@@ -5,540 +5,536 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PA.YU - Admin Dashboard</title>
 
-<!-- Library untuk Chart dan QR Code Scanner -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
-
 <style>
 :root {
-  /* Skema Warna Identitas PA.YU disesuaikan tanpa merusak struktur asli */
-  --bg: #fdfaf6;
-  --white: #ffffff;
-  --primary: #a62823; /* Merah PA.YU pengganti Green */
-  --dark: #3a221f; /* Cokelat gelap sesuai gambar sidebar */
-  --light-primary: #fceecb; /* Cream PA.YU pengganti light-green */
-  --lime: #f0a15b; /* Oranye untuk teks "pa." di logo */
-  --text: #2c1a18;
-  --muted: #857472;
-  --border: #ecdcd9;
-  --red: #d94236;
+  --bg: #f7f5ed;
+  --white: #fffef9;
+  --green: #66784d;
+  --dark: #263021;
+  --light-green: #dfe6d1;
+  --lime: #d7ee78;
+  --text: #24291f;
+  --muted: #74796d;
+  --border: #e5e4d9;
+  --red: #b84236;
 }
 
-* {
-  box-sizing: border-box;
+
+- {
+  box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: Arial, sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
 }
 
 button, input, select {
-  font: inherit;
+  font: inherit;
 }
 
 button {
-  border: none;
-  border-radius: 9px;
-  padding: 10px 14px;
-  cursor: pointer;
-  font-weight: bold;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
+  opacity: .5;
+  cursor: not-allowed;
 }
 
 .app {
-  display: grid;
-  grid-template-columns: 230px 1fr;
-  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
 }
 
 .sidebar {
-  background: var(--dark);
-  color: white;
-  padding: 24px 16px;
+  background: var(--dark);
+  color: white;
+  padding: 24px 16px;
 }
 
 .brand {
-  font-size: 25px;
-  font-weight: bold;
-  margin: 0 8px 32px;
+  font-size: 25px;
+  font-weight: bold;
+  margin: 0 8px 32px;
 }
 
 .brand span {
-  color: var(--lime);
+  color: var(--lime);
 }
 
 .nav button {
-  display: block;
-  width: 100%;
-  background: transparent;
-  color: #e4e8dc;
-  text-align: left;
-  margin-bottom: 7px;
+  display: block;
+  width: 100%;
+  background: transparent;
+  color: #e4e8dc;
+  text-align: left;
+  margin-bottom: 7px;
 }
 
 .nav button.active,
 .nav button:hover {
-  background: #ffffff1c;
-  color: white;
+  background: #ffffff1c;
+  color: white;
 }
 
 .sidebar-note {
-  margin-top: 35px;
-  color: #cbd1c4;
-  font-size: 12px;
-  line-height: 1.6;
+  margin-top: 35px;
+  color: #cbd1c4;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 main {
-  min-width: 0;
-  padding: 28px;
+  min-width: 0;
+  padding: 28px;
 }
 
 .topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 25px;
 }
 
 h1 {
-  margin: 5px 0;
-  font-size: 30px;
+  margin: 5px 0;
+  font-size: 30px;
 }
 
 h2 {
-  font-size: 19px;
-  margin: 0 0 8px;
+  font-size: 19px;
+  margin: 0 0 8px;
 }
 
 h3 {
-  margin: 0 0 6px;
+  margin: 0 0 6px;
 }
 
 .subtitle,
 .muted {
-  color: var(--muted);
-  font-size: 13px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .profile-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
 }
 
 .profile-chip select {
-  border: none;
-  background: transparent;
-  font-weight: bold;
+  border: none;
+  background: transparent;
+  font-weight: bold;
 }
 
 .avatar {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: var(--light-primary);
-  color: var(--primary);
-  font-weight: bold;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--light-green);
+  color: var(--green);
+  font-weight: bold;
 }
 
 .stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
 .stat,
 .panel {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 18px;
-  margin-bottom: 18px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 18px;
 }
 
 .stat strong {
-  display: block;
-  font-size: 26px;
-  margin: 10px 0;
+  display: block;
+  font-size: 26px;
+  margin: 10px 0;
 }
 
 .layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 18px;
 }
 
 .panel-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .btn-primary {
-  background: var(--primary);
-  color: white;
+  background: var(--green);
+  color: white;
 }
 
 .btn-light {
-  background: #efeee6;
-  color: var(--text);
+  background: #efeee6;
+  color: var(--text);
 }
 
 .btn-soft {
-  background: var(--light-primary);
-  color: var(--dark);
+  background: var(--light-green);
+  color: var(--dark);
 }
 
 .btn-danger {
-  background: #fbe7e3;
-  color: var(--red);
+  background: #fbe7e3;
+  color: var(--red);
 }
 
 .btn-sm {
-  padding: 7px 10px;
-  font-size: 12px;
+  padding: 7px 10px;
+  font-size: 12px;
 }
 
 input,
 select {
-  width: 100%;
-  padding: 11px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: white;
-  color: var(--text);
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  color: var(--text);
 }
 
 .searchrow {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .member-list {
-  display: grid;
-  gap: 9px;
+  display: grid;
+  gap: 9px;
 }
 
 .member {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: white;
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
 }
 
 .member:hover,
 .member.selected {
-  border-color: var(--primary);
-  background: #fff9ed;
+  border-color: var(--green);
+  background: #f8faef;
 }
 
 .member-info {
-  flex: 1;
-  min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .member-info strong {
-  display: block;
+  display: block;
 }
 
 .member-info small {
-  color: var(--muted);
-  font-size: 12px;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .points {
-  color: var(--primary);
-  font-weight: bold;
-  text-align: right;
+  color: var(--green);
+  font-weight: bold;
+  text-align: right;
 }
 
 .points small {
-  display: block;
-  color: var(--muted);
-  font-weight: normal;
+  display: block;
+  color: var(--muted);
+  font-weight: normal;
 }
 
 .empty {
-  padding: 22px;
-  text-align: center;
-  color: var(--muted);
-  border: 1px dashed var(--border);
-  border-radius: 12px;
+  padding: 22px;
+  text-align: center;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
 }
 
 .member-top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .member-top .avatar {
-  width: 52px;
-  height: 52px;
+  width: 52px;
+  height: 52px;
 }
 
 .member-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 16px;
 }
 
 .history {
-  display: grid;
-  gap: 10px;
+  display: grid;
+  gap: 10px;
 }
 
 .transaction {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 13px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px;
 }
 
 .transaction-top,
 .transaction-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
 
 .transaction-menu {
-  font-weight: bold;
-  margin: 6px 0;
+  font-weight: bold;
+  margin: 6px 0;
 }
 
 .transaction-bottom {
-  border-top: 1px solid var(--border);
-  padding-top: 10px;
-  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: 10px;
 }
 
 .earned {
-  color: var(--primary);
-  font-weight: bold;
+  color: var(--green);
+  font-weight: bold;
 }
 
 .section {
-  display: none;
+  display: none;
 }
 
 .section.active {
-  display: block;
+  display: block;
 }
 
 .admin-only {
-  display: none !important;
+  display: none !important;
 }
 
 .admin-only.visible {
-  display: inline-block !important;
+  display: inline-block !important;
 }
 
 .field {
-  margin-bottom: 14px;
+  margin-bottom: 14px;
 }
 
 .field label {
-  display: block;
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 6px;
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 6px;
 }
 
 .menu-line {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 75px 36px;
-  gap: 7px;
-  margin-bottom: 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 75px 36px;
+  gap: 7px;
+  margin-bottom: 8px;
 }
 
 .total-box {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  background: #f1ebd8;
-  border-radius: 12px;
-  padding: 14px;
-  margin: 14px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  background: #f1f4e8;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 14px 0;
 }
 
 .total-box strong {
-  font-size: 20px;
+  font-size: 20px;
 }
 
 .menu-admin-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 130px auto;
-  align-items: center;
-  gap: 10px;
-  margin: 10px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px auto;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
 }
 
 .promo-preview {
-  min-height: 150px;
-  padding: 22px;
-  border-radius: 15px;
-  background: linear-gradient(135deg, var(--lime), #f0a15b);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin-bottom: 18px;
+  min-height: 150px;
+  padding: 22px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, var(--lime), #f0a15b);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 18px;
 }
 
 .promo-preview strong {
-  font-size: 25px;
+  font-size: 25px;
 }
 
 .access-note {
-  background: #fff5df;
-  border: 1px solid #f0dfb6;
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 12px;
-  line-height: 1.5;
-  margin-top: 12px;
+  background: #fff5df;
+  border: 1px solid #f0dfb6;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 12px;
 }
 
 .modal-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: #151a11aa;
-  padding: 20px;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #151a11aa;
+  padding: 20px;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
 }
 
 .modal-backdrop.open {
-  display: flex;
+  display: flex;
 }
 
 .modal {
-  width: min(600px, 100%);
-  max-height: 90vh;
-  overflow-y: auto;
-  background: var(--white);
-  border-radius: 18px;
-  padding: 22px;
+  width: min(600px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--white);
+  border-radius: 18px;
+  padding: 22px;
 }
 
 .modal-head,
 .modal-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .modal-actions {
-  justify-content: flex-end;
-  margin: 18px 0 0;
+  justify-content: flex-end;
+  margin: 18px 0 0;
 }
 
 .toast {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: var(--dark);
-  color: white;
-  padding: 13px 17px;
-  border-radius: 10px;
-  display: none;
-  z-index: 20;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--dark);
+  color: white;
+  padding: 13px 17px;
+  border-radius: 10px;
+  display: none;
+  z-index: 20;
 }
 
 .toast.show {
-  display: block;
+  display: block;
 }
 
 @media (max-width: 1000px) {
-  .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .layout {
-    grid-template-columns: 1fr;
-  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 650px) {
-  .app {
-    display: block;
-  }
-  .sidebar {
-    padding: 13px;
-  }
-  .brand {
-    margin: 5px 8px 14px;
-  }
-  .nav {
-    display: flex;
-    overflow-x: auto;
-    gap: 5px;
-  }
-  .nav button {
-    width: auto;
-    white-space: nowrap;
-    margin: 0;
-  }
-  .sidebar-note {
-    display: none;
-  }
-  main {
-    padding: 18px 12px;
-  }
-  .topbar {
-    align-items: flex-start;
-  }
-  h1 {
-    font-size: 24px;
-  }
-  .stats {
-    gap: 8px;
-  }
-  .stat,
-  .panel {
-    padding: 13px;
-  }
-  .stat strong {
-    font-size: 22px;
-  }
-  .profile-chip select {
-    max-width: 90px;
-  }
-  .transaction-top {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .menu-admin-row {
-    grid-template-columns: minmax(0, 1fr) 90px auto;
-  }
+  .app {
+    display: block;
+  }
+  .sidebar {
+    padding: 13px;
+  }
+  .brand {
+    margin: 5px 8px 14px;
+  }
+  .nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 5px;
+  }
+  .nav button {
+    width: auto;
+    white-space: nowrap;
+    margin: 0;
+  }
+  .sidebar-note {
+    display: none;
+  }
+  main {
+    padding: 18px 12px;
+  }
+  .topbar {
+    align-items: flex-start;
+  }
+  h1 {
+    font-size: 24px;
+  }
+  .stats {
+    gap: 8px;
+  }
+  .stat,
+  .panel {
+    padding: 13px;
+  }
+  .stat strong {
+    font-size: 22px;
+  }
+  .profile-chip select {
+    max-width: 90px;
+  }
+  .transaction-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .menu-admin-row {
+    grid-template-columns: minmax(0, 1fr) 90px auto;
+  }
 }
 </style>
 </head>
@@ -547,189 +543,168 @@ select {
 <div class="app">
 
 <aside class="sidebar">
-  <div class="brand"><span>pa.</span>yu</div>
-  <nav class="nav">
-    <button class="active" data-section="dashboard">▦ Dashboard</button>
-    <button data-section="members">♙ Cek Member</button>
-    <button data-section="menu">☷ Menu & Harga</button>
-    <button data-section="promo">▧ Promo Website</button>
-  </nav>
-  <div class="sidebar-note">
-    <strong>PA.YU Membership</strong><br>
-    Prototype halaman admin. Data disimpan pada browser ini.
-  </div>
+  <div class="brand"><span>pa.</span>yu</div>
+  <nav class="nav">
+    <button class="active" data-section="dashboard">▦ Dashboard</button>
+    <button data-section="members">♙ Cek Member</button>
+    <button data-section="menu">☷ Menu & Harga</button>
+    <button data-section="promo">▧ Promo Website</button>
+  </nav>
+  <div class="sidebar-note">
+    <strong>PA.YU Membership</strong><br>
+    Prototype halaman admin. Data disimpan pada browser ini.
+  </div>
 </aside>
 
 <main>
 <header class="topbar">
-  <div>
-    <div class="subtitle">PA.YU / MEMBER SYSTEM</div>
-    <h1 id="pageTitle">Dashboard</h1>
-    <p class="subtitle" id="pageSub">Ringkasan membership dan transaksi.</p>
-  </div>
+  <div>
+    <div class="subtitle">PA.YU / MEMBER SYSTEM</div>
+    <h1 id="pageTitle">Dashboard</h1>
+    <p class="subtitle" id="pageSub">Ringkasan membership dan transaksi.</p>
+  </div>
 
-  <div class="profile-chip">
-    <div class="avatar">A</div>
-    <div>
-      <strong id="roleName">Admin</strong><br>
-      <small class="muted">Hak akses</small>
-    </div>
-    <select id="roleSelect" aria-label="Pilih role">
-      <option value="admin">Admin</option>
-      <option value="kasir">Kasir</option>
-    </select>
-  </div>
+  <div class="profile-chip">
+    <div class="avatar">A</div>
+    <div>
+      <strong id="roleName">Admin</strong><br>
+      <small class="muted">Hak akses</small>
+    </div>
+    <select id="roleSelect" aria-label="Pilih role">
+      <option value="admin">Admin</option>
+      <option value="kasir">Kasir</option>
+    </select>
+  </div>
 </header>
 
 <!-- DASHBOARD -->
 <section class="section active" id="section-dashboard">
-  <div class="stats">
-    <div class="stat">Total member<strong id="statMembers">0</strong><small class="muted">Member terdaftar</small></div>
-    <div class="stat">Total transaksi<strong id="statTx">0</strong><small class="muted">Transaksi tercatat</small></div>
-    <div class="stat">Total poin<strong id="statPoints">0</strong><small class="muted">Poin member</small></div>
-    <div class="stat">Menu aktif<strong id="statMenu">0</strong><small class="muted">Daftar menu</small></div>
-  </div>
+  <div class="stats">
+    <div class="stat">Total member<strong id="statMembers">0</strong><small class="muted">Member terdaftar</small></div>
+    <div class="stat">Total transaksi<strong id="statTx">0</strong><small class="muted">Transaksi tercatat</small></div>
+    <div class="stat">Total poin<strong id="statPoints">0</strong><small class="muted">Poin member</small></div>
+    <div class="stat">Menu aktif<strong id="statMenu">0</strong><small class="muted">Daftar menu</small></div>
+  </div>
 
-  <!-- TAMBAHAN: GRAFIK ANALISIS -->
-  <div class="panel">
-    <div class="panel-head" style="flex-wrap: wrap;">
-      <div>
-        <h2>Grafik Analisis</h2>
-        <p class="subtitle">Penambahan member, total belanja, dan kumulatif member.</p>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <select id="chartPeriod" class="btn-light" style="padding: 8px; width: auto; font-weight: normal;">
-          <option value="daily">Harian (Per Jam)</option>
-          <option value="monthly">Bulanan (Per Hari)</option>
-          <option value="yearly">Tahunan (Per Bulan)</option>
-        </select>
-        <input type="date" id="chartDate" class="btn-light" style="padding: 8px; width: auto;">
-      </div>
-    </div>
-    <canvas id="analyticsChart" style="width: 100%; max-height: 350px;"></canvas>
-  </div>
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Member terbaru</h2>
+          <p class="subtitle">Klik member untuk membuka profil.</p>
+        </div>
+        <button class="btn-primary" id="dashCheck">Cek Member</button>
+      </div>
+      <div class="member-list" id="recentMembers"></div>
+    </div>
 
-  <div class="layout">
-    <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>Member terbaru</h2>
-          <p class="subtitle">Klik member untuk membuka profil.</p>
-        </div>
-        <button class="btn-primary" id="dashCheck">Cek Member</button>
-      </div>
-      <div class="member-list" id="recentMembers"></div>
-    </div>
-
-    <div>
-      <div class="panel">
-        <h2>Aturan poin</h2>
-        <div style="font-size:27px;font-weight:bold;color:var(--primary);margin:12px 0">Rp1.000 = 1 poin</div>
-        <p class="subtitle">Poin dihitung dari total transaksi dan dibulatkan ke bawah.</p>
-      </div>
-      <div class="panel">
-        <h2>Hak akses</h2>
-        <p class="subtitle" id="accessText"></p>
-        <div class="access-note">
-          Admin dan Kasir sama-sama dapat mengelola member dan transaksi.
-          Hanya Admin yang dapat mengubah menu, harga, dan promo website.
-        </div>
-      </div>
-    </div>
-  </div>
+    <div>
+      <div class="panel">
+        <h2>Aturan poin</h2>
+        <div style="font-size:27px;font-weight:bold;color:var(--green);margin:12px 0">Rp1.000 = 1 poin</div>
+        <p class="subtitle">Poin dihitung dari total transaksi dan dibulatkan ke bawah.</p>
+      </div>
+      <div class="panel">
+        <h2>Hak akses</h2>
+        <p class="subtitle" id="accessText"></p>
+        <div class="access-note">
+          Admin dan Kasir sama-sama dapat mengelola member dan transaksi.
+          Hanya Admin yang dapat mengubah menu, harga, dan promo website.
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- MEMBER -->
 <section class="section" id="section-members">
-  <div class="layout">
-    <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>Pengecekan Member</h2>
-          <p class="subtitle">Cari nama, kode member, atau nomor telepon.</p>
-        </div>
-        <button class="btn-primary" id="addMemberBtn">+ Member</button>
-      </div>
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Pengecekan Member</h2>
+          <p class="subtitle">Cari nama, kode member, atau nomor telepon.</p>
+        </div>
+        <button class="btn-primary" id="addMemberBtn">+ Member</button>
+      </div>
 
-      <div class="searchrow">
-        <input id="memberSearch" placeholder="Cari member...">
-        <!-- TAMBAHAN: TOMBOL SCAN QR -->
-        <button class="btn-primary" id="scanQrBtn" style="padding: 0 15px;" title="Scan QR Code">📷 Scan</button>
-        <button class="btn-light" id="clearSearch">Reset</button>
-      </div>
-      <div class="member-list" id="memberList"></div>
-    </div>
+      <div class="searchrow">
+        <input id="memberSearch" placeholder="Cari member...">
+        <button class="btn-light" id="clearSearch">Reset</button>
+      </div>
+      <div class="member-list" id="memberList"></div>
+    </div>
 
-    <div>
-      <div class="panel" id="memberProfile">
-        <div class="empty">Pilih member untuk membuka profil.</div>
-      </div>
-      <div class="panel" id="transactionPanel">
-        <h2>Riwayat transaksi</h2>
-        <div class="empty">Belum ada member dipilih.</div>
-      </div>
-    </div>
-  </div>
+    <div>
+      <div class="panel" id="memberProfile">
+        <div class="empty">Pilih member untuk membuka profil.</div>
+      </div>
+      <div class="panel" id="transactionPanel">
+        <h2>Riwayat transaksi</h2>
+        <div class="empty">Belum ada member dipilih.</div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- MENU -->
 <section class="section" id="section-menu">
-  <div class="panel">
-    <div class="panel-head">
-      <div>
-        <h2>Menu & Harga</h2>
-        <p class="subtitle">Harga akan digunakan otomatis pada transaksi.</p>
-      </div>
-      <button class="btn-primary admin-only" id="addMenuBtn">+ Tambah Menu</button>
-    </div>
-    <div class="access-note" id="menuPermission" style="display:none">
-      Kasir hanya dapat melihat menu. Hubungi Admin untuk mengubah harga.
-    </div>
-    <div id="menuAdminList"></div>
-  </div>
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Menu & Harga</h2>
+        <p class="subtitle">Harga akan digunakan otomatis pada transaksi.</p>
+      </div>
+      <button class="btn-primary admin-only" id="addMenuBtn">+ Tambah Menu</button>
+    </div>
+    <div class="access-note" id="menuPermission" style="display:none">
+      Kasir hanya dapat melihat menu. Hubungi Admin untuk mengubah harga.
+    </div>
+    <div id="menuAdminList"></div>
+  </div>
 </section>
 
 <!-- PROMO -->
 <section class="section" id="section-promo">
-  <div class="layout">
-    <div class="panel">
-      <h2>Promo Website</h2>
-      <p class="subtitle">Pratinjau konten promo website publik.</p>
+  <div class="layout">
+    <div class="panel">
+      <h2>Promo Website</h2>
+      <p class="subtitle">Pratinjau konten promo website publik.</p>
 
-      <div class="promo-preview" id="promoPreview">
-        <small>PA.YU PROMO</small>
-        <strong>Ngopi lebih hemat, mood tetap hangat.</strong>
-        <span>Promo member minggu ini</span>
-      </div>
+      <div class="promo-preview" id="promoPreview">
+        <small>PA.YU PROMO</small>
+        <strong>Ngopi lebih hemat, mood tetap hangat.</strong>
+        <span>Promo member minggu ini</span>
+      </div>
 
-      <div class="field">
-        <label>Judul promo</label>
-        <input id="promoTitle">
-      </div>
-      <div class="field">
-        <label>Deskripsi promo</label>
-        <input id="promoSubtitle">
-      </div>
-      <div class="field">
-        <label>URL poster (opsional)</label>
-        <input id="promoImage" placeholder="https://alamat-gambar-poster.jpg">
-      </div>
+      <div class="field">
+        <label>Judul promo</label>
+        <input id="promoTitle">
+      </div>
+      <div class="field">
+        <label>Deskripsi promo</label>
+        <input id="promoSubtitle">
+      </div>
+      <div class="field">
+        <label>URL poster (opsional)</label>
+        <input id="promoImage" placeholder="https://alamat-gambar-poster.jpg">
+      </div>
 
-      <button class="btn-primary admin-only" id="savePromo">Simpan Promo</button>
-      <div class="access-note" id="promoPermission" style="display:none">
-        Kasir hanya dapat melihat promo. Hanya Admin yang dapat mengubah kontennya.
-      </div>
-    </div>
+      <button class="btn-primary admin-only" id="savePromo">Simpan Promo</button>
+      <div class="access-note" id="promoPermission" style="display:none">
+        Kasir hanya dapat melihat promo. Hanya Admin yang dapat mengubah kontennya.
+      </div>
+    </div>
 
-    <div class="panel">
-      <h2>Catatan</h2>
-      <p class="subtitle">
-        Promo pada prototipe ini disimpan di browser lokal.
-        Agar tampil di website publik dari perangkat lain, diperlukan backend
-        dan penyimpanan gambar online.
-      </p>
-    </div>
-  </div>
+    <div class="panel">
+      <h2>Catatan</h2>
+      <p class="subtitle">
+        Promo pada prototipe ini disimpan di browser lokal.
+        Agar tampil di website publik dari perangkat lain, diperlukan backend
+        dan penyimpanan gambar online.
+      </p>
+    </div>
+  </div>
 </section>
 
 </main>
@@ -737,947 +712,745 @@ select {
 
 <!-- MODAL -->
 <div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal" role="dialog" aria-modal="true">
-    <div class="modal-head">
-      <h2 id="modalTitle">Form</h2>
-      <button class="btn-light" id="modalClose">Tutup ✕</button>
-    </div>
-    <div id="modalBody"></div>
-    <div class="modal-actions" id="modalActions"></div>
-  </div>
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h2 id="modalTitle">Form</h2>
+      <button class="btn-light" id="modalClose">Tutup ✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// Key diubah agar data dummy reset untuk menyesuaikan format tanggal baru (ada jam-nya)
-const STORAGE_KEY = "payu_admin_dashboard_v3";
+const STORAGE_KEY = "payu_admin_dashboard_v1";
 
 const initialState = {
-  menus: [
-    {id: 1, name: "Es Kopi Susu", price: 22000},
-    {id: 2, name: "Americano", price: 18000},
-    {id: 3, name: "Cafe Latte", price: 25000},
-    {id: 4, name: "Matcha Latte", price: 27000},
-    {id: 5, name: "Croissant", price: 20000}
-  ],
-  members: [
-    {id: 1, code: "PYU001", name: "Bayu Pratama", phone: "081234567890", created: "2026-09-12T10:30:00"},
-    {id: 2, code: "PYU002", name: "Nadia Putri", phone: "081298765432", created: "2026-09-18T14:15:00"},
-    {id: 3, code: "PYU003", name: "Raka Wijaya", phone: "082112223333", created: "2026-10-01T09:00:00"}
-  ],
-  transactions: [
-    {id: 101, memberId: 1, date: "2026-10-13T08:30:00", items: [{menuId: 1, qty: 2}, {menuId: 5, qty: 1}]},
-    {id: 102, memberId: 1, date: "2026-10-10T11:00:00", items: [{menuId: 3, qty: 1}]},
-    {id: 103, memberId: 2, date: "2026-10-12T16:45:00", items: [{menuId: 2, qty: 2}]},
-    {id: 104, memberId: 3, date: "2026-10-08T19:20:00", items: [{menuId: 4, qty: 1}, {menuId: 1, qty: 1}]}
-  ],
-  promo: {
-    title: "Ngopi lebih hemat, mood tetap hangat.",
-    subtitle: "Promo member minggu ini",
-    image: ""
-  }
+  menus: [
+    {id: 1, name: "Es Kopi Susu", price: 22000},
+    {id: 2, name: "Americano", price: 18000},
+    {id: 3, name: "Cafe Latte", price: 25000},
+    {id: 4, name: "Matcha Latte", price: 27000},
+    {id: 5, name: "Croissant", price: 20000}
+  ],
+  members: [
+    {id: 1, code: "PYU001", name: "Bayu Pratama", phone: "081234567890", created: "2026-09-12"},
+    {id: 2, code: "PYU002", name: "Nadia Putri", phone: "081298765432", created: "2026-09-18"},
+    {id: 3, code: "PYU003", name: "Raka Wijaya", phone: "082112223333", created: "2026-10-01"}
+  ],
+  transactions: [
+    {id: 101, memberId: 1, date: "2026-10-13", items: [{menuId: 1, qty: 2}, {menuId: 5, qty: 1}]},
+    {id: 102, memberId: 1, date: "2026-10-10", items: [{menuId: 3, qty: 1}]},
+    {id: 103, memberId: 2, date: "2026-10-12", items: [{menuId: 2, qty: 2}]},
+    {id: 104, memberId: 3, date: "2026-10-08", items: [{menuId: 4, qty: 1}, {menuId: 1, qty: 1}]}
+  ],
+  promo: {
+    title: "Ngopi lebih hemat, mood tetap hangat.",
+    subtitle: "Promo member minggu ini",
+    image: ""
+  }
 };
 
 let state;
 try {
-  state = JSON.parse(localStorage.getItem(STORAGE_KEY)) ||
-          JSON.parse(JSON.stringify(initialState));
+  state = JSON.parse(localStorage.getItem(STORAGE_KEY)) ||
+          JSON.parse(JSON.stringify(initialState));
 } catch (e) {
-  state = JSON.parse(JSON.stringify(initialState));
+  state = JSON.parse(JSON.stringify(initialState));
 }
 
 let role = "admin";
 let selectedMemberId = null;
-let html5QrcodeScanner = null; // Instance scanner
-let myChart = null; // Instance Chart.js
-
-// Set Default Tanggal di Chart
-$("chartDate").value = new Date().toISOString().slice(0, 10);
 
 const $ = id => document.getElementById(id);
 const money = n => "Rp" + Number(n || 0).toLocaleString("id-ID");
 
 function esc(value) {
-  return String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;",
-    '"': "&quot;", "'": "&#39;"
-  }[c]));
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  }[c]));
 }
 
-// Disesuaikan agar bisa membaca tanggal yang mengandung Jam
-function fmtDate(dateStr) {
-  if (!dateStr) return "-";
-  const dateOnly = dateStr.split("T")[0];
-  return new Date(dateOnly + "T00:00:00").toLocaleDateString("id-ID", {
-    day: "numeric", month: "long", year: "numeric"
-  });
+function fmtDate(date) {
+  if (!date) return "-";
+  return new Date(date + "T00:00:00").toLocaleDateString("id-ID", {
+    day: "numeric", month: "long", year: "numeric"
+  });
 }
 
 function getMember(id) {
-  return state.members.find(m => m.id === Number(id));
+  return state.members.find(m => m.id === Number(id));
 }
 
 function getMenu(id) {
-  return state.menus.find(m => m.id === Number(id));
+  return state.menus.find(m => m.id === Number(id));
 }
 
 function getTransaction(id) {
-  return state.transactions.find(t => t.id === Number(id));
+  return state.transactions.find(t => t.id === Number(id));
 }
 
 function totalOf(tx) {
-  return tx.items.reduce((sum, item) => {
-    const menu = getMenu(item.menuId);
-    return sum + (menu ? menu.price : 0) * Number(item.qty);
-  }, 0);
+  return tx.items.reduce((sum, item) => {
+    const menu = getMenu(item.menuId);
+    return sum + (menu ? menu.price : 0) * Number(item.qty);
+  }, 0);
 }
 
 function pointsOf(tx) {
-  return Math.floor(totalOf(tx) / 1000);
+  return Math.floor(totalOf(tx) / 1000);
 }
 
 function memberPoints(memberId) {
-  return state.transactions
-    .filter(tx => tx.memberId === Number(memberId))
-    .reduce((sum, tx) => sum + pointsOf(tx), 0);
+  return state.transactions
+    .filter(tx => tx.memberId === Number(memberId))
+    .reduce((sum, tx) => sum + pointsOf(tx), 0);
 }
 
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  renderAll();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  renderAll();
 }
 
 function toast(message) {
-  $("toast").textContent = message;
-  $("toast").classList.add("show");
-  setTimeout(() => $("toast").classList.remove("show"), 2300);
+  $("toast").textContent = message;
+  $("toast").classList.add("show");
+  setTimeout(() => $("toast").classList.remove("show"), 2300);
 }
 
 function initials(name) {
-  return name.split(" ").map(x => x[0]).slice(0, 2).join("").toUpperCase();
+  return name.split(" ").map(x => x[0]).slice(0, 2).join("").toUpperCase();
 }
 
 function memberCard(member) {
-  return `
-    <div class="member ${selectedMemberId === member.id ? "selected" : ""}"
-         data-member="${member.id}">
-      <div class="avatar">${esc(initials(member.name))}</div>
-      <div class="member-info">
-        <strong>${esc(member.name)}</strong>
-        <small>${esc(member.code)} · ${esc(member.phone)}</small>
-      </div>
-      <div class="points">${memberPoints(member.id)}<small>poin</small></div>
-    </div>`;
+  return `
+    <div class="member ${selectedMemberId === member.id ? "selected" : ""}"
+         data-member="${member.id}">
+      <div class="avatar">${esc(initials(member.name))}</div>
+      <div class="member-info">
+        <strong>${esc(member.name)}</strong>
+        <small>${esc(member.code)} · ${esc(member.phone)}</small>
+      </div>
+      <div class="points">${memberPoints(member.id)}<small>poin</small></div>
+    </div>`;
 }
 
 function renderStats() {
-  $("statMembers").textContent = state.members.length;
-  $("statTx").textContent = state.transactions.length;
-  $("statPoints").textContent = state.members
-    .reduce((sum, member) => sum + memberPoints(member.id), 0)
-    .toLocaleString("id-ID");
-  $("statMenu").textContent = state.menus.length;
+  $("statMembers").textContent = state.members.length;
+  $("statTx").textContent = state.transactions.length;
+  $("statPoints").textContent = state.members
+    .reduce((sum, member) => sum + memberPoints(member.id), 0)
+    .toLocaleString("id-ID");
+  $("statMenu").textContent = state.menus.length;
 }
 
 function renderMemberLists() {
-  const query = ($("memberSearch").value || "").toLowerCase().trim();
+  const query = ($("memberSearch").value || "").toLowerCase().trim();
 
-  const members = state.members.filter(member =>
-    [member.name, member.code, member.phone]
-      .some(value => value.toLowerCase().includes(query))
-  );
+  const members = state.members.filter(member =>
+    [member.name, member.code, member.phone]
+      .some(value => value.toLowerCase().includes(query))
+  );
 
-  $("memberList").innerHTML = members.length
-    ? members.map(memberCard).join("")
-    : '<div class="empty">Member tidak ditemukan.</div>';
+  $("memberList").innerHTML = members.length
+    ? members.map(memberCard).join("")
+    : '<div class="empty">Member tidak ditemukan.</div>';
 
-  $("recentMembers").innerHTML = [...state.members]
-    .slice(-4).reverse().map(memberCard).join("");
+  $("recentMembers").innerHTML = [...state.members]
+    .slice(-4).reverse().map(memberCard).join("");
 
-  document.querySelectorAll("[data-member]").forEach(el => {
-    el.onclick = () => selectMember(Number(el.dataset.member));
-  });
+  document.querySelectorAll("[data-member]").forEach(el => {
+    el.onclick = () => selectMember(Number(el.dataset.member));
+  });
 }
 
 function selectMember(id) {
-  selectedMemberId = id;
-  showSection("members");
-  renderAll();
+  selectedMemberId = id;
+  showSection("members");
+  renderAll();
 }
 
 function transactionMenuText(tx) {
-  return tx.items.map(item => {
-    const menu = getMenu(item.menuId);
-    return `${menu ? menu.name : "Menu dihapus"} × ${item.qty}`;
-  }).join(", ");
+  return tx.items.map(item => {
+    const menu = getMenu(item.menuId);
+    return `${menu ? menu.name : "Menu dihapus"} × ${item.qty}`;
+  }).join(", ");
 }
 
 function renderProfile() {
-  const member = getMember(selectedMemberId);
+  const member = getMember(selectedMemberId);
 
-  if (!member) {
-    $("memberProfile").innerHTML =
-      '<div class="empty">Pilih member untuk membuka profil.</div>';
-    $("transactionPanel").innerHTML =
-      '<h2>Riwayat transaksi</h2><div class="empty">Belum ada member dipilih.</div>';
-    return;
-  }
+  if (!member) {
+    $("memberProfile").innerHTML =
+      '<div class="empty">Pilih member untuk membuka profil.</div>';
+    $("transactionPanel").innerHTML =
+      '<h2>Riwayat transaksi</h2><div class="empty">Belum ada member dipilih.</div>';
+    return;
+  }
 
-  const txs = state.transactions
-    .filter(tx => tx.memberId === member.id)
-    .sort((a, b) => b.date.localeCompare(a.date));
+  const txs = state.transactions
+    .filter(tx => tx.memberId === member.id)
+    .sort((a, b) => b.date.localeCompare(a.date));
 
-  $("memberProfile").innerHTML = `
-    <div class="member-top">
-      <div class="avatar">${esc(initials(member.name))}</div>
-      <div>
-        <h3>${esc(member.name)}</h3>
-        <div class="muted">${esc(member.code)}</div>
-        <div class="muted">${esc(member.phone)}</div>
-      </div>
-    </div>
+  $("memberProfile").innerHTML = `
+    <div class="member-top">
+      <div class="avatar">${esc(initials(member.name))}</div>
+      <div>
+        <h3>${esc(member.name)}</h3>
+        <div class="muted">${esc(member.code)}</div>
+        <div class="muted">${esc(member.phone)}</div>
+      </div>
+    </div>
 
-    <div class="stats" style="grid-template-columns:1fr 1fr;margin:18px 0 0">
-      <div class="stat">
-        <div class="muted">Total poin</div>
-        <strong>${memberPoints(member.id)}</strong>
-      </div>
-      <div class="stat">
-        <div class="muted">Transaksi</div>
-        <strong>${txs.length}</strong>
-      </div>
-    </div>
+    <div class="stats" style="grid-template-columns:1fr 1fr;margin:18px 0 0">
+      <div class="stat">
+        <div class="muted">Total poin</div>
+        <strong>${memberPoints(member.id)}</strong>
+      </div>
+      <div class="stat">
+        <div class="muted">Transaksi</div>
+        <strong>${txs.length}</strong>
+      </div>
+    </div>
 
-    <div class="member-actions">
-      <button class="btn-primary" id="newTx">+ Transaksi</button>
-      <button class="btn-light" id="editMember">Edit Profil</button>
-      <button class="btn-danger" id="deleteMember">Hapus Member</button>
-    </div>`;
+    <div class="member-actions">
+      <button class="btn-primary" id="newTx">+ Transaksi</button>
+      <button class="btn-light" id="editMember">Edit Profil</button>
+      <button class="btn-danger" id="deleteMember">Hapus Member</button>
+    </div>`;
 
-  $("newTx").onclick = () => openTransactionForm(member.id);
-  $("editMember").onclick = () => openMemberForm(member);
-  $("deleteMember").onclick = () => deleteMember(member.id);
+  $("newTx").onclick = () => openTransactionForm(member.id);
+  $("editMember").onclick = () => openMemberForm(member);
+  $("deleteMember").onclick = () => deleteMember(member.id);
 
-  $("transactionPanel").innerHTML = `
-    <div class="panel-head">
-      <div>
-        <h2>Riwayat transaksi</h2>
-        <p class="subtitle">${txs.length} transaksi untuk ${esc(member.name)}</p>
-      </div>
-      <button class="btn-primary btn-sm" id="addTxHistory">+ Tambah</button>
-    </div>
+  $("transactionPanel").innerHTML = `
+    <div class="panel-head">
+      <div>
+        <h2>Riwayat transaksi</h2>
+        <p class="subtitle">${txs.length} transaksi untuk ${esc(member.name)}</p>
+      </div>
+      <button class="btn-primary btn-sm" id="addTxHistory">+ Tambah</button>
+    </div>
 
-    <div class="history">
-      ${txs.length ? txs.map(tx => `
-        <div class="transaction">
-          <div class="transaction-top">
-            <div>
-              <div class="muted">${fmtDate(tx.date)}</div>
-              <div class="transaction-menu">${esc(transactionMenuText(tx))}</div>
-              <div class="muted">Total belanja: ${money(totalOf(tx))}</div>
-            </div>
-            <div>
-              <button class="btn-soft btn-sm" data-edit-tx="${tx.id}">Edit</button>
-              <button class="btn-danger btn-sm" data-delete-tx="${tx.id}">Hapus</button>
-            </div>
-          </div>
-          <div class="transaction-bottom">
-            <span class="muted">Total poin diperoleh</span>
-            <span class="earned">+${pointsOf(tx)} poin</span>
-          </div>
-        </div>
-      `).join("") : '<div class="empty">Belum ada transaksi.</div>'}
-    </div>`;
+    <div class="history">
+      ${txs.length ? txs.map(tx => `
+        <div class="transaction">
+          <div class="transaction-top">
+            <div>
+              <div class="muted">${fmtDate(tx.date)}</div>
+              <div class="transaction-menu">${esc(transactionMenuText(tx))}</div>
+              <div class="muted">Total belanja: ${money(totalOf(tx))}</div>
+            </div>
+            <div>
+              <button class="btn-soft btn-sm" data-edit-tx="${tx.id}">Edit</button>
+              <button class="btn-danger btn-sm" data-delete-tx="${tx.id}">Hapus</button>
+            </div>
+          </div>
+          <div class="transaction-bottom">
+            <span class="muted">Total poin diperoleh</span>
+            <span class="earned">+${pointsOf(tx)} poin</span>
+          </div>
+        </div>
+      `).join("") : '<div class="empty">Belum ada transaksi.</div>'}
+    </div>`;
 
-  $("addTxHistory").onclick = () => openTransactionForm(member.id);
+  $("addTxHistory").onclick = () => openTransactionForm(member.id);
 
-  document.querySelectorAll("[data-edit-tx]").forEach(button => {
-    button.onclick = () => openTransactionForm(
-      member.id, Number(button.dataset.editTx)
-    );
-  });
+  document.querySelectorAll("[data-edit-tx]").forEach(button => {
+    button.onclick = () => openTransactionForm(
+      member.id, Number(button.dataset.editTx)
+    );
+  });
 
-  document.querySelectorAll("[data-delete-tx]").forEach(button => {
-    button.onclick = () => deleteTransaction(Number(button.dataset.deleteTx));
-  });
+  document.querySelectorAll("[data-delete-tx]").forEach(button => {
+    button.onclick = () => deleteTransaction(Number(button.dataset.deleteTx));
+  });
 }
 
 function updatePermissions() {
-  const isAdmin = role === "admin";
+  const isAdmin = role === "admin";
 
-  $("roleName").textContent = isAdmin ? "Admin" : "Kasir";
-  $("accessText").textContent = isAdmin
-    ? "Admin dapat mengelola member, transaksi, menu, harga, dan promo."
-    : "Kasir dapat mengelola member dan transaksi serta melihat menu dan promo.";
+  $("roleName").textContent = isAdmin ? "Admin" : "Kasir";
+  $("accessText").textContent = isAdmin
+    ? "Admin dapat mengelola member, transaksi, menu, harga, dan promo."
+    : "Kasir dapat mengelola member dan transaksi serta melihat menu dan promo.";
 
-  document.querySelectorAll(".admin-only").forEach(el => {
-    el.classList.toggle("visible", isAdmin);
-  });
+  document.querySelectorAll(".admin-only").forEach(el => {
+    el.classList.toggle("visible", isAdmin);
+  });
 
-  $("menuPermission").style.display = isAdmin ? "none" : "block";
-  $("promoPermission").style.display = isAdmin ? "none" : "block";
+  $("menuPermission").style.display = isAdmin ? "none" : "block";
+  $("promoPermission").style.display = isAdmin ? "none" : "block";
 
-  $("promoTitle").disabled = !isAdmin;
-  $("promoSubtitle").disabled = !isAdmin;
-  $("promoImage").disabled = !isAdmin;
+  $("promoTitle").disabled = !isAdmin;
+  $("promoSubtitle").disabled = !isAdmin;
+  $("promoImage").disabled = !isAdmin;
 }
 
 function renderMenus() {
-  const isAdmin = role === "admin";
+  const isAdmin = role === "admin";
 
-  $("menuAdminList").innerHTML = state.menus.map(menu => isAdmin
-    ? `<div class="menu-admin-row">
-         <input data-menu-name="${menu.id}" value="${esc(menu.name)}"
-                aria-label="Nama menu">
-         <input data-menu-price="${menu.id}" type="number" min="0"
-                value="${menu.price}" aria-label="Harga menu">
-         <button class="btn-danger btn-sm"
-                 data-menu-delete="${menu.id}">Hapus</button>
-       </div>`
-    : `<div class="menu-admin-row">
-         <strong>${esc(menu.name)}</strong>
-         <strong>${money(menu.price)}</strong>
-         <span class="muted">Aktif</span>
-       </div>`
-  ).join("") || '<div class="empty">Belum ada menu.</div>';
+  $("menuAdminList").innerHTML = state.menus.map(menu => isAdmin
+    ? `<div class="menu-admin-row">
+         <input data-menu-name="${menu.id}" value="${esc(menu.name)}"
+                aria-label="Nama menu">
+         <input data-menu-price="${menu.id}" type="number" min="0"
+                value="${menu.price}" aria-label="Harga menu">
+         <button class="btn-danger btn-sm"
+                 data-menu-delete="${menu.id}">Hapus</button>
+       </div>`
+    : `<div class="menu-admin-row">
+         <strong>${esc(menu.name)}</strong>
+         <strong>${money(menu.price)}</strong>
+         <span class="muted">Aktif</span>
+       </div>`
+  ).join("") || '<div class="empty">Belum ada menu.</div>';
 
-  document.querySelectorAll("[data-menu-name]").forEach(input => {
-    input.onchange = () => {
-      const menu = getMenu(input.dataset.menuName);
-      if (menu) {
-        menu.name = input.value.trim() || menu.name;
-        save();
-        toast("Nama menu disimpan.");
-      }
-    };
-  });
+  document.querySelectorAll("[data-menu-name]").forEach(input => {
+    input.onchange = () => {
+      const menu = getMenu(input.dataset.menuName);
+      if (menu) {
+        menu.name = input.value.trim() || menu.name;
+        save();
+        toast("Nama menu disimpan.");
+      }
+    };
+  });
 
-  document.querySelectorAll("[data-menu-price]").forEach(input => {
-    input.onchange = () => {
-      const menu = getMenu(input.dataset.menuPrice);
-      if (menu) {
-        menu.price = Math.max(0, Number(input.value) || 0);
-        save();
-        toast("Harga menu disimpan.");
-      }
-    };
-  });
+  document.querySelectorAll("[data-menu-price]").forEach(input => {
+    input.onchange = () => {
+      const menu = getMenu(input.dataset.menuPrice);
+      if (menu) {
+        menu.price = Math.max(0, Number(input.value) || 0);
+        save();
+        toast("Harga menu disimpan.");
+      }
+    };
+  });
 
-  document.querySelectorAll("[data-menu-delete]").forEach(button => {
-    button.onclick = () => {
-      const id = Number(button.dataset.menuDelete);
-      if (confirm("Hapus menu ini?")) {
-        state.menus = state.menus.filter(menu => menu.id !== id);
-        save();
-        toast("Menu dihapus.");
-      }
-    };
-  });
+  document.querySelectorAll("[data-menu-delete]").forEach(button => {
+    button.onclick = () => {
+      const id = Number(button.dataset.menuDelete);
+      if (confirm("Hapus menu ini?")) {
+        state.menus = state.menus.filter(menu => menu.id !== id);
+        save();
+        toast("Menu dihapus.");
+      }
+    };
+  });
 }
 
 function renderPromo() {
-  const promo = state.promo;
+  const promo = state.promo;
 
-  $("promoTitle").value = promo.title;
-  $("promoSubtitle").value = promo.subtitle;
-  $("promoImage").value = promo.image || "";
+  $("promoTitle").value = promo.title;
+  $("promoSubtitle").value = promo.subtitle;
+  $("promoImage").value = promo.image || "";
 
-  $("promoPreview").innerHTML = `
-    <small>PA.YU PROMO</small>
-    <strong>${esc(promo.title)}</strong>
-    <span>${esc(promo.subtitle)}</span>`;
+  $("promoPreview").innerHTML = `
+    <small>PA.YU PROMO</small>
+    <strong>${esc(promo.title)}</strong>
+    <span>${esc(promo.subtitle)}</span>`;
 
-  if (promo.image) {
-    $("promoPreview").style.background =
-      `linear-gradient(#26302155,#26302155),url("${promo.image.replace(/"/g, "")}") center/cover`;
-    $("promoPreview").style.color = "white";
-  } else {
-    // Penyesuaian warna promo default agar senada dengan PA.YU
-    $("promoPreview").style.background =
-      "linear-gradient(135deg,#fceecb,#f0a15b)";
-    $("promoPreview").style.color = "#a62823";
-  }
+  if (promo.image) {
+    $("promoPreview").style.background =
+      `linear-gradient(#26302155,#26302155),url("${promo.image.replace(/"/g, "")}") center/cover`;
+    $("promoPreview").style.color = "white";
+  } else {
+    $("promoPreview").style.background =
+      "linear-gradient(135deg,#d7ee78,#f0a15b)";
+    $("promoPreview").style.color = "#263021";
+  }
 }
-
-// LOGIKA CHART.JS ANALISIS
-function renderChart() {
-  const ctx = $("analyticsChart").getContext("2d");
-  const period = $("chartPeriod").value;
-  const dateValStr = $("chartDate").value; 
-  if (!dateValStr) return;
-
-  const selDate = new Date(dateValStr);
-  const selYear = selDate.getFullYear();
-  const selMonth = selDate.getMonth();
-  const selDateNum = selDate.getDate();
-
-  let labels = [];
-  let newMembers = [];
-  let spendings = [];
-  let totalMembersCumulative = [];
-
-  let currentTotalMembers = 0;
-
-  if (period === 'daily') {
-    // Per Jam dalam 24 Jam
-    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(selYear, selMonth, selDateNum)).length;
-    for(let i=0; i<24; i++) {
-      labels.push(`${i.toString().padStart(2,'0')}:00`);
-      const mCreated = state.members.filter(m => {
-          const d = new Date(m.created);
-          return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === selDateNum && d.getHours() === i;
-      }).length;
-      newMembers.push(mCreated);
-      currentTotalMembers += mCreated;
-      totalMembersCumulative.push(currentTotalMembers);
-
-      const txThisHour = state.transactions.filter(t => {
-          const d = new Date(t.date);
-          return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === selDateNum && d.getHours() === i;
-      });
-      spendings.push(txThisHour.reduce((sum, tx) => sum + totalOf(tx), 0));
-    }
-  } else if (period === 'monthly') {
-    // Per Hari dalam Sebulan
-    const mYear = parseInt(dateValStr.split("-")[0]);
-    const mMonth = parseInt(dateValStr.split("-")[1]) - 1;
-    const daysInMonth = new Date(mYear, mMonth + 1, 0).getDate();
-    
-    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(mYear, mMonth, 1)).length;
-    
-    for(let i=1; i<=daysInMonth; i++) {
-        labels.push(`${i}`);
-        const mCreated = state.members.filter(m => {
-            const d = new Date(m.created);
-            return d.getFullYear() === mYear && d.getMonth() === mMonth && d.getDate() === i;
-        }).length;
-        newMembers.push(mCreated);
-        currentTotalMembers += mCreated;
-        totalMembersCumulative.push(currentTotalMembers);
-
-        const txThisDay = state.transactions.filter(t => {
-            const d = new Date(t.date);
-            return d.getFullYear() === mYear && d.getMonth() === mMonth && d.getDate() === i;
-        });
-        spendings.push(txThisDay.reduce((sum, tx) => sum + totalOf(tx), 0));
-    }
-  } else if (period === 'yearly') {
-    // Per Bulan dalam Setahun
-    let yYear = parseInt(dateValStr.substring(0,4));
-    if(isNaN(yYear)) yYear = selYear;
-    
-    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(yYear, 0, 1)).length;
-    const monthNames = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"];
-    
-    for(let i=0; i<12; i++) {
-        labels.push(monthNames[i]);
-        const mCreated = state.members.filter(m => {
-            const d = new Date(m.created);
-            return d.getFullYear() === yYear && d.getMonth() === i;
-        }).length;
-        newMembers.push(mCreated);
-        currentTotalMembers += mCreated;
-        totalMembersCumulative.push(currentTotalMembers);
-
-        const txThisMonth = state.transactions.filter(t => {
-            const d = new Date(t.date);
-            return d.getFullYear() === yYear && d.getMonth() === i;
-        });
-        spendings.push(txThisMonth.reduce((sum, tx) => sum + totalOf(tx), 0));
-    }
-  }
-
-  if (myChart) myChart.destroy();
-
-  myChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          type: 'bar',
-          label: 'Penambahan Member Baru',
-          data: newMembers,
-          backgroundColor: '#f0a15b',
-          yAxisID: 'y1',
-        },
-        {
-          type: 'line',
-          label: 'Total Belanja (Rp)',
-          data: spendings,
-          borderColor: '#a62823',
-          backgroundColor: '#a62823',
-          yAxisID: 'y',
-          tension: 0.3
-        },
-        {
-          type: 'line',
-          label: 'Total Member',
-          data: totalMembersCumulative,
-          borderColor: '#d94236',
-          backgroundColor: '#d94236',
-          borderDash: [5, 5],
-          yAxisID: 'y1',
-          tension: 0.3
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      scales: {
-        y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Rupiah (Belanja)'} },
-        y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Orang (Member)'}, min: 0, suggestedMax: 5 }
-      }
-    }
-  });
-}
-
-// Event ganti periode grafik
-$("chartPeriod").onchange = (e) => {
-    const val = e.target.value;
-    const input = $("chartDate");
-    if(val === 'daily') { input.type = "date"; input.value = new Date().toISOString().slice(0, 10); }
-    else if(val === 'monthly') { input.type = "month"; input.value = new Date().toISOString().slice(0, 7); }
-    else { input.type = "number"; input.value = new Date().getFullYear(); input.min = "2020"; input.max = "2099"; }
-    renderChart();
-};
-$("chartDate").onchange = renderChart;
 
 function renderAll() {
-  renderStats();
-  renderMemberLists();
-  renderProfile();
-  renderMenus();
-  renderPromo();
-  renderChart();
-  updatePermissions();
+  renderStats();
+  renderMemberLists();
+  renderProfile();
+  renderMenus();
+  renderPromo();
+  updatePermissions();
 }
 
 function showSection(name) {
-  document.querySelectorAll(".section").forEach(section =>
-    section.classList.remove("active")
-  );
+  document.querySelectorAll(".section").forEach(section =>
+    section.classList.remove("active")
+  );
 
-  $("section-" + name).classList.add("active");
+  $("section-" + name).classList.add("active");
 
-  document.querySelectorAll("[data-section]").forEach(button =>
-    button.classList.toggle("active", button.dataset.section === name)
-  );
+  document.querySelectorAll("[data-section]").forEach(button =>
+    button.classList.toggle("active", button.dataset.section === name)
+  );
 
-  const titles = {
-    dashboard: ["Dashboard", "Ringkasan membership dan transaksi."],
-    members: ["Pengecekan Member", "Profil member dan riwayat transaksi."],
-    menu: ["Menu & Harga", "Kelola daftar menu dan harga."],
-    promo: ["Promo Website", "Kelola konten promosi website."]
-  };
+  const titles = {
+    dashboard: ["Dashboard", "Ringkasan membership dan transaksi."],
+    members: ["Pengecekan Member", "Profil member dan riwayat transaksi."],
+    menu: ["Menu & Harga", "Kelola daftar menu dan harga."],
+    promo: ["Promo Website", "Kelola konten promosi website."]
+  };
 
-  $("pageTitle").textContent = titles[name][0];
-  $("pageSub").textContent = titles[name][1];
+  $("pageTitle").textContent = titles[name][0];
+  $("pageSub").textContent = titles[name][1];
 }
 
 function openModal(title, body, actions) {
-  $("modalTitle").textContent = title;
-  $("modalBody").innerHTML = body;
-  $("modalActions").innerHTML = actions;
-  $("modalBackdrop").classList.add("open");
+  $("modalTitle").textContent = title;
+  $("modalBody").innerHTML = body;
+  $("modalActions").innerHTML = actions;
+  $("modalBackdrop").classList.add("open");
 }
 
 function closeModal() {
-  $("modalBackdrop").classList.remove("open");
-  // Matikan kamera jika modal scanner ditutup
-  if (html5QrcodeScanner) {
-    try { html5QrcodeScanner.clear(); } catch(e){}
-    html5QrcodeScanner = null;
-  }
+  $("modalBackdrop").classList.remove("open");
 }
 
 function openMemberForm(member = null) {
-  const editing = Boolean(member);
+  const editing = Boolean(member);
 
-  openModal(
-    editing ? "Edit Profil Member" : "Tambah Member",
-    `
-      <div class="field">
-        <label>Nama member</label>
-        <input id="fName" value="${esc(member?.name || "")}">
-      </div>
-      <div class="field">
-        <label>Nomor telepon</label>
-        <input id="fPhone" value="${esc(member?.phone || "")}">
-      </div>
-      <div class="field">
-        <label>Kode member</label>
-        <input id="fCode" value="${esc(member?.code || "")}"
-               ${editing ? "disabled" : ""}>
-      </div>`,
-    `<button class="btn-light" id="cancelModal">Batal</button>
-     <button class="btn-primary" id="saveModal">Simpan</button>`
-  );
+  openModal(
+    editing ? "Edit Profil Member" : "Tambah Member",
+    `
+      <div class="field">
+        <label>Nama member</label>
+        <input id="fName" value="${esc(member?.name || "")}">
+      </div>
+      <div class="field">
+        <label>Nomor telepon</label>
+        <input id="fPhone" value="${esc(member?.phone || "")}">
+      </div>
+      <div class="field">
+        <label>Kode member</label>
+        <input id="fCode" value="${esc(member?.code || "")}"
+               ${editing ? "disabled" : ""}>
+      </div>`,
+    `<button class="btn-light" id="cancelModal">Batal</button>
+     <button class="btn-primary" id="saveModal">Simpan</button>`
+  );
 
-  $("cancelModal").onclick = closeModal;
+  $("cancelModal").onclick = closeModal;
 
-  $("saveModal").onclick = () => {
-    const name = $("fName").value.trim();
-    const phone = $("fPhone").value.trim();
-    const code = $("fCode").value.trim().toUpperCase();
+  $("saveModal").onclick = () => {
+    const name = $("fName").value.trim();
+    const phone = $("fPhone").value.trim();
+    const code = $("fCode").value.trim().toUpperCase();
 
-    if (!name || !phone || !code) {
-      toast("Lengkapi data member.");
-      return;
-    }
+    if (!name || !phone || !code) {
+      toast("Lengkapi data member.");
+      return;
+    }
 
-    if (!editing && state.members.some(m => m.code === code)) {
-      toast("Kode member sudah digunakan.");
-      return;
-    }
+    if (!editing && state.members.some(m => m.code === code)) {
+      toast("Kode member sudah digunakan.");
+      return;
+    }
 
-    if (editing) {
-      member.name = name;
-      member.phone = phone;
-    } else {
-      const id = Math.max(0, ...state.members.map(m => m.id)) + 1;
-      const timeNow = new Date().toISOString().substring(11, 19); 
-      state.members.push({
-        id, code, name, phone,
-        created: new Date().toISOString().slice(0, 10) + "T" + timeNow
-      });
-      selectedMemberId = id;
-    }
+    if (editing) {
+      member.name = name;
+      member.phone = phone;
+    } else {
+      const id = Math.max(0, ...state.members.map(m => m.id)) + 1;
+      state.members.push({
+        id, code, name, phone,
+        created: new Date().toISOString().slice(0, 10)
+      });
+      selectedMemberId = id;
+    }
 
-    save();
-    closeModal();
-    toast(editing ? "Profil diperbarui." : "Member ditambahkan.");
-  };
+    save();
+    closeModal();
+    toast(editing ? "Profil diperbarui." : "Member ditambahkan.");
+  };
 }
 
 function menuOptions(selectedId) {
-  return state.menus.map(menu => `
-    <option value="${menu.id}" ${Number(selectedId) === menu.id ? "selected" : ""}>
-      ${esc(menu.name)} — ${money(menu.price)}
-    </option>
-  `).join("");
+  return state.menus.map(menu => `
+    <option value="${menu.id}" ${Number(selectedId) === menu.id ? "selected" : ""}>
+      ${esc(menu.name)} — ${money(menu.price)}
+    </option>
+  `).join("");
 }
 
 function openTransactionForm(memberId, txId = null) {
-  const member = getMember(memberId);
-  const tx = txId ? getTransaction(txId) : null;
+  const member = getMember(memberId);
+  const tx = txId ? getTransaction(txId) : null;
 
-  let items = tx
-    ? tx.items.map(item => ({...item}))
-    : [{menuId: state.menus[0]?.id || "", qty: 1}];
-    
-  const txDateOnly = tx && tx.date.includes("T") ? tx.date.split("T")[0] : (tx ? tx.date : new Date().toISOString().slice(0,10));
+  let items = tx
+    ? tx.items.map(item => ({...item}))
+    : [{menuId: state.menus[0]?.id || "", qty: 1}];
 
-  openModal(
-    tx ? "Edit Transaksi" : "Tambah Transaksi",
-    `
-      <div class="field">
-        <label>Member</label>
-        <input value="${esc(member.name)} (${esc(member.code)})" disabled>
-      </div>
+  openModal(
+    tx ? "Edit Transaksi" : "Tambah Transaksi",
+    `
+      <div class="field">
+        <label>Member</label>
+        <input value="${esc(member.name)} (${esc(member.code)})" disabled>
+      </div>
 
-      <div class="field">
-        <label>Tanggal transaksi</label>
-        <input id="txDate" type="date"
-          value="${txDateOnly}">
-      </div>
+      <div class="field">
+        <label>Tanggal transaksi</label>
+        <input id="txDate" type="date"
+          value="${tx?.date || new Date().toISOString().slice(0,10)}">
+      </div>
 
-      <div class="field">
-        <label>Menu yang dibeli</label>
-        <div id="menuLines"></div>
-        <button class="btn-soft btn-sm" id="addMenuLine" type="button">
-          + Tambah Menu
-        </button>
-      </div>
+      <div class="field">
+        <label>Menu yang dibeli</label>
+        <div id="menuLines"></div>
+        <button class="btn-soft btn-sm" id="addMenuLine" type="button">
+          + Tambah Menu
+        </button>
+      </div>
 
-      <div class="total-box">
-        <div>
-          <span class="muted">Total belanja</span>
-          <strong id="txTotal" style="display:block">Rp0</strong>
-        </div>
-        <div style="text-align:right">
-          <span class="muted">Poin diperoleh</span>
-          <strong id="txPoints" style="display:block">0</strong>
-        </div>
-      </div>
-      <p class="muted">Setiap Rp1.000 = 1 poin, dibulatkan ke bawah.</p>
-    `,
-    `<button class="btn-light" id="cancelModal">Batal</button>
-     <button class="btn-primary" id="saveModal">
-       ${tx ? "Simpan Perubahan" : "Simpan Transaksi"}
-     </button>`
-  );
+      <div class="total-box">
+        <div>
+          <span class="muted">Total belanja</span>
+          <strong id="txTotal" style="display:block">Rp0</strong>
+        </div>
+        <div style="text-align:right">
+          <span class="muted">Poin diperoleh</span>
+          <strong id="txPoints" style="display:block">0</strong>
+        </div>
+      </div>
+      <p class="muted">Setiap Rp1.000 = 1 poin, dibulatkan ke bawah.</p>
+    `,
+    `<button class="btn-light" id="cancelModal">Batal</button>
+     <button class="btn-primary" id="saveModal">
+       ${tx ? "Simpan Perubahan" : "Simpan Transaksi"}
+     </button>`
+  );
 
-  if (!items.length) {
-    items = [{menuId: state.menus[0]?.id || "", qty: 1}];
-  }
+  if (!items.length) {
+    items = [{menuId: state.menus[0]?.id || "", qty: 1}];
+  }
 
-  const lines = $("menuLines");
+  const lines = $("menuLines");
 
-  function calculate() {
-    const total = items.reduce((sum, item) => {
-      const menu = getMenu(item.menuId);
-      return sum + (menu ? menu.price : 0) * Number(item.qty || 0);
-    }, 0);
+  function calculate() {
+    const total = items.reduce((sum, item) => {
+      const menu = getMenu(item.menuId);
+      return sum + (menu ? menu.price : 0) * Number(item.qty || 0);
+    }, 0);
 
-    $("txTotal").textContent = money(total);
-    $("txPoints").textContent =
-      Math.floor(total / 1000).toLocaleString("id-ID") + " poin";
-  }
+    $("txTotal").textContent = money(total);
+    $("txPoints").textContent =
+      Math.floor(total / 1000).toLocaleString("id-ID") + " poin";
+  }
 
-  function drawLines() {
-    lines.innerHTML = items.map((item, index) => `
-      <div class="menu-line">
-        <select data-line-menu="${index}">
-          <option value="">Pilih menu</option>
-          ${menuOptions(item.menuId)}
-        </select>
-        <input data-line-qty="${index}" type="number" min="1"
-               value="${Math.max(1, Number(item.qty) || 1)}">
-        <button class="btn-danger" data-remove-line="${index}"
-                ${items.length === 1 ? "disabled" : ""}>×</button>
-      </div>
-    `).join("");
+  function drawLines() {
+    lines.innerHTML = items.map((item, index) => `
+      <div class="menu-line">
+        <select data-line-menu="${index}">
+          <option value="">Pilih menu</option>
+          ${menuOptions(item.menuId)}
+        </select>
+        <input data-line-qty="${index}" type="number" min="1"
+               value="${Math.max(1, Number(item.qty) || 1)}">
+        <button class="btn-danger" data-remove-line="${index}"
+                ${items.length === 1 ? "disabled" : ""}>×</button>
+      </div>
+    `).join("");
 
-    document.querySelectorAll("[data-line-menu]").forEach(select => {
-      select.onchange = () => {
-        items[Number(select.dataset.lineMenu)].menuId = Number(select.value);
-        calculate();
-      };
-    });
+    document.querySelectorAll("[data-line-menu]").forEach(select => {
+      select.onchange = () => {
+        items[Number(select.dataset.lineMenu)].menuId = Number(select.value);
+        calculate();
+      };
+    });
 
-    document.querySelectorAll("[data-line-qty]").forEach(input => {
-      input.onchange = () => {
-        items[Number(input.dataset.lineQty)].qty =
-          Math.max(1, Number(input.value) || 1);
-        calculate();
-      };
-    });
+    document.querySelectorAll("[data-line-qty]").forEach(input => {
+      input.onchange = () => {
+        items[Number(input.dataset.lineQty)].qty =
+          Math.max(1, Number(input.value) || 1);
+        calculate();
+      };
+    });
 
-    document.querySelectorAll("[data-remove-line]").forEach(button => {
-      button.onclick = () => {
-        if (items.length > 1) {
-          items.splice(Number(button.dataset.removeLine), 1);
-          drawLines();
-        }
-      };
-    });
+    document.querySelectorAll("[data-remove-line]").forEach(button => {
+      button.onclick = () => {
+        if (items.length > 1) {
+          items.splice(Number(button.dataset.removeLine), 1);
+          drawLines();
+        }
+      };
+    });
 
-    calculate();
-  }
+    calculate();
+  }
 
-  $("addMenuLine").onclick = () => {
-    items.push({menuId: state.menus[0]?.id || "", qty: 1});
-    drawLines();
-  };
+  $("addMenuLine").onclick = () => {
+    items.push({menuId: state.menus[0]?.id || "", qty: 1});
+    drawLines();
+  };
 
-  $("cancelModal").onclick = closeModal;
-  drawLines();
+  $("cancelModal").onclick = closeModal;
+  drawLines();
 
-  $("saveModal").onclick = () => {
-    if (!items.length || items.some(item =>
-      !getMenu(item.menuId) || Number(item.qty) < 1
-    )) {
-      toast("Pilih menu dan jumlah yang valid.");
-      return;
-    }
+  $("saveModal").onclick = () => {
+    if (!items.length || items.some(item =>
+      !getMenu(item.menuId) || Number(item.qty) < 1
+    )) {
+      toast("Pilih menu dan jumlah yang valid.");
+      return;
+    }
 
-    const total = items.reduce((sum, item) =>
-      sum + getMenu(item.menuId).price * Number(item.qty), 0
-    );
+    const total = items.reduce((sum, item) =>
+      sum + getMenu(item.menuId).price * Number(item.qty), 0
+    );
 
-    const dateInput = $("txDate").value;
-    if (!dateInput) {
-      toast("Pilih tanggal transaksi.");
-      return;
-    }
-    
-    // Gabung waktu agar terbaca pada grafik harian
-    const timeNow = new Date().toISOString().substring(11, 19); 
-    const fullDateToSave = dateInput + "T" + timeNow;
+    const date = $("txDate").value;
+    if (!date) {
+      toast("Pilih tanggal transaksi.");
+      return;
+    }
 
-    if (tx) {
-      tx.date = fullDateToSave;
-      tx.items = items.map(item => ({...item}));
-    } else {
-      state.transactions.push({
-        id: Math.max(0, ...state.transactions.map(t => t.id)) + 1,
-        memberId: Number(memberId),
-        date: fullDateToSave,
-        items: items.map(item => ({...item}))
-      });
-    }
+    if (tx) {
+      tx.date = date;
+      tx.items = items.map(item => ({...item}));
+    } else {
+      state.transactions.push({
+        id: Math.max(0, ...state.transactions.map(t => t.id)) + 1,
+        memberId: Number(memberId),
+        date,
+        items: items.map(item => ({...item}))
+      });
+    }
 
-    selectedMemberId = Number(memberId);
-    save();
-    closeModal();
-    toast(tx ? "Transaksi diperbarui." : "Transaksi ditambahkan.");
-  };
+    selectedMemberId = Number(memberId);
+    save();
+    closeModal();
+    toast(tx ? "Transaksi diperbarui." : "Transaksi ditambahkan.");
+  };
 }
 
 function deleteTransaction(id) {
-  const tx = getTransaction(id);
-  if (!tx) return;
+  const tx = getTransaction(id);
+  if (!tx) return;
 
-  if (confirm(
-    `Hapus transaksi tanggal ${fmtDate(tx.date)}? Poin transaksi ini juga akan dihapus.`
-  )) {
-    state.transactions = state.transactions.filter(t => t.id !== id);
-    save();
-    toast("Transaksi dihapus dan poin diperbarui.");
-  }
+  if (confirm(
+    `Hapus transaksi tanggal ${fmtDate(tx.date)}? Poin transaksi ini juga akan dihapus.`
+  )) {
+    state.transactions = state.transactions.filter(t => t.id !== id);
+    save();
+    toast("Transaksi dihapus dan poin diperbarui.");
+  }
 }
 
 function deleteMember(id) {
-  const member = getMember(id);
-  if (!member) return;
+  const member = getMember(id);
+  if (!member) return;
 
-  if (confirm(
-    `Hapus member ${member.name} beserta seluruh riwayat transaksinya?`
-  )) {
-    state.transactions = state.transactions.filter(t => t.memberId !== id);
-    state.members = state.members.filter(m => m.id !== id);
-    selectedMemberId = null;
-    save();
-    toast("Member dihapus.");
-  }
+  if (confirm(
+    `Hapus member ${member.name} beserta seluruh riwayat transaksinya?`
+  )) {
+    state.transactions = state.transactions.filter(t => t.memberId !== id);
+    state.members = state.members.filter(m => m.id !== id);
+    selectedMemberId = null;
+    save();
+    toast("Member dihapus.");
+  }
 }
 
-// LOGIKA SCANNER QR
-$("scanQrBtn").onclick = () => {
-  openModal("Scan QR Member",
-    `<div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px;"></div>
-     <p class="muted" style="text-align:center">Arahkan kamera ke QR Code milik member.</p>`,
-    `<button class="btn-danger" id="closeScan">Tutup Kamera</button>`
-  );
-
-  // Tunggu sejenak agar DOM div qr-reader dirender sebelum scanner aktif
-  setTimeout(() => {
-      html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-      html5QrcodeScanner.render((decodedText) => {
-        html5QrcodeScanner.clear();
-        closeModal();
-        
-        // Cari member yang kodenya sesuai dengan hasil scan
-        const member = state.members.find(m => m.code.toUpperCase() === decodedText.trim().toUpperCase());
-        if (member) {
-           $("memberSearch").value = member.code;
-           renderMemberLists();
-           selectMember(member.id);
-           toast("Member ditemukan!");
-        } else {
-           toast("Member tidak ditemukan (Kode: " + decodedText + ")");
-        }
-      }, (error) => {
-        // Biarkan kosong, akan error terus menerus tiap frame saat QR belum tertangkap kamera
-      });
-  }, 200);
-
-  $("closeScan").onclick = closeModal;
-};
-
-
-/* Navigasi - DIBIARKAN 100% SESUAI ASLINYA */
+/* Navigasi */
 document.querySelectorAll("[data-section]").forEach(button => {
-  button.onclick = () => showSection(button.dataset.section);
+  button.onclick = () => showSection(button.dataset.section);
 });
 
 $("dashCheck").onclick = () => showSection("members");
 $("memberSearch").oninput = renderMemberLists;
 
 $("clearSearch").onclick = () => {
-  $("memberSearch").value = "";
-  renderMemberLists();
+  $("memberSearch").value = "";
+  renderMemberLists();
 };
 
 $("addMemberBtn").onclick = () => openMemberForm();
 
 /* Simulasi pergantian role */
 $("roleSelect").onchange = event => {
-  role = event.target.value;
-  renderAll();
-  toast("Mode tampilan: " + (role === "admin" ? "Admin" : "Kasir"));
+  role = event.target.value;
+  renderAll();
+  toast("Mode tampilan: " + (role === "admin" ? "Admin" : "Kasir"));
 };
 
 /* Tambah menu: Admin saja */
 $("addMenuBtn").onclick = () => {
-  if (role !== "admin") return;
+  if (role !== "admin") return;
 
-  openModal(
-    "Tambah Menu",
-    `<div class="field">
-       <label>Nama menu</label>
-       <input id="newMenuName" placeholder="Nama menu">
-     </div>
-     <div class="field">
-       <label>Harga (Rp)</label>
-       <input id="newMenuPrice" type="number" min="0" placeholder="22000">
-     </div>`,
-    `<button class="btn-light" id="cancelModal">Batal</button>
-     <button class="btn-primary" id="saveModal">Tambah Menu</button>`
-  );
+  openModal(
+    "Tambah Menu",
+    `<div class="field">
+       <label>Nama menu</label>
+       <input id="newMenuName" placeholder="Nama menu">
+     </div>
+     <div class="field">
+       <label>Harga (Rp)</label>
+       <input id="newMenuPrice" type="number" min="0" placeholder="22000">
+     </div>`,
+    `<button class="btn-light" id="cancelModal">Batal</button>
+     <button class="btn-primary" id="saveModal">Tambah Menu</button>`
+  );
 
-  $("cancelModal").onclick = closeModal;
+  $("cancelModal").onclick = closeModal;
 
-  $("saveModal").onclick = () => {
-    const name = $("newMenuName").value.trim();
-    const price = Number($("newMenuPrice").value);
+  $("saveModal").onclick = () => {
+    const name = $("newMenuName").value.trim();
+    const price = Number($("newMenuPrice").value);
 
-    if (role !== "admin") {
-      toast("Akses ditolak.");
-      return;
-    }
+    if (role !== "admin") {
+      toast("Akses ditolak.");
+      return;
+    }
 
-    if (!name || !Number.isFinite(price) || price < 0) {
-      toast("Masukkan nama dan harga yang valid.");
-      return;
-    }
+    if (!name || !Number.isFinite(price) || price < 0) {
+      toast("Masukkan nama dan harga yang valid.");
+      return;
+    }
 
-    state.menus.push({
-      id: Math.max(0, ...state.menus.map(m => m.id)) + 1,
-      name,
-      price
-    });
+    state.menus.push({
+      id: Math.max(0, ...state.menus.map(m => m.id)) + 1,
+      name,
+      price
+    });
 
-    save();
-    closeModal();
-    toast("Menu ditambahkan.");
-  };
+    save();
+    closeModal();
+    toast("Menu ditambahkan.");
+  };
 };
 
 /* Simpan promo: Admin saja */
 $("savePromo").onclick = () => {
-  if (role !== "admin") {
-    toast("Akses ditolak.");
-    return;
-  }
+  if (role !== "admin") {
+    toast("Akses ditolak.");
+    return;
+  }
 
-  state.promo = {
-    title: $("promoTitle").value.trim() || "Promo PA.YU",
-    subtitle: $("promoSubtitle").value.trim(),
-    image: $("promoImage").value.trim()
-  };
+  state.promo = {
+    title: $("promoTitle").value.trim() || "Promo PA.YU",
+    subtitle: $("promoSubtitle").value.trim(),
+    image: $("promoImage").value.trim()
+  };
 
-  save();
-  toast("Promo disimpan di browser ini.");
+  save();
+  toast("Promo disimpan di browser ini.");
 };
 
 /* Modal */
 $("modalClose").onclick = closeModal;
 
 $("modalBackdrop").onclick = event => {
-  if (event.target === $("modalBackdrop")) closeModal();
+  if (event.target === $("modalBackdrop")) closeModal();
 };
 
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape") closeModal();
+  if (event.key === "Escape") closeModal();
 });
 
 /* Inisialisasi */
 renderAll();
 </script>
 </body>
-</html>
+</html> ini adalah code sebelum anda lakukan perubahan
