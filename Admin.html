@@ -11,22 +11,20 @@
 
 <style>
 :root {
-  /* Skema Warna Identitas PA.YU disesuaikan tanpa merusak struktur asli */
+  /* Skema Warna Identitas PA.YU */
   --bg: #fdfaf6;
   --white: #ffffff;
-  --primary: #a62823; /* Merah PA.YU pengganti Green */
-  --dark: #3a221f; /* Cokelat gelap sesuai gambar sidebar */
-  --light-primary: #fceecb; /* Cream PA.YU pengganti light-green */
-  --lime: #f0a15b; /* Oranye untuk teks "pa." di logo */
+  --primary: #a62823;
+  --dark: #3a221f;
+  --light-primary: #fceecb;
+  --lime: #f0a15b;
   --text: #2c1a18;
   --muted: #857472;
   --border: #ecdcd9;
   --red: #d94236;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -35,9 +33,7 @@ body {
   font-family: Arial, sans-serif;
 }
 
-button, input, select {
-  font: inherit;
-}
+button, input, select { font: inherit; }
 
 button {
   border: none;
@@ -47,10 +43,7 @@ button {
   font-weight: bold;
 }
 
-button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
+button:disabled { opacity: .5; cursor: not-allowed; }
 
 .app {
   display: grid;
@@ -70,9 +63,7 @@ button:disabled {
   margin: 0 8px 32px;
 }
 
-.brand span {
-  color: var(--lime);
-}
+.brand span { color: var(--lime); }
 
 .nav button {
   display: block;
@@ -83,8 +74,7 @@ button:disabled {
   margin-bottom: 7px;
 }
 
-.nav button.active,
-.nav button:hover {
+.nav button.active, .nav button:hover {
   background: #ffffff1c;
   color: white;
 }
@@ -96,10 +86,7 @@ button:disabled {
   line-height: 1.6;
 }
 
-main {
-  min-width: 0;
-  padding: 28px;
-}
+main { min-width: 0; padding: 28px; }
 
 .topbar {
   display: flex;
@@ -109,25 +96,11 @@ main {
   margin-bottom: 25px;
 }
 
-h1 {
-  margin: 5px 0;
-  font-size: 30px;
-}
+h1 { margin: 5px 0; font-size: 30px; }
+h2 { font-size: 19px; margin: 0 0 8px; }
+h3 { margin: 0 0 6px; }
 
-h2 {
-  font-size: 19px;
-  margin: 0 0 8px;
-}
-
-h3 {
-  margin: 0 0 6px;
-}
-
-.subtitle,
-.muted {
-  color: var(--muted);
-  font-size: 13px;
-}
+.subtitle, .muted { color: var(--muted); font-size: 13px; }
 
 .profile-chip {
   display: flex;
@@ -163,8 +136,7 @@ h3 {
   margin-bottom: 20px;
 }
 
-.stat,
-.panel {
+.stat, .panel {
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -192,33 +164,13 @@ h3 {
   margin-bottom: 16px;
 }
 
-.btn-primary {
-  background: var(--primary);
-  color: white;
-}
+.btn-primary { background: var(--primary); color: white; }
+.btn-light { background: #efeee6; color: var(--text); }
+.btn-soft { background: var(--light-primary); color: var(--dark); }
+.btn-danger { background: #fbe7e3; color: var(--red); }
+.btn-sm { padding: 7px 10px; font-size: 12px; }
 
-.btn-light {
-  background: #efeee6;
-  color: var(--text);
-}
-
-.btn-soft {
-  background: var(--light-primary);
-  color: var(--dark);
-}
-
-.btn-danger {
-  background: #fbe7e3;
-  color: var(--red);
-}
-
-.btn-sm {
-  padding: 7px 10px;
-  font-size: 12px;
-}
-
-input,
-select {
+input, select {
   width: 100%;
   padding: 11px;
   border: 1px solid var(--border);
@@ -233,10 +185,7 @@ select {
   margin-bottom: 14px;
 }
 
-.member-list {
-  display: grid;
-  gap: 9px;
-}
+.member-list { display: grid; gap: 9px; }
 
 .member {
   display: flex;
@@ -249,37 +198,17 @@ select {
   cursor: pointer;
 }
 
-.member:hover,
-.member.selected {
+.member:hover, .member.selected {
   border-color: var(--primary);
   background: #fff9ed;
 }
 
-.member-info {
-  flex: 1;
-  min-width: 0;
-}
+.member-info { flex: 1; min-width: 0; }
+.member-info strong { display: block; }
+.member-info small { color: var(--muted); font-size: 12px; }
 
-.member-info strong {
-  display: block;
-}
-
-.member-info small {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.points {
-  color: var(--primary);
-  font-weight: bold;
-  text-align: right;
-}
-
-.points small {
-  display: block;
-  color: var(--muted);
-  font-weight: normal;
-}
+.points { color: var(--primary); font-weight: bold; text-align: right; }
+.points small { display: block; color: var(--muted); font-weight: normal; }
 
 .empty {
   padding: 22px;
@@ -289,256 +218,91 @@ select {
   border-radius: 12px;
 }
 
-.member-top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.member-top { display: flex; align-items: center; gap: 12px; }
+.member-top .avatar { width: 52px; height: 52px; }
+.member-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
 
-.member-top .avatar {
-  width: 52px;
-  height: 52px;
-}
-
-.member-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 16px;
-}
-
-.history {
-  display: grid;
-  gap: 10px;
-}
-
+.history { display: grid; gap: 10px; }
 .transaction {
   background: white;
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 13px;
 }
-
-.transaction-top,
-.transaction-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+.transaction-top, .transaction-bottom {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
 }
-
-.transaction-menu {
-  font-weight: bold;
-  margin: 6px 0;
-}
-
+.transaction-menu { font-weight: bold; margin: 6px 0; }
 .transaction-bottom {
   border-top: 1px solid var(--border);
-  padding-top: 10px;
-  margin-top: 10px;
+  padding-top: 10px; margin-top: 10px;
 }
+.earned { color: var(--primary); font-weight: bold; }
 
-.earned {
-  color: var(--primary);
-  font-weight: bold;
-}
+.section { display: none; }
+.section.active { display: block; }
+.admin-only { display: none !important; }
+.admin-only.visible { display: inline-block !important; }
 
-.section {
-  display: none;
-}
-
-.section.active {
-  display: block;
-}
-
-.admin-only {
-  display: none !important;
-}
-
-.admin-only.visible {
-  display: inline-block !important;
-}
-
-.field {
-  margin-bottom: 14px;
-}
-
-.field label {
-  display: block;
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 6px;
-}
-
-.menu-line {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 75px 36px;
-  gap: 7px;
-  margin-bottom: 8px;
-}
-
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 6px; }
+.menu-line { display: grid; grid-template-columns: minmax(0, 1fr) 75px 36px; gap: 7px; margin-bottom: 8px; }
 .total-box {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  background: #f1ebd8;
-  border-radius: 12px;
-  padding: 14px;
-  margin: 14px 0;
+  display: flex; justify-content: space-between; gap: 12px;
+  background: #f1ebd8; border-radius: 12px; padding: 14px; margin: 14px 0;
 }
-
-.total-box strong {
-  font-size: 20px;
-}
-
-.menu-admin-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 130px auto;
-  align-items: center;
-  gap: 10px;
-  margin: 10px 0;
-}
+.total-box strong { font-size: 20px; }
+.menu-admin-row { display: grid; grid-template-columns: minmax(0, 1fr) 130px auto; align-items: center; gap: 10px; margin: 10px 0; }
 
 .promo-preview {
-  min-height: 150px;
-  padding: 22px;
-  border-radius: 15px;
+  min-height: 150px; padding: 22px; border-radius: 15px;
   background: linear-gradient(135deg, var(--lime), #f0a15b);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin-bottom: 18px;
+  display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 18px;
 }
-
-.promo-preview strong {
-  font-size: 25px;
-}
-
+.promo-preview strong { font-size: 25px; }
 .access-note {
-  background: #fff5df;
-  border: 1px solid #f0dfb6;
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 12px;
-  line-height: 1.5;
-  margin-top: 12px;
+  background: #fff5df; border: 1px solid #f0dfb6; border-radius: 10px;
+  padding: 12px; font-size: 12px; line-height: 1.5; margin-top: 12px;
 }
 
 .modal-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: #151a11aa;
-  padding: 20px;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+  display: none; position: fixed; inset: 0; background: #151a11aa;
+  padding: 20px; align-items: center; justify-content: center; z-index: 10;
 }
-
-.modal-backdrop.open {
-  display: flex;
-}
-
+.modal-backdrop.open { display: flex; }
 .modal {
-  width: min(600px, 100%);
-  max-height: 90vh;
-  overflow-y: auto;
-  background: var(--white);
-  border-radius: 18px;
-  padding: 22px;
+  width: min(600px, 100%); max-height: 90vh; overflow-y: auto;
+  background: var(--white); border-radius: 18px; padding: 22px;
 }
-
-.modal-head,
-.modal-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.modal-actions {
-  justify-content: flex-end;
-  margin: 18px 0 0;
-}
+.modal-head, .modal-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 18px; }
+.modal-actions { justify-content: flex-end; margin: 18px 0 0; }
 
 .toast {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: var(--dark);
-  color: white;
-  padding: 13px 17px;
-  border-radius: 10px;
-  display: none;
-  z-index: 20;
+  position: fixed; bottom: 20px; right: 20px; background: var(--dark);
+  color: white; padding: 13px 17px; border-radius: 10px; display: none; z-index: 20;
 }
-
-.toast.show {
-  display: block;
-}
+.toast.show { display: block; }
 
 @media (max-width: 1000px) {
-  .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .layout {
-    grid-template-columns: 1fr;
-  }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .layout { grid-template-columns: 1fr; }
 }
-
 @media (max-width: 650px) {
-  .app {
-    display: block;
-  }
-  .sidebar {
-    padding: 13px;
-  }
-  .brand {
-    margin: 5px 8px 14px;
-  }
-  .nav {
-    display: flex;
-    overflow-x: auto;
-    gap: 5px;
-  }
-  .nav button {
-    width: auto;
-    white-space: nowrap;
-    margin: 0;
-  }
-  .sidebar-note {
-    display: none;
-  }
-  main {
-    padding: 18px 12px;
-  }
-  .topbar {
-    align-items: flex-start;
-  }
-  h1 {
-    font-size: 24px;
-  }
-  .stats {
-    gap: 8px;
-  }
-  .stat,
-  .panel {
-    padding: 13px;
-  }
-  .stat strong {
-    font-size: 22px;
-  }
-  .profile-chip select {
-    max-width: 90px;
-  }
-  .transaction-top {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .menu-admin-row {
-    grid-template-columns: minmax(0, 1fr) 90px auto;
-  }
+  .app { display: block; }
+  .sidebar { padding: 13px; }
+  .brand { margin: 5px 8px 14px; }
+  .nav { display: flex; overflow-x: auto; gap: 5px; }
+  .nav button { width: auto; white-space: nowrap; margin: 0; }
+  .sidebar-note { display: none; }
+  main { padding: 18px 12px; }
+  .topbar { align-items: flex-start; }
+  h1 { font-size: 24px; }
+  .stats { gap: 8px; }
+  .stat, .panel { padding: 13px; }
+  .stat strong { font-size: 22px; }
+  .profile-chip select { max-width: 90px; }
+  .transaction-top { align-items: flex-start; flex-direction: column; }
+  .menu-admin-row { grid-template-columns: minmax(0, 1fr) 90px auto; }
 }
 </style>
 </head>
@@ -606,7 +370,10 @@ select {
         <input type="date" id="chartDate" class="btn-light" style="padding: 8px; width: auto;">
       </div>
     </div>
-    <canvas id="analyticsChart" style="width: 100%; max-height: 350px;"></canvas>
+    <!-- Wadah ini mencegah grafik error/freeze karena ukuran layar -->
+    <div style="position: relative; height: 350px; width: 100%;">
+      <canvas id="analyticsChart"></canvas>
+    </div>
   </div>
 
   <div class="layout">
@@ -750,8 +517,8 @@ select {
 <div class="toast" id="toast"></div>
 
 <script>
-// Key diubah agar data dummy reset untuk menyesuaikan format tanggal baru (ada jam-nya)
-const STORAGE_KEY = "payu_admin_dashboard_v3";
+// Key dinaikkan jadi v4 agar bersih dari bentrok data versi sebelumnya
+const STORAGE_KEY = "payu_admin_dashboard_v4";
 
 const initialState = {
   menus: [
@@ -789,23 +556,22 @@ try {
 
 let role = "admin";
 let selectedMemberId = null;
-let html5QrcodeScanner = null; // Instance scanner
-let myChart = null; // Instance Chart.js
+let html5QrcodeScanner = null; 
+let myChart = null;
 
-// Set Default Tanggal di Chart
-$("chartDate").value = new Date().toISOString().slice(0, 10);
+// Set default tanggal hari ini di grafik
+const todayStr = new Date().toISOString().slice(0, 10);
+$("chartDate").value = todayStr;
 
 const $ = id => document.getElementById(id);
 const money = n => "Rp" + Number(n || 0).toLocaleString("id-ID");
 
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;",
-    '"': "&quot;", "'": "&#39;"
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]));
 }
 
-// Disesuaikan agar bisa membaca tanggal yang mengandung Jam
 function fmtDate(dateStr) {
   if (!dateStr) return "-";
   const dateOnly = dateStr.split("T")[0];
@@ -814,17 +580,9 @@ function fmtDate(dateStr) {
   });
 }
 
-function getMember(id) {
-  return state.members.find(m => m.id === Number(id));
-}
-
-function getMenu(id) {
-  return state.menus.find(m => m.id === Number(id));
-}
-
-function getTransaction(id) {
-  return state.transactions.find(t => t.id === Number(id));
-}
+function getMember(id) { return state.members.find(m => m.id === Number(id)); }
+function getMenu(id) { return state.menus.find(m => m.id === Number(id)); }
+function getTransaction(id) { return state.transactions.find(t => t.id === Number(id)); }
 
 function totalOf(tx) {
   return tx.items.reduce((sum, item) => {
@@ -833,10 +591,7 @@ function totalOf(tx) {
   }, 0);
 }
 
-function pointsOf(tx) {
-  return Math.floor(totalOf(tx) / 1000);
-}
-
+function pointsOf(tx) { return Math.floor(totalOf(tx) / 1000); }
 function memberPoints(memberId) {
   return state.transactions
     .filter(tx => tx.memberId === Number(memberId))
@@ -844,14 +599,16 @@ function memberPoints(memberId) {
 }
 
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) { console.log("Gagal menyimpan ke memori browser"); }
   renderAll();
 }
 
 function toast(message) {
   $("toast").textContent = message;
   $("toast").classList.add("show");
-  setTimeout(() => $("toast").classList.remove("show"), 2300);
+  setTimeout(() => $("toast").classList.remove("show"), 2500);
 }
 
 function initials(name) {
@@ -860,8 +617,7 @@ function initials(name) {
 
 function memberCard(member) {
   return `
-    <div class="member ${selectedMemberId === member.id ? "selected" : ""}"
-         data-member="${member.id}">
+    <div class="member ${selectedMemberId === member.id ? "selected" : ""}" data-member="${member.id}">
       <div class="avatar">${esc(initials(member.name))}</div>
       <div class="member-info">
         <strong>${esc(member.name)}</strong>
@@ -882,18 +638,15 @@ function renderStats() {
 
 function renderMemberLists() {
   const query = ($("memberSearch").value || "").toLowerCase().trim();
-
   const members = state.members.filter(member =>
-    [member.name, member.code, member.phone]
-      .some(value => value.toLowerCase().includes(query))
+    [member.name, member.code, member.phone].some(value => value.toLowerCase().includes(query))
   );
 
   $("memberList").innerHTML = members.length
     ? members.map(memberCard).join("")
     : '<div class="empty">Member tidak ditemukan.</div>';
 
-  $("recentMembers").innerHTML = [...state.members]
-    .slice(-4).reverse().map(memberCard).join("");
+  $("recentMembers").innerHTML = [...state.members].slice(-4).reverse().map(memberCard).join("");
 
   document.querySelectorAll("[data-member]").forEach(el => {
     el.onclick = () => selectMember(Number(el.dataset.member));
@@ -915,12 +668,9 @@ function transactionMenuText(tx) {
 
 function renderProfile() {
   const member = getMember(selectedMemberId);
-
   if (!member) {
-    $("memberProfile").innerHTML =
-      '<div class="empty">Pilih member untuk membuka profil.</div>';
-    $("transactionPanel").innerHTML =
-      '<h2>Riwayat transaksi</h2><div class="empty">Belum ada member dipilih.</div>';
+    $("memberProfile").innerHTML = '<div class="empty">Pilih member untuk membuka profil.</div>';
+    $("transactionPanel").innerHTML = '<h2>Riwayat transaksi</h2><div class="empty">Belum ada member dipilih.</div>';
     return;
   }
 
@@ -937,18 +687,10 @@ function renderProfile() {
         <div class="muted">${esc(member.phone)}</div>
       </div>
     </div>
-
     <div class="stats" style="grid-template-columns:1fr 1fr;margin:18px 0 0">
-      <div class="stat">
-        <div class="muted">Total poin</div>
-        <strong>${memberPoints(member.id)}</strong>
-      </div>
-      <div class="stat">
-        <div class="muted">Transaksi</div>
-        <strong>${txs.length}</strong>
-      </div>
+      <div class="stat"><div class="muted">Total poin</div><strong>${memberPoints(member.id)}</strong></div>
+      <div class="stat"><div class="muted">Transaksi</div><strong>${txs.length}</strong></div>
     </div>
-
     <div class="member-actions">
       <button class="btn-primary" id="newTx">+ Transaksi</button>
       <button class="btn-light" id="editMember">Edit Profil</button>
@@ -961,13 +703,9 @@ function renderProfile() {
 
   $("transactionPanel").innerHTML = `
     <div class="panel-head">
-      <div>
-        <h2>Riwayat transaksi</h2>
-        <p class="subtitle">${txs.length} transaksi untuk ${esc(member.name)}</p>
-      </div>
+      <div><h2>Riwayat transaksi</h2><p class="subtitle">${txs.length} transaksi untuk ${esc(member.name)}</p></div>
       <button class="btn-primary btn-sm" id="addTxHistory">+ Tambah</button>
     </div>
-
     <div class="history">
       ${txs.length ? txs.map(tx => `
         <div class="transaction">
@@ -983,41 +721,26 @@ function renderProfile() {
             </div>
           </div>
           <div class="transaction-bottom">
-            <span class="muted">Total poin diperoleh</span>
-            <span class="earned">+${pointsOf(tx)} poin</span>
+            <span class="muted">Total poin diperoleh</span><span class="earned">+${pointsOf(tx)} poin</span>
           </div>
         </div>
       `).join("") : '<div class="empty">Belum ada transaksi.</div>'}
     </div>`;
 
   $("addTxHistory").onclick = () => openTransactionForm(member.id);
-
-  document.querySelectorAll("[data-edit-tx]").forEach(button => {
-    button.onclick = () => openTransactionForm(
-      member.id, Number(button.dataset.editTx)
-    );
-  });
-
-  document.querySelectorAll("[data-delete-tx]").forEach(button => {
-    button.onclick = () => deleteTransaction(Number(button.dataset.deleteTx));
-  });
+  document.querySelectorAll("[data-edit-tx]").forEach(btn => btn.onclick = () => openTransactionForm(member.id, Number(btn.dataset.editTx)));
+  document.querySelectorAll("[data-delete-tx]").forEach(btn => btn.onclick = () => deleteTransaction(Number(btn.dataset.deleteTx)));
 }
 
 function updatePermissions() {
   const isAdmin = role === "admin";
-
   $("roleName").textContent = isAdmin ? "Admin" : "Kasir";
   $("accessText").textContent = isAdmin
     ? "Admin dapat mengelola member, transaksi, menu, harga, dan promo."
     : "Kasir dapat mengelola member dan transaksi serta melihat menu dan promo.";
-
-  document.querySelectorAll(".admin-only").forEach(el => {
-    el.classList.toggle("visible", isAdmin);
-  });
-
+  document.querySelectorAll(".admin-only").forEach(el => el.classList.toggle("visible", isAdmin));
   $("menuPermission").style.display = isAdmin ? "none" : "block";
   $("promoPermission").style.display = isAdmin ? "none" : "block";
-
   $("promoTitle").disabled = !isAdmin;
   $("promoSubtitle").disabled = !isAdmin;
   $("promoImage").disabled = !isAdmin;
@@ -1025,208 +748,121 @@ function updatePermissions() {
 
 function renderMenus() {
   const isAdmin = role === "admin";
-
   $("menuAdminList").innerHTML = state.menus.map(menu => isAdmin
     ? `<div class="menu-admin-row">
-         <input data-menu-name="${menu.id}" value="${esc(menu.name)}"
-                aria-label="Nama menu">
-         <input data-menu-price="${menu.id}" type="number" min="0"
-                value="${menu.price}" aria-label="Harga menu">
-         <button class="btn-danger btn-sm"
-                 data-menu-delete="${menu.id}">Hapus</button>
+         <input data-menu-name="${menu.id}" value="${esc(menu.name)}">
+         <input data-menu-price="${menu.id}" type="number" min="0" value="${menu.price}">
+         <button class="btn-danger btn-sm" data-menu-delete="${menu.id}">Hapus</button>
        </div>`
     : `<div class="menu-admin-row">
-         <strong>${esc(menu.name)}</strong>
-         <strong>${money(menu.price)}</strong>
-         <span class="muted">Aktif</span>
+         <strong>${esc(menu.name)}</strong><strong>${money(menu.price)}</strong><span class="muted">Aktif</span>
        </div>`
   ).join("") || '<div class="empty">Belum ada menu.</div>';
 
-  document.querySelectorAll("[data-menu-name]").forEach(input => {
-    input.onchange = () => {
-      const menu = getMenu(input.dataset.menuName);
-      if (menu) {
-        menu.name = input.value.trim() || menu.name;
-        save();
-        toast("Nama menu disimpan.");
-      }
-    };
-  });
-
-  document.querySelectorAll("[data-menu-price]").forEach(input => {
-    input.onchange = () => {
-      const menu = getMenu(input.dataset.menuPrice);
-      if (menu) {
-        menu.price = Math.max(0, Number(input.value) || 0);
-        save();
-        toast("Harga menu disimpan.");
-      }
-    };
-  });
-
-  document.querySelectorAll("[data-menu-delete]").forEach(button => {
-    button.onclick = () => {
-      const id = Number(button.dataset.menuDelete);
-      if (confirm("Hapus menu ini?")) {
-        state.menus = state.menus.filter(menu => menu.id !== id);
-        save();
-        toast("Menu dihapus.");
-      }
-    };
-  });
+  document.querySelectorAll("[data-menu-name]").forEach(input => input.onchange = () => { const menu = getMenu(input.dataset.menuName); if (menu) { menu.name = input.value.trim() || menu.name; save(); toast("Nama disimpan."); } });
+  document.querySelectorAll("[data-menu-price]").forEach(input => input.onchange = () => { const menu = getMenu(input.dataset.menuPrice); if (menu) { menu.price = Math.max(0, Number(input.value) || 0); save(); toast("Harga disimpan."); } });
+  document.querySelectorAll("[data-menu-delete]").forEach(btn => btn.onclick = () => { const id = Number(btn.dataset.menuDelete); if (confirm("Hapus menu?")) { state.menus = state.menus.filter(m => m.id !== id); save(); toast("Menu dihapus."); } });
 }
 
 function renderPromo() {
   const promo = state.promo;
-
   $("promoTitle").value = promo.title;
   $("promoSubtitle").value = promo.subtitle;
   $("promoImage").value = promo.image || "";
-
-  $("promoPreview").innerHTML = `
-    <small>PA.YU PROMO</small>
-    <strong>${esc(promo.title)}</strong>
-    <span>${esc(promo.subtitle)}</span>`;
-
+  $("promoPreview").innerHTML = `<small>PA.YU PROMO</small><strong>${esc(promo.title)}</strong><span>${esc(promo.subtitle)}</span>`;
   if (promo.image) {
-    $("promoPreview").style.background =
-      `linear-gradient(#26302155,#26302155),url("${promo.image.replace(/"/g, "")}") center/cover`;
+    $("promoPreview").style.background = `linear-gradient(#26302155,#26302155),url("${promo.image.replace(/"/g, "")}") center/cover`;
     $("promoPreview").style.color = "white";
   } else {
-    // Penyesuaian warna promo default agar senada dengan PA.YU
-    $("promoPreview").style.background =
-      "linear-gradient(135deg,#fceecb,#f0a15b)";
+    $("promoPreview").style.background = "linear-gradient(135deg,#fceecb,#f0a15b)";
     $("promoPreview").style.color = "#a62823";
   }
 }
 
-// LOGIKA CHART.JS ANALISIS
+// LOGIKA GRAFIK (ANTI-ERROR & AMAN ZONA WAKTU)
 function renderChart() {
+  if (typeof Chart === 'undefined') {
+    const parent = $("analyticsChart").parentElement;
+    parent.innerHTML = "<div class='empty'>Gagal memuat grafik. Periksa koneksi internet Anda.</div>";
+    parent.style.height = "auto";
+    return;
+  }
+
   const ctx = $("analyticsChart").getContext("2d");
   const period = $("chartPeriod").value;
   const dateValStr = $("chartDate").value; 
   if (!dateValStr) return;
 
-  const selDate = new Date(dateValStr);
-  const selYear = selDate.getFullYear();
-  const selMonth = selDate.getMonth();
-  const selDateNum = selDate.getDate();
+  // Pencegahan bug zona waktu
+  const dateParts = dateValStr.split("-");
+  const selYear = parseInt(dateParts[0]);
+  const selMonth = dateParts.length > 1 ? parseInt(dateParts[1]) - 1 : 0;
+  const selDateNum = dateParts.length > 2 ? parseInt(dateParts[2]) : 1;
 
-  let labels = [];
-  let newMembers = [];
-  let spendings = [];
-  let totalMembersCumulative = [];
-
+  let labels = [], newMembers = [], spendings = [], totalMembersCumulative = [];
   let currentTotalMembers = 0;
 
   if (period === 'daily') {
-    // Per Jam dalam 24 Jam
     currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(selYear, selMonth, selDateNum)).length;
     for(let i=0; i<24; i++) {
       labels.push(`${i.toString().padStart(2,'0')}:00`);
       const mCreated = state.members.filter(m => {
-          const d = new Date(m.created);
-          return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === selDateNum && d.getHours() === i;
+          const d = new Date(m.created); return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === selDateNum && d.getHours() === i;
       }).length;
-      newMembers.push(mCreated);
-      currentTotalMembers += mCreated;
-      totalMembersCumulative.push(currentTotalMembers);
+      newMembers.push(mCreated); currentTotalMembers += mCreated; totalMembersCumulative.push(currentTotalMembers);
 
       const txThisHour = state.transactions.filter(t => {
-          const d = new Date(t.date);
-          return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === selDateNum && d.getHours() === i;
+          const d = new Date(t.date); return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === selDateNum && d.getHours() === i;
       });
       spendings.push(txThisHour.reduce((sum, tx) => sum + totalOf(tx), 0));
     }
   } else if (period === 'monthly') {
-    // Per Hari dalam Sebulan
-    const mYear = parseInt(dateValStr.split("-")[0]);
-    const mMonth = parseInt(dateValStr.split("-")[1]) - 1;
-    const daysInMonth = new Date(mYear, mMonth + 1, 0).getDate();
-    
-    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(mYear, mMonth, 1)).length;
+    const daysInMonth = new Date(selYear, selMonth + 1, 0).getDate();
+    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(selYear, selMonth, 1)).length;
     
     for(let i=1; i<=daysInMonth; i++) {
         labels.push(`${i}`);
         const mCreated = state.members.filter(m => {
-            const d = new Date(m.created);
-            return d.getFullYear() === mYear && d.getMonth() === mMonth && d.getDate() === i;
+            const d = new Date(m.created); return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === i;
         }).length;
-        newMembers.push(mCreated);
-        currentTotalMembers += mCreated;
-        totalMembersCumulative.push(currentTotalMembers);
+        newMembers.push(mCreated); currentTotalMembers += mCreated; totalMembersCumulative.push(currentTotalMembers);
 
         const txThisDay = state.transactions.filter(t => {
-            const d = new Date(t.date);
-            return d.getFullYear() === mYear && d.getMonth() === mMonth && d.getDate() === i;
+            const d = new Date(t.date); return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === i;
         });
         spendings.push(txThisDay.reduce((sum, tx) => sum + totalOf(tx), 0));
     }
   } else if (period === 'yearly') {
-    // Per Bulan dalam Setahun
-    let yYear = parseInt(dateValStr.substring(0,4));
-    if(isNaN(yYear)) yYear = selYear;
-    
-    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(yYear, 0, 1)).length;
+    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(selYear, 0, 1)).length;
     const monthNames = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"];
     
     for(let i=0; i<12; i++) {
         labels.push(monthNames[i]);
         const mCreated = state.members.filter(m => {
-            const d = new Date(m.created);
-            return d.getFullYear() === yYear && d.getMonth() === i;
+            const d = new Date(m.created); return d.getFullYear() === selYear && d.getMonth() === i;
         }).length;
-        newMembers.push(mCreated);
-        currentTotalMembers += mCreated;
-        totalMembersCumulative.push(currentTotalMembers);
+        newMembers.push(mCreated); currentTotalMembers += mCreated; totalMembersCumulative.push(currentTotalMembers);
 
         const txThisMonth = state.transactions.filter(t => {
-            const d = new Date(t.date);
-            return d.getFullYear() === yYear && d.getMonth() === i;
+            const d = new Date(t.date); return d.getFullYear() === selYear && d.getMonth() === i;
         });
         spendings.push(txThisMonth.reduce((sum, tx) => sum + totalOf(tx), 0));
     }
   }
 
   if (myChart) myChart.destroy();
-
   myChart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [
-        {
-          type: 'bar',
-          label: 'Penambahan Member Baru',
-          data: newMembers,
-          backgroundColor: '#f0a15b',
-          yAxisID: 'y1',
-        },
-        {
-          type: 'line',
-          label: 'Total Belanja (Rp)',
-          data: spendings,
-          borderColor: '#a62823',
-          backgroundColor: '#a62823',
-          yAxisID: 'y',
-          tension: 0.3
-        },
-        {
-          type: 'line',
-          label: 'Total Member',
-          data: totalMembersCumulative,
-          borderColor: '#d94236',
-          backgroundColor: '#d94236',
-          borderDash: [5, 5],
-          yAxisID: 'y1',
-          tension: 0.3
-        }
+        { type: 'bar', label: 'Member Baru', data: newMembers, backgroundColor: '#f0a15b', yAxisID: 'y1' },
+        { type: 'line', label: 'Total Belanja (Rp)', data: spendings, borderColor: '#a62823', backgroundColor: '#a62823', yAxisID: 'y', tension: 0.3 },
+        { type: 'line', label: 'Total Member', data: totalMembersCumulative, borderColor: '#d94236', backgroundColor: '#d94236', borderDash: [5, 5], yAxisID: 'y1', tension: 0.3 }
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
       scales: {
         y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Rupiah (Belanja)'} },
         y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Orang (Member)'}, min: 0, suggestedMax: 5 }
@@ -1235,448 +871,176 @@ function renderChart() {
   });
 }
 
-// Event ganti periode grafik
 $("chartPeriod").onchange = (e) => {
-    const val = e.target.value;
-    const input = $("chartDate");
-    if(val === 'daily') { input.type = "date"; input.value = new Date().toISOString().slice(0, 10); }
-    else if(val === 'monthly') { input.type = "month"; input.value = new Date().toISOString().slice(0, 7); }
-    else { input.type = "number"; input.value = new Date().getFullYear(); input.min = "2020"; input.max = "2099"; }
+    const val = e.target.value; const input = $("chartDate");
+    if(val === 'daily') { input.type = "date"; input.value = todayStr; }
+    else if(val === 'monthly') { input.type = "month"; input.value = todayStr.slice(0, 7); }
+    else { input.type = "number"; input.value = todayStr.substring(0,4); input.min = "2020"; input.max = "2099"; }
     renderChart();
 };
 $("chartDate").onchange = renderChart;
 
 function renderAll() {
-  renderStats();
-  renderMemberLists();
-  renderProfile();
-  renderMenus();
-  renderPromo();
-  renderChart();
-  updatePermissions();
+  renderStats(); renderMemberLists(); renderProfile(); renderMenus(); renderPromo(); renderChart(); updatePermissions();
 }
 
 function showSection(name) {
-  document.querySelectorAll(".section").forEach(section =>
-    section.classList.remove("active")
-  );
-
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   $("section-" + name).classList.add("active");
-
-  document.querySelectorAll("[data-section]").forEach(button =>
-    button.classList.toggle("active", button.dataset.section === name)
-  );
-
+  document.querySelectorAll("[data-section]").forEach(b => b.classList.toggle("active", b.dataset.section === name));
   const titles = {
     dashboard: ["Dashboard", "Ringkasan membership dan transaksi."],
     members: ["Pengecekan Member", "Profil member dan riwayat transaksi."],
     menu: ["Menu & Harga", "Kelola daftar menu dan harga."],
     promo: ["Promo Website", "Kelola konten promosi website."]
   };
-
-  $("pageTitle").textContent = titles[name][0];
-  $("pageSub").textContent = titles[name][1];
+  $("pageTitle").textContent = titles[name][0]; $("pageSub").textContent = titles[name][1];
 }
 
 function openModal(title, body, actions) {
-  $("modalTitle").textContent = title;
-  $("modalBody").innerHTML = body;
-  $("modalActions").innerHTML = actions;
-  $("modalBackdrop").classList.add("open");
+  $("modalTitle").textContent = title; $("modalBody").innerHTML = body;
+  $("modalActions").innerHTML = actions; $("modalBackdrop").classList.add("open");
 }
 
 function closeModal() {
   $("modalBackdrop").classList.remove("open");
-  // Matikan kamera jika modal scanner ditutup
-  if (html5QrcodeScanner) {
-    try { html5QrcodeScanner.clear(); } catch(e){}
-    html5QrcodeScanner = null;
-  }
+  if (html5QrcodeScanner) { try { html5QrcodeScanner.clear(); } catch(e){} html5QrcodeScanner = null; }
 }
 
 function openMemberForm(member = null) {
   const editing = Boolean(member);
-
-  openModal(
-    editing ? "Edit Profil Member" : "Tambah Member",
-    `
-      <div class="field">
-        <label>Nama member</label>
-        <input id="fName" value="${esc(member?.name || "")}">
-      </div>
-      <div class="field">
-        <label>Nomor telepon</label>
-        <input id="fPhone" value="${esc(member?.phone || "")}">
-      </div>
-      <div class="field">
-        <label>Kode member</label>
-        <input id="fCode" value="${esc(member?.code || "")}"
-               ${editing ? "disabled" : ""}>
-      </div>`,
-    `<button class="btn-light" id="cancelModal">Batal</button>
-     <button class="btn-primary" id="saveModal">Simpan</button>`
+  openModal(editing ? "Edit Profil" : "Tambah Member",
+    `<div class="field"><label>Nama</label><input id="fName" value="${esc(member?.name || "")}"></div>
+     <div class="field"><label>Telepon</label><input id="fPhone" value="${esc(member?.phone || "")}"></div>
+     <div class="field"><label>Kode</label><input id="fCode" value="${esc(member?.code || "")}" ${editing ? "disabled" : ""}></div>`,
+    `<button class="btn-light" id="cancelModal">Batal</button><button class="btn-primary" id="saveModal">Simpan</button>`
   );
-
   $("cancelModal").onclick = closeModal;
-
   $("saveModal").onclick = () => {
-    const name = $("fName").value.trim();
-    const phone = $("fPhone").value.trim();
-    const code = $("fCode").value.trim().toUpperCase();
-
-    if (!name || !phone || !code) {
-      toast("Lengkapi data member.");
-      return;
-    }
-
-    if (!editing && state.members.some(m => m.code === code)) {
-      toast("Kode member sudah digunakan.");
-      return;
-    }
-
-    if (editing) {
-      member.name = name;
-      member.phone = phone;
-    } else {
+    const name = $("fName").value.trim(); const phone = $("fPhone").value.trim(); const code = $("fCode").value.trim().toUpperCase();
+    if (!name || !phone || !code) { toast("Lengkapi data."); return; }
+    if (!editing && state.members.some(m => m.code === code)) { toast("Kode digunakan."); return; }
+    if (editing) { member.name = name; member.phone = phone; } 
+    else {
       const id = Math.max(0, ...state.members.map(m => m.id)) + 1;
-      const timeNow = new Date().toISOString().substring(11, 19); 
-      state.members.push({
-        id, code, name, phone,
-        created: new Date().toISOString().slice(0, 10) + "T" + timeNow
-      });
+      const timeNow = new Date().toISOString().substring(11, 19);
+      state.members.push({ id, code, name, phone, created: todayStr + "T" + timeNow });
       selectedMemberId = id;
     }
-
-    save();
-    closeModal();
-    toast(editing ? "Profil diperbarui." : "Member ditambahkan.");
+    save(); closeModal(); toast(editing ? "Diperbarui." : "Ditambahkan.");
   };
 }
 
 function menuOptions(selectedId) {
-  return state.menus.map(menu => `
-    <option value="${menu.id}" ${Number(selectedId) === menu.id ? "selected" : ""}>
-      ${esc(menu.name)} — ${money(menu.price)}
-    </option>
-  `).join("");
+  return state.menus.map(menu => `<option value="${menu.id}" ${Number(selectedId) === menu.id ? "selected" : ""}>${esc(menu.name)} — ${money(menu.price)}</option>`).join("");
 }
 
 function openTransactionForm(memberId, txId = null) {
   const member = getMember(memberId);
   const tx = txId ? getTransaction(txId) : null;
+  let items = tx ? tx.items.map(item => ({...item})) : [{menuId: state.menus[0]?.id || "", qty: 1}];
+  const txDateOnly = tx && tx.date.includes("T") ? tx.date.split("T")[0] : (tx ? tx.date : todayStr);
 
-  let items = tx
-    ? tx.items.map(item => ({...item}))
-    : [{menuId: state.menus[0]?.id || "", qty: 1}];
-    
-  const txDateOnly = tx && tx.date.includes("T") ? tx.date.split("T")[0] : (tx ? tx.date : new Date().toISOString().slice(0,10));
-
-  openModal(
-    tx ? "Edit Transaksi" : "Tambah Transaksi",
-    `
-      <div class="field">
-        <label>Member</label>
-        <input value="${esc(member.name)} (${esc(member.code)})" disabled>
-      </div>
-
-      <div class="field">
-        <label>Tanggal transaksi</label>
-        <input id="txDate" type="date"
-          value="${txDateOnly}">
-      </div>
-
-      <div class="field">
-        <label>Menu yang dibeli</label>
-        <div id="menuLines"></div>
-        <button class="btn-soft btn-sm" id="addMenuLine" type="button">
-          + Tambah Menu
-        </button>
-      </div>
-
-      <div class="total-box">
-        <div>
-          <span class="muted">Total belanja</span>
-          <strong id="txTotal" style="display:block">Rp0</strong>
-        </div>
-        <div style="text-align:right">
-          <span class="muted">Poin diperoleh</span>
-          <strong id="txPoints" style="display:block">0</strong>
-        </div>
-      </div>
-      <p class="muted">Setiap Rp1.000 = 1 poin, dibulatkan ke bawah.</p>
-    `,
-    `<button class="btn-light" id="cancelModal">Batal</button>
-     <button class="btn-primary" id="saveModal">
-       ${tx ? "Simpan Perubahan" : "Simpan Transaksi"}
-     </button>`
+  openModal(tx ? "Edit Transaksi" : "Tambah Transaksi",
+    `<div class="field"><label>Member</label><input value="${esc(member.name)} (${esc(member.code)})" disabled></div>
+     <div class="field"><label>Tanggal</label><input id="txDate" type="date" value="${txDateOnly}"></div>
+     <div class="field"><label>Menu</label><div id="menuLines"></div><button class="btn-soft btn-sm" id="addMenuLine" type="button">+ Tambah</button></div>
+     <div class="total-box"><div><span class="muted">Belanja</span><strong id="txTotal" style="display:block">Rp0</strong></div><div style="text-align:right"><span class="muted">Poin</span><strong id="txPoints" style="display:block">0</strong></div></div>`,
+    `<button class="btn-light" id="cancelModal">Batal</button><button class="btn-primary" id="saveModal">Simpan</button>`
   );
 
-  if (!items.length) {
-    items = [{menuId: state.menus[0]?.id || "", qty: 1}];
-  }
-
-  const lines = $("menuLines");
-
+  if (!items.length) items = [{menuId: state.menus[0]?.id || "", qty: 1}];
   function calculate() {
-    const total = items.reduce((sum, item) => {
-      const menu = getMenu(item.menuId);
-      return sum + (menu ? menu.price : 0) * Number(item.qty || 0);
-    }, 0);
-
-    $("txTotal").textContent = money(total);
-    $("txPoints").textContent =
-      Math.floor(total / 1000).toLocaleString("id-ID") + " poin";
+    const total = items.reduce((sum, item) => sum + (getMenu(item.menuId)?.price || 0) * Number(item.qty || 0), 0);
+    $("txTotal").textContent = money(total); $("txPoints").textContent = Math.floor(total / 1000).toLocaleString("id-ID") + " poin";
   }
-
   function drawLines() {
-    lines.innerHTML = items.map((item, index) => `
-      <div class="menu-line">
-        <select data-line-menu="${index}">
-          <option value="">Pilih menu</option>
-          ${menuOptions(item.menuId)}
-        </select>
-        <input data-line-qty="${index}" type="number" min="1"
-               value="${Math.max(1, Number(item.qty) || 1)}">
-        <button class="btn-danger" data-remove-line="${index}"
-                ${items.length === 1 ? "disabled" : ""}>×</button>
-      </div>
-    `).join("");
-
-    document.querySelectorAll("[data-line-menu]").forEach(select => {
-      select.onchange = () => {
-        items[Number(select.dataset.lineMenu)].menuId = Number(select.value);
-        calculate();
-      };
-    });
-
-    document.querySelectorAll("[data-line-qty]").forEach(input => {
-      input.onchange = () => {
-        items[Number(input.dataset.lineQty)].qty =
-          Math.max(1, Number(input.value) || 1);
-        calculate();
-      };
-    });
-
-    document.querySelectorAll("[data-remove-line]").forEach(button => {
-      button.onclick = () => {
-        if (items.length > 1) {
-          items.splice(Number(button.dataset.removeLine), 1);
-          drawLines();
-        }
-      };
-    });
-
+    $("menuLines").innerHTML = items.map((item, index) => `
+      <div class="menu-line"><select data-line-menu="${index}"><option value="">Pilih</option>${menuOptions(item.menuId)}</select>
+      <input data-line-qty="${index}" type="number" min="1" value="${Math.max(1, Number(item.qty) || 1)}">
+      <button class="btn-danger" data-remove-line="${index}" ${items.length === 1 ? "disabled" : ""}>×</button></div>`).join("");
+    document.querySelectorAll("[data-line-menu]").forEach(sel => sel.onchange = () => { items[Number(sel.dataset.lineMenu)].menuId = Number(sel.value); calculate(); });
+    document.querySelectorAll("[data-line-qty]").forEach(inp => inp.onchange = () => { items[Number(inp.dataset.lineQty)].qty = Math.max(1, Number(inp.value) || 1); calculate(); });
+    document.querySelectorAll("[data-remove-line]").forEach(btn => btn.onclick = () => { if (items.length > 1) { items.splice(Number(btn.dataset.removeLine), 1); drawLines(); } });
     calculate();
   }
-
-  $("addMenuLine").onclick = () => {
-    items.push({menuId: state.menus[0]?.id || "", qty: 1});
-    drawLines();
-  };
-
-  $("cancelModal").onclick = closeModal;
-  drawLines();
+  $("addMenuLine").onclick = () => { items.push({menuId: state.menus[0]?.id || "", qty: 1}); drawLines(); };
+  $("cancelModal").onclick = closeModal; drawLines();
 
   $("saveModal").onclick = () => {
-    if (!items.length || items.some(item =>
-      !getMenu(item.menuId) || Number(item.qty) < 1
-    )) {
-      toast("Pilih menu dan jumlah yang valid.");
-      return;
-    }
-
-    const total = items.reduce((sum, item) =>
-      sum + getMenu(item.menuId).price * Number(item.qty), 0
-    );
-
-    const dateInput = $("txDate").value;
-    if (!dateInput) {
-      toast("Pilih tanggal transaksi.");
-      return;
-    }
+    if (!items.length || items.some(item => !getMenu(item.menuId) || Number(item.qty) < 1)) { toast("Pilih menu valid."); return; }
+    const dateInput = $("txDate").value; if (!dateInput) { toast("Pilih tanggal."); return; }
+    const timeNow = new Date().toISOString().substring(11, 19); const fullDate = dateInput + "T" + timeNow;
     
-    // Gabung waktu agar terbaca pada grafik harian
-    const timeNow = new Date().toISOString().substring(11, 19); 
-    const fullDateToSave = dateInput + "T" + timeNow;
-
-    if (tx) {
-      tx.date = fullDateToSave;
-      tx.items = items.map(item => ({...item}));
-    } else {
-      state.transactions.push({
-        id: Math.max(0, ...state.transactions.map(t => t.id)) + 1,
-        memberId: Number(memberId),
-        date: fullDateToSave,
-        items: items.map(item => ({...item}))
-      });
-    }
-
-    selectedMemberId = Number(memberId);
-    save();
-    closeModal();
-    toast(tx ? "Transaksi diperbarui." : "Transaksi ditambahkan.");
+    if (tx) { tx.date = fullDate; tx.items = items.map(item => ({...item})); } 
+    else { state.transactions.push({ id: Math.max(0, ...state.transactions.map(t => t.id)) + 1, memberId: Number(memberId), date: fullDate, items: items.map(item => ({...item})) }); }
+    selectedMemberId = Number(memberId); save(); closeModal(); toast("Tersimpan.");
   };
 }
 
 function deleteTransaction(id) {
-  const tx = getTransaction(id);
-  if (!tx) return;
-
-  if (confirm(
-    `Hapus transaksi tanggal ${fmtDate(tx.date)}? Poin transaksi ini juga akan dihapus.`
-  )) {
-    state.transactions = state.transactions.filter(t => t.id !== id);
-    save();
-    toast("Transaksi dihapus dan poin diperbarui.");
-  }
+  if (confirm("Hapus transaksi? Poin akan berkurang.")) { state.transactions = state.transactions.filter(t => t.id !== id); save(); toast("Dihapus."); }
 }
-
 function deleteMember(id) {
-  const member = getMember(id);
-  if (!member) return;
-
-  if (confirm(
-    `Hapus member ${member.name} beserta seluruh riwayat transaksinya?`
-  )) {
-    state.transactions = state.transactions.filter(t => t.memberId !== id);
-    state.members = state.members.filter(m => m.id !== id);
-    selectedMemberId = null;
-    save();
-    toast("Member dihapus.");
-  }
+  if (confirm("Hapus member dan riwayat?")) { state.transactions = state.transactions.filter(t => t.memberId !== id); state.members = state.members.filter(m => m.id !== id); selectedMemberId = null; save(); toast("Dihapus."); }
 }
 
-// LOGIKA SCANNER QR
+// LOGIKA SCANNER QR (DENGAN ANTI ERROR)
 $("scanQrBtn").onclick = () => {
+  if (typeof Html5QrcodeScanner === 'undefined') { toast("Koneksi gagal. Periksa internet Anda."); return; }
+  
+  let warningHtml = "";
+  if (window.location.protocol === 'file:') {
+    warningHtml = `<div class="access-note" style="margin-bottom:15px; background:#fbe7e3; border-color:#d94236; color:#d94236;"><b>Perhatian:</b> Browser memblokir kamera untuk file lokal (file://). Pastikan file ini di-hosting agar kamera bisa menyala.</div>`;
+  }
+
   openModal("Scan QR Member",
-    `<div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px;"></div>
-     <p class="muted" style="text-align:center">Arahkan kamera ke QR Code milik member.</p>`,
+    warningHtml + `<div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px;"></div><p class="muted" style="text-align:center">Arahkan kamera ke QR Code milik member.</p>`,
     `<button class="btn-danger" id="closeScan">Tutup Kamera</button>`
   );
 
-  // Tunggu sejenak agar DOM div qr-reader dirender sebelum scanner aktif
   setTimeout(() => {
+    try {
       html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
       html5QrcodeScanner.render((decodedText) => {
-        html5QrcodeScanner.clear();
-        closeModal();
-        
-        // Cari member yang kodenya sesuai dengan hasil scan
+        html5QrcodeScanner.clear(); closeModal();
         const member = state.members.find(m => m.code.toUpperCase() === decodedText.trim().toUpperCase());
-        if (member) {
-           $("memberSearch").value = member.code;
-           renderMemberLists();
-           selectMember(member.id);
-           toast("Member ditemukan!");
-        } else {
-           toast("Member tidak ditemukan (Kode: " + decodedText + ")");
-        }
-      }, (error) => {
-        // Biarkan kosong, akan error terus menerus tiap frame saat QR belum tertangkap kamera
-      });
-  }, 200);
-
+        if (member) { $("memberSearch").value = member.code; renderMemberLists(); selectMember(member.id); toast("Ditemukan!"); } 
+        else { toast("Tidak ditemukan: " + decodedText); }
+      }, (err) => { /* ignore */ });
+    } catch(e) { console.error(e); $("qr-reader").innerHTML = "<div class='empty'>Kamera diblokir oleh browser.</div>"; }
+  }, 250);
   $("closeScan").onclick = closeModal;
 };
 
-
-/* Navigasi - DIBIARKAN 100% SESUAI ASLINYA */
-document.querySelectorAll("[data-section]").forEach(button => {
-  button.onclick = () => showSection(button.dataset.section);
-});
-
+document.querySelectorAll("[data-section]").forEach(b => b.onclick = () => showSection(b.dataset.section));
 $("dashCheck").onclick = () => showSection("members");
 $("memberSearch").oninput = renderMemberLists;
-
-$("clearSearch").onclick = () => {
-  $("memberSearch").value = "";
-  renderMemberLists();
-};
-
+$("clearSearch").onclick = () => { $("memberSearch").value = ""; renderMemberLists(); };
 $("addMemberBtn").onclick = () => openMemberForm();
+$("roleSelect").onchange = e => { role = e.target.value; renderAll(); toast("Mode: " + role); };
 
-/* Simulasi pergantian role */
-$("roleSelect").onchange = event => {
-  role = event.target.value;
-  renderAll();
-  toast("Mode tampilan: " + (role === "admin" ? "Admin" : "Kasir"));
-};
-
-/* Tambah menu: Admin saja */
 $("addMenuBtn").onclick = () => {
   if (role !== "admin") return;
-
-  openModal(
-    "Tambah Menu",
-    `<div class="field">
-       <label>Nama menu</label>
-       <input id="newMenuName" placeholder="Nama menu">
-     </div>
-     <div class="field">
-       <label>Harga (Rp)</label>
-       <input id="newMenuPrice" type="number" min="0" placeholder="22000">
-     </div>`,
-    `<button class="btn-light" id="cancelModal">Batal</button>
-     <button class="btn-primary" id="saveModal">Tambah Menu</button>`
-  );
-
+  openModal("Tambah Menu", `<div class="field"><label>Nama</label><input id="newMenuName"></div><div class="field"><label>Harga</label><input id="newMenuPrice" type="number" min="0"></div>`, `<button class="btn-light" id="cancelModal">Batal</button><button class="btn-primary" id="saveModal">Tambah</button>`);
   $("cancelModal").onclick = closeModal;
-
   $("saveModal").onclick = () => {
-    const name = $("newMenuName").value.trim();
-    const price = Number($("newMenuPrice").value);
-
-    if (role !== "admin") {
-      toast("Akses ditolak.");
-      return;
-    }
-
-    if (!name || !Number.isFinite(price) || price < 0) {
-      toast("Masukkan nama dan harga yang valid.");
-      return;
-    }
-
-    state.menus.push({
-      id: Math.max(0, ...state.menus.map(m => m.id)) + 1,
-      name,
-      price
-    });
-
-    save();
-    closeModal();
-    toast("Menu ditambahkan.");
+    const name = $("newMenuName").value.trim(); const price = Number($("newMenuPrice").value);
+    if (!name || price < 0) { toast("Data tidak valid."); return; }
+    state.menus.push({ id: Math.max(0, ...state.menus.map(m => m.id)) + 1, name, price }); save(); closeModal(); toast("Ditambahkan.");
   };
 };
 
-/* Simpan promo: Admin saja */
 $("savePromo").onclick = () => {
-  if (role !== "admin") {
-    toast("Akses ditolak.");
-    return;
-  }
-
-  state.promo = {
-    title: $("promoTitle").value.trim() || "Promo PA.YU",
-    subtitle: $("promoSubtitle").value.trim(),
-    image: $("promoImage").value.trim()
-  };
-
-  save();
-  toast("Promo disimpan di browser ini.");
+  if (role !== "admin") return;
+  state.promo = { title: $("promoTitle").value.trim() || "Promo", subtitle: $("promoSubtitle").value.trim(), image: $("promoImage").value.trim() };
+  save(); toast("Tersimpan.");
 };
 
-/* Modal */
 $("modalClose").onclick = closeModal;
+$("modalBackdrop").onclick = e => { if (e.target === $("modalBackdrop")) closeModal(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 
-$("modalBackdrop").onclick = event => {
-  if (event.target === $("modalBackdrop")) closeModal();
-};
-
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape") closeModal();
-});
-
-/* Inisialisasi */
 renderAll();
 </script>
 </body>
