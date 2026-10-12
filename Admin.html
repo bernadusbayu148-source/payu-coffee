@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -6,18 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PA.YU - Admin Dashboard</title>
 
+<!-- Chart.js untuk Grafik Analisis -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- HTML5 QR Code Scanner -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
 <style>
 :root {
-  --bg: #f7f5ed;
-  --white: #fffef9;
-  --green: #66784d;
-  --dark: #263021;
-  --light-green: #dfe6d1;
-  --lime: #d7ee78;
-  --text: #24291f;
-  --muted: #74796d;
-  --border: #e5e4d9;
-  --red: #b84236;
+  /* Skema Warna Identitas PA.YU */
+  --bg: #fcfaf5;
+  --white: #ffffff;
+  --primary: #a62823; /* PA.YU Red */
+  --dark: #381a17; /* Dark Red/Brown */
+  --light-primary: #fceecb; /* PA.YU Cream */
+  --lime: #f0a15b; /* Aksen Orange */
+  --text: #2c1a18;
+  --muted: #857472;
+  --border: #ecdcd9;
+  --danger: #d94236;
 }
 
 * {
@@ -87,7 +92,7 @@ button:disabled {
 
 .sidebar-note {
   margin-top: 35px;
-  color: #cbd1c4;
+  color: #dcbaba;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -147,8 +152,8 @@ h3 {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: var(--light-green);
-  color: var(--green);
+  background: var(--light-primary);
+  color: var(--primary);
   font-weight: bold;
 }
 
@@ -189,7 +194,7 @@ h3 {
 }
 
 .btn-primary {
-  background: var(--green);
+  background: var(--primary);
   color: white;
 }
 
@@ -199,13 +204,13 @@ h3 {
 }
 
 .btn-soft {
-  background: var(--light-green);
+  background: var(--light-primary);
   color: var(--dark);
 }
 
 .btn-danger {
   background: #fbe7e3;
-  color: var(--red);
+  color: var(--danger);
 }
 
 .btn-sm {
@@ -247,8 +252,8 @@ select {
 
 .member:hover,
 .member.selected {
-  border-color: var(--green);
-  background: #f8faef;
+  border-color: var(--primary);
+  background: #fff8eb;
 }
 
 .member-info {
@@ -266,7 +271,7 @@ select {
 }
 
 .points {
-  color: var(--green);
+  color: var(--primary);
   font-weight: bold;
   text-align: right;
 }
@@ -335,7 +340,7 @@ select {
 }
 
 .earned {
-  color: var(--green);
+  color: var(--primary);
   font-weight: bold;
 }
 
@@ -377,7 +382,7 @@ select {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  background: #f1f4e8;
+  background: var(--light-primary);
   border-radius: 12px;
   padding: 14px;
   margin: 14px 0;
@@ -586,6 +591,25 @@ select {
     <div class="stat">Menu aktif<strong id="statMenu">0</strong><small class="muted">Daftar menu</small></div>
   </div>
 
+  <!-- BAGIAN GRAFIK ANALISIS BARU -->
+  <div class="panel">
+    <div class="panel-head" style="flex-wrap: wrap;">
+      <div>
+        <h2>Grafik Analisis</h2>
+        <p class="subtitle">Penambahan member, total belanja, dan kumulatif member.</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <select id="chartPeriod" class="btn-light" style="padding: 8px; width: auto; font-weight: normal;">
+          <option value="daily">Harian</option>
+          <option value="monthly">Bulanan</option>
+          <option value="yearly">Tahunan</option>
+        </select>
+        <input type="date" id="chartDate" class="btn-light" style="padding: 8px; width: auto;">
+      </div>
+    </div>
+    <canvas id="analyticsChart" style="width: 100%; max-height: 350px;"></canvas>
+  </div>
+  
   <div class="layout">
     <div class="panel">
       <div class="panel-head">
@@ -601,7 +625,7 @@ select {
     <div>
       <div class="panel">
         <h2>Aturan poin</h2>
-        <div style="font-size:27px;font-weight:bold;color:var(--green);margin:12px 0">Rp1.000 = 1 poin</div>
+        <div style="font-size:27px;font-weight:bold;color:var(--primary);margin:12px 0">Rp1.000 = 1 poin</div>
         <p class="subtitle">Poin dihitung dari total transaksi dan dibulatkan ke bawah.</p>
       </div>
       <div class="panel">
@@ -629,7 +653,8 @@ select {
       </div>
 
       <div class="searchrow">
-        <input id="memberSearch" placeholder="Cari member...">
+        <input id="memberSearch" placeholder="Cari nama atau kode member...">
+        <button class="btn-primary" id="scanQrBtn" style="padding: 0 15px;" title="Scan QR Code">📷 Scan</button>
         <button class="btn-light" id="clearSearch">Reset</button>
       </div>
       <div class="member-list" id="memberList"></div>
@@ -725,8 +750,9 @@ select {
 <div class="toast" id="toast"></div>
 
 <script>
-const STORAGE_KEY = "payu_admin_dashboard_v1";
+const STORAGE_KEY = "payu_admin_dashboard_v2"; // Berubah versi untuk reset data demo dgn timestamp baru
 
+// State awal menambahkan jam (time) agar bisa di-filter di chart harian
 const initialState = {
   menus: [
     {id: 1, name: "Es Kopi Susu", price: 22000},
@@ -736,15 +762,15 @@ const initialState = {
     {id: 5, name: "Croissant", price: 20000}
   ],
   members: [
-    {id: 1, code: "PYU001", name: "Bayu Pratama", phone: "081234567890", created: "2026-09-12"},
-    {id: 2, code: "PYU002", name: "Nadia Putri", phone: "081298765432", created: "2026-09-18"},
-    {id: 3, code: "PYU003", name: "Raka Wijaya", phone: "082112223333", created: "2026-10-01"}
+    {id: 1, code: "PYU001", name: "Bayu Pratama", phone: "081234567890", created: "2026-09-12T10:30:00"},
+    {id: 2, code: "PYU002", name: "Nadia Putri", phone: "081298765432", created: "2026-09-18T14:15:00"},
+    {id: 3, code: "PYU003", name: "Raka Wijaya", phone: "082112223333", created: "2026-10-01T09:00:00"}
   ],
   transactions: [
-    {id: 101, memberId: 1, date: "2026-10-13", items: [{menuId: 1, qty: 2}, {menuId: 5, qty: 1}]},
-    {id: 102, memberId: 1, date: "2026-10-10", items: [{menuId: 3, qty: 1}]},
-    {id: 103, memberId: 2, date: "2026-10-12", items: [{menuId: 2, qty: 2}]},
-    {id: 104, memberId: 3, date: "2026-10-08", items: [{menuId: 4, qty: 1}, {menuId: 1, qty: 1}]}
+    {id: 101, memberId: 1, date: "2026-10-13T08:30:00", items: [{menuId: 1, qty: 2}, {menuId: 5, qty: 1}]},
+    {id: 102, memberId: 1, date: "2026-10-10T11:00:00", items: [{menuId: 3, qty: 1}]},
+    {id: 103, memberId: 2, date: "2026-10-12T16:45:00", items: [{menuId: 2, qty: 2}]},
+    {id: 104, memberId: 3, date: "2026-10-08T19:20:00", items: [{menuId: 4, qty: 1}, {menuId: 1, qty: 1}]}
   ],
   promo: {
     title: "Ngopi lebih hemat, mood tetap hangat.",
@@ -763,6 +789,11 @@ try {
 
 let role = "admin";
 let selectedMemberId = null;
+let html5QrcodeScanner = null; // Scanner Instance
+let myChart = null; // Chart Instance
+
+// Set default date for chart
+$("chartDate").value = new Date().toISOString().slice(0, 10);
 
 const $ = id => document.getElementById(id);
 const money = n => "Rp" + Number(n || 0).toLocaleString("id-ID");
@@ -774,24 +805,17 @@ function esc(value) {
   }[c]));
 }
 
-function fmtDate(date) {
-  if (!date) return "-";
-  return new Date(date + "T00:00:00").toLocaleDateString("id-ID", {
+function fmtDate(dateStr) {
+  if (!dateStr) return "-";
+  const dateOnly = dateStr.split("T")[0]; // Cegah bentrok format ISO
+  return new Date(dateOnly + "T00:00:00").toLocaleDateString("id-ID", {
     day: "numeric", month: "long", year: "numeric"
   });
 }
 
-function getMember(id) {
-  return state.members.find(m => m.id === Number(id));
-}
-
-function getMenu(id) {
-  return state.menus.find(m => m.id === Number(id));
-}
-
-function getTransaction(id) {
-  return state.transactions.find(t => t.id === Number(id));
-}
+function getMember(id) { return state.members.find(m => m.id === Number(id)); }
+function getMenu(id) { return state.menus.find(m => m.id === Number(id)); }
+function getTransaction(id) { return state.transactions.find(t => t.id === Number(id)); }
 
 function totalOf(tx) {
   return tx.items.reduce((sum, item) => {
@@ -800,9 +824,7 @@ function totalOf(tx) {
   }, 0);
 }
 
-function pointsOf(tx) {
-  return Math.floor(totalOf(tx) / 1000);
-}
+function pointsOf(tx) { return Math.floor(totalOf(tx) / 1000); }
 
 function memberPoints(memberId) {
   return state.transactions
@@ -884,10 +906,8 @@ function renderProfile() {
   const member = getMember(selectedMemberId);
 
   if (!member) {
-    $("memberProfile").innerHTML =
-      '<div class="empty">Pilih member untuk membuka profil.</div>';
-    $("transactionPanel").innerHTML =
-      '<h2>Riwayat transaksi</h2><div class="empty">Belum ada member dipilih.</div>';
+    $("memberProfile").innerHTML = '<div class="empty">Pilih member untuk membuka profil.</div>';
+    $("transactionPanel").innerHTML = '<h2>Riwayat transaksi</h2><div class="empty">Belum ada member dipilih.</div>';
     return;
   }
 
@@ -960,9 +980,7 @@ function renderProfile() {
   $("addTxHistory").onclick = () => openTransactionForm(member.id);
 
   document.querySelectorAll("[data-edit-tx]").forEach(button => {
-    button.onclick = () => openTransactionForm(
-      member.id, Number(button.dataset.editTx)
-    );
+    button.onclick = () => openTransactionForm(member.id, Number(button.dataset.editTx));
   });
 
   document.querySelectorAll("[data-delete-tx]").forEach(button => {
@@ -972,7 +990,6 @@ function renderProfile() {
 
 function updatePermissions() {
   const isAdmin = role === "admin";
-
   $("roleName").textContent = isAdmin ? "Admin" : "Kasir";
   $("accessText").textContent = isAdmin
     ? "Admin dapat mengelola member, transaksi, menu, harga, dan promo."
@@ -984,7 +1001,6 @@ function updatePermissions() {
 
   $("menuPermission").style.display = isAdmin ? "none" : "block";
   $("promoPermission").style.display = isAdmin ? "none" : "block";
-
   $("promoTitle").disabled = !isAdmin;
   $("promoSubtitle").disabled = !isAdmin;
   $("promoImage").disabled = !isAdmin;
@@ -992,15 +1008,11 @@ function updatePermissions() {
 
 function renderMenus() {
   const isAdmin = role === "admin";
-
   $("menuAdminList").innerHTML = state.menus.map(menu => isAdmin
     ? `<div class="menu-admin-row">
-         <input data-menu-name="${menu.id}" value="${esc(menu.name)}"
-                aria-label="Nama menu">
-         <input data-menu-price="${menu.id}" type="number" min="0"
-                value="${menu.price}" aria-label="Harga menu">
-         <button class="btn-danger btn-sm"
-                 data-menu-delete="${menu.id}">Hapus</button>
+         <input data-menu-name="${menu.id}" value="${esc(menu.name)}" aria-label="Nama menu">
+         <input data-menu-price="${menu.id}" type="number" min="0" value="${menu.price}" aria-label="Harga menu">
+         <button class="btn-danger btn-sm" data-menu-delete="${menu.id}">Hapus</button>
        </div>`
     : `<div class="menu-admin-row">
          <strong>${esc(menu.name)}</strong>
@@ -1012,22 +1024,14 @@ function renderMenus() {
   document.querySelectorAll("[data-menu-name]").forEach(input => {
     input.onchange = () => {
       const menu = getMenu(input.dataset.menuName);
-      if (menu) {
-        menu.name = input.value.trim() || menu.name;
-        save();
-        toast("Nama menu disimpan.");
-      }
+      if (menu) { menu.name = input.value.trim() || menu.name; save(); toast("Nama menu disimpan."); }
     };
   });
 
   document.querySelectorAll("[data-menu-price]").forEach(input => {
     input.onchange = () => {
       const menu = getMenu(input.dataset.menuPrice);
-      if (menu) {
-        menu.price = Math.max(0, Number(input.value) || 0);
-        save();
-        toast("Harga menu disimpan.");
-      }
+      if (menu) { menu.price = Math.max(0, Number(input.value) || 0); save(); toast("Harga menu disimpan."); }
     };
   });
 
@@ -1036,8 +1040,7 @@ function renderMenus() {
       const id = Number(button.dataset.menuDelete);
       if (confirm("Hapus menu ini?")) {
         state.menus = state.menus.filter(menu => menu.id !== id);
-        save();
-        toast("Menu dihapus.");
+        save(); toast("Menu dihapus.");
       }
     };
   });
@@ -1045,7 +1048,6 @@ function renderMenus() {
 
 function renderPromo() {
   const promo = state.promo;
-
   $("promoTitle").value = promo.title;
   $("promoSubtitle").value = promo.subtitle;
   $("promoImage").value = promo.image || "";
@@ -1056,15 +1058,160 @@ function renderPromo() {
     <span>${esc(promo.subtitle)}</span>`;
 
   if (promo.image) {
-    $("promoPreview").style.background =
-      `linear-gradient(#26302155,#26302155),url("${promo.image.replace(/"/g, "")}") center/cover`;
+    $("promoPreview").style.background = `linear-gradient(#26302155,#26302155),url("${promo.image.replace(/"/g, "")}") center/cover`;
     $("promoPreview").style.color = "white";
   } else {
-    $("promoPreview").style.background =
-      "linear-gradient(135deg,#d7ee78,#f0a15b)";
-    $("promoPreview").style.color = "#263021";
+    $("promoPreview").style.background = "linear-gradient(135deg,#fceecb,#f0a15b)";
+    $("promoPreview").style.color = "#a62823";
   }
 }
+
+// LOGIKA CHART.JS ANALISIS
+function renderChart() {
+  const ctx = $("analyticsChart").getContext("2d");
+  const period = $("chartPeriod").value;
+  const dateValStr = $("chartDate").value; 
+  if (!dateValStr) return;
+
+  const selDate = new Date(dateValStr);
+  const selYear = selDate.getFullYear();
+  const selMonth = selDate.getMonth();
+  const selDateNum = selDate.getDate();
+
+  let labels = [];
+  let newMembers = [];
+  let spendings = [];
+  let totalMembersCumulative = [];
+
+  let currentTotalMembers = 0;
+
+  if (period === 'daily') {
+    // 24 Jam
+    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(selYear, selMonth, selDateNum)).length;
+    for(let i=0; i<24; i++) {
+      labels.push(`${i.toString().padStart(2,'0')}:00`);
+      const mCreated = state.members.filter(m => {
+          const d = new Date(m.created);
+          return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === selDateNum && d.getHours() === i;
+      }).length;
+      newMembers.push(mCreated);
+      currentTotalMembers += mCreated;
+      totalMembersCumulative.push(currentTotalMembers);
+
+      const txThisHour = state.transactions.filter(t => {
+          const d = new Date(t.date);
+          return d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === selDateNum && d.getHours() === i;
+      });
+      spendings.push(txThisHour.reduce((sum, tx) => sum + totalOf(tx), 0));
+    }
+  } else if (period === 'monthly') {
+    // Per hari dalam sebulan
+    const mYear = parseInt(dateValStr.split("-")[0]);
+    const mMonth = parseInt(dateValStr.split("-")[1]) - 1;
+    const daysInMonth = new Date(mYear, mMonth + 1, 0).getDate();
+    
+    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(mYear, mMonth, 1)).length;
+    
+    for(let i=1; i<=daysInMonth; i++) {
+        labels.push(`${i}`);
+        const mCreated = state.members.filter(m => {
+            const d = new Date(m.created);
+            return d.getFullYear() === mYear && d.getMonth() === mMonth && d.getDate() === i;
+        }).length;
+        newMembers.push(mCreated);
+        currentTotalMembers += mCreated;
+        totalMembersCumulative.push(currentTotalMembers);
+
+        const txThisDay = state.transactions.filter(t => {
+            const d = new Date(t.date);
+            return d.getFullYear() === mYear && d.getMonth() === mMonth && d.getDate() === i;
+        });
+        spendings.push(txThisDay.reduce((sum, tx) => sum + totalOf(tx), 0));
+    }
+  } else if (period === 'yearly') {
+    // Per bulan dalam setahun
+    let yYear = parseInt(dateValStr.substring(0,4));
+    if(isNaN(yYear)) yYear = selYear;
+    
+    currentTotalMembers = state.members.filter(m => new Date(m.created) < new Date(yYear, 0, 1)).length;
+    const monthNames = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"];
+    
+    for(let i=0; i<12; i++) {
+        labels.push(monthNames[i]);
+        const mCreated = state.members.filter(m => {
+            const d = new Date(m.created);
+            return d.getFullYear() === yYear && d.getMonth() === i;
+        }).length;
+        newMembers.push(mCreated);
+        currentTotalMembers += mCreated;
+        totalMembersCumulative.push(currentTotalMembers);
+
+        const txThisMonth = state.transactions.filter(t => {
+            const d = new Date(t.date);
+            return d.getFullYear() === yYear && d.getMonth() === i;
+        });
+        spendings.push(txThisMonth.reduce((sum, tx) => sum + totalOf(tx), 0));
+    }
+  }
+
+  if (myChart) myChart.destroy();
+
+  myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Penambahan Member Baru',
+          data: newMembers,
+          backgroundColor: '#f0a15b',
+          yAxisID: 'y1',
+        },
+        {
+          type: 'line',
+          label: 'Total Belanja (Rp)',
+          data: spendings,
+          borderColor: '#a62823',
+          backgroundColor: '#a62823',
+          yAxisID: 'y',
+          tension: 0.3
+        },
+        {
+          type: 'line',
+          label: 'Total Member',
+          data: totalMembersCumulative,
+          borderColor: '#629e46',
+          backgroundColor: '#629e46',
+          borderDash: [5, 5],
+          yAxisID: 'y1',
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Rupiah (Belanja)'} },
+        y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Orang (Member)'}, min: 0, suggestedMax: 5 }
+      }
+    }
+  });
+}
+
+// Event trigger ubah filter grafik
+$("chartPeriod").onchange = (e) => {
+    const val = e.target.value;
+    const input = $("chartDate");
+    if(val === 'daily') { input.type = "date"; input.value = new Date().toISOString().slice(0, 10); }
+    else if(val === 'monthly') { input.type = "month"; input.value = new Date().toISOString().slice(0, 7); }
+    else { input.type = "number"; input.value = new Date().getFullYear(); input.min = "2020"; input.max = "2099"; }
+    renderChart();
+};
+$("chartDate").onchange = renderChart;
+
 
 function renderAll() {
   renderStats();
@@ -1072,19 +1219,14 @@ function renderAll() {
   renderProfile();
   renderMenus();
   renderPromo();
+  renderChart();
   updatePermissions();
 }
 
 function showSection(name) {
-  document.querySelectorAll(".section").forEach(section =>
-    section.classList.remove("active")
-  );
-
+  document.querySelectorAll(".section").forEach(section => section.classList.remove("active"));
   $("section-" + name).classList.add("active");
-
-  document.querySelectorAll("[data-section]").forEach(button =>
-    button.classList.toggle("active", button.dataset.section === name)
-  );
+  document.querySelectorAll("[data-section]").forEach(button => button.classList.toggle("active", button.dataset.section === name));
 
   const titles = {
     dashboard: ["Dashboard", "Ringkasan membership dan transaksi."],
@@ -1092,7 +1234,6 @@ function showSection(name) {
     menu: ["Menu & Harga", "Kelola daftar menu dan harga."],
     promo: ["Promo Website", "Kelola konten promosi website."]
   };
-
   $("pageTitle").textContent = titles[name][0];
   $("pageSub").textContent = titles[name][1];
 }
@@ -1106,350 +1247,206 @@ function openModal(title, body, actions) {
 
 function closeModal() {
   $("modalBackdrop").classList.remove("open");
+  if (html5QrcodeScanner) {
+    try { html5QrcodeScanner.clear(); } catch(e){}
+    html5QrcodeScanner = null;
+  }
 }
 
 function openMemberForm(member = null) {
   const editing = Boolean(member);
-
   openModal(
     editing ? "Edit Profil Member" : "Tambah Member",
-    `
-      <div class="field">
-        <label>Nama member</label>
-        <input id="fName" value="${esc(member?.name || "")}">
-      </div>
-      <div class="field">
-        <label>Nomor telepon</label>
-        <input id="fPhone" value="${esc(member?.phone || "")}">
-      </div>
-      <div class="field">
-        <label>Kode member</label>
-        <input id="fCode" value="${esc(member?.code || "")}"
-               ${editing ? "disabled" : ""}>
-      </div>`,
-    `<button class="btn-light" id="cancelModal">Batal</button>
-     <button class="btn-primary" id="saveModal">Simpan</button>`
+    ` <div class="field"><label>Nama member</label><input id="fName" value="${esc(member?.name || "")}"></div>
+      <div class="field"><label>Nomor telepon</label><input id="fPhone" value="${esc(member?.phone || "")}"></div>
+      <div class="field"><label>Kode member</label><input id="fCode" value="${esc(member?.code || "")}" ${editing ? "disabled" : ""}></div>`,
+    `<button class="btn-light" id="cancelModal">Batal</button><button class="btn-primary" id="saveModal">Simpan</button>`
   );
 
   $("cancelModal").onclick = closeModal;
-
   $("saveModal").onclick = () => {
     const name = $("fName").value.trim();
     const phone = $("fPhone").value.trim();
     const code = $("fCode").value.trim().toUpperCase();
 
-    if (!name || !phone || !code) {
-      toast("Lengkapi data member.");
-      return;
-    }
-
-    if (!editing && state.members.some(m => m.code === code)) {
-      toast("Kode member sudah digunakan.");
-      return;
-    }
+    if (!name || !phone || !code) { toast("Lengkapi data member."); return; }
+    if (!editing && state.members.some(m => m.code === code)) { toast("Kode member sudah digunakan."); return; }
 
     if (editing) {
-      member.name = name;
-      member.phone = phone;
+      member.name = name; member.phone = phone;
     } else {
       const id = Math.max(0, ...state.members.map(m => m.id)) + 1;
-      state.members.push({
-        id, code, name, phone,
-        created: new Date().toISOString().slice(0, 10)
-      });
+      state.members.push({ id, code, name, phone, created: new Date().toISOString().slice(0, 19) }); // Simpan dengan Jam
       selectedMemberId = id;
     }
-
-    save();
-    closeModal();
-    toast(editing ? "Profil diperbarui." : "Member ditambahkan.");
+    save(); closeModal(); toast(editing ? "Profil diperbarui." : "Member ditambahkan.");
   };
 }
 
 function menuOptions(selectedId) {
-  return state.menus.map(menu => `
-    <option value="${menu.id}" ${Number(selectedId) === menu.id ? "selected" : ""}>
-      ${esc(menu.name)} — ${money(menu.price)}
-    </option>
-  `).join("");
+  return state.menus.map(menu => `<option value="${menu.id}" ${Number(selectedId) === menu.id ? "selected" : ""}>${esc(menu.name)} — ${money(menu.price)}</option>`).join("");
 }
 
 function openTransactionForm(memberId, txId = null) {
   const member = getMember(memberId);
   const tx = txId ? getTransaction(txId) : null;
+  let items = tx ? tx.items.map(item => ({...item})) : [{menuId: state.menus[0]?.id || "", qty: 1}];
 
-  let items = tx
-    ? tx.items.map(item => ({...item}))
-    : [{menuId: state.menus[0]?.id || "", qty: 1}];
+  // Ambil YYYY-MM-DD saja untuk di input date
+  const txDateOnly = tx ? tx.date.split("T")[0] : new Date().toISOString().slice(0,10);
 
   openModal(
     tx ? "Edit Transaksi" : "Tambah Transaksi",
-    `
-      <div class="field">
-        <label>Member</label>
-        <input value="${esc(member.name)} (${esc(member.code)})" disabled>
-      </div>
-
-      <div class="field">
-        <label>Tanggal transaksi</label>
-        <input id="txDate" type="date"
-          value="${tx?.date || new Date().toISOString().slice(0,10)}">
-      </div>
-
-      <div class="field">
-        <label>Menu yang dibeli</label>
-        <div id="menuLines"></div>
-        <button class="btn-soft btn-sm" id="addMenuLine" type="button">
-          + Tambah Menu
-        </button>
-      </div>
-
+    ` <div class="field"><label>Member</label><input value="${esc(member.name)} (${esc(member.code)})" disabled></div>
+      <div class="field"><label>Tanggal transaksi</label><input id="txDate" type="date" value="${txDateOnly}"></div>
+      <div class="field"><label>Menu yang dibeli</label><div id="menuLines"></div><button class="btn-soft btn-sm" id="addMenuLine" type="button">+ Tambah Menu</button></div>
       <div class="total-box">
-        <div>
-          <span class="muted">Total belanja</span>
-          <strong id="txTotal" style="display:block">Rp0</strong>
-        </div>
-        <div style="text-align:right">
-          <span class="muted">Poin diperoleh</span>
-          <strong id="txPoints" style="display:block">0</strong>
-        </div>
+        <div><span class="muted">Total belanja</span><strong id="txTotal" style="display:block">Rp0</strong></div>
+        <div style="text-align:right"><span class="muted">Poin diperoleh</span><strong id="txPoints" style="display:block">0</strong></div>
       </div>
-      <p class="muted">Setiap Rp1.000 = 1 poin, dibulatkan ke bawah.</p>
-    `,
-    `<button class="btn-light" id="cancelModal">Batal</button>
-     <button class="btn-primary" id="saveModal">
-       ${tx ? "Simpan Perubahan" : "Simpan Transaksi"}
-     </button>`
+      <p class="muted">Setiap Rp1.000 = 1 poin, dibulatkan ke bawah.</p>`,
+    `<button class="btn-light" id="cancelModal">Batal</button><button class="btn-primary" id="saveModal">${tx ? "Simpan Perubahan" : "Simpan Transaksi"}</button>`
   );
 
-  if (!items.length) {
-    items = [{menuId: state.menus[0]?.id || "", qty: 1}];
-  }
-
+  if (!items.length) items = [{menuId: state.menus[0]?.id || "", qty: 1}];
   const lines = $("menuLines");
 
   function calculate() {
     const total = items.reduce((sum, item) => {
-      const menu = getMenu(item.menuId);
-      return sum + (menu ? menu.price : 0) * Number(item.qty || 0);
+      const menu = getMenu(item.menuId); return sum + (menu ? menu.price : 0) * Number(item.qty || 0);
     }, 0);
-
     $("txTotal").textContent = money(total);
-    $("txPoints").textContent =
-      Math.floor(total / 1000).toLocaleString("id-ID") + " poin";
+    $("txPoints").textContent = Math.floor(total / 1000).toLocaleString("id-ID") + " poin";
   }
 
   function drawLines() {
     lines.innerHTML = items.map((item, index) => `
       <div class="menu-line">
-        <select data-line-menu="${index}">
-          <option value="">Pilih menu</option>
-          ${menuOptions(item.menuId)}
-        </select>
-        <input data-line-qty="${index}" type="number" min="1"
-               value="${Math.max(1, Number(item.qty) || 1)}">
-        <button class="btn-danger" data-remove-line="${index}"
-                ${items.length === 1 ? "disabled" : ""}>×</button>
-      </div>
-    `).join("");
+        <select data-line-menu="${index}"><option value="">Pilih menu</option>${menuOptions(item.menuId)}</select>
+        <input data-line-qty="${index}" type="number" min="1" value="${Math.max(1, Number(item.qty) || 1)}">
+        <button class="btn-danger" data-remove-line="${index}" ${items.length === 1 ? "disabled" : ""}>×</button>
+      </div>`).join("");
 
-    document.querySelectorAll("[data-line-menu]").forEach(select => {
-      select.onchange = () => {
-        items[Number(select.dataset.lineMenu)].menuId = Number(select.value);
-        calculate();
-      };
-    });
-
-    document.querySelectorAll("[data-line-qty]").forEach(input => {
-      input.onchange = () => {
-        items[Number(input.dataset.lineQty)].qty =
-          Math.max(1, Number(input.value) || 1);
-        calculate();
-      };
-    });
-
-    document.querySelectorAll("[data-remove-line]").forEach(button => {
-      button.onclick = () => {
-        if (items.length > 1) {
-          items.splice(Number(button.dataset.removeLine), 1);
-          drawLines();
-        }
-      };
-    });
-
+    document.querySelectorAll("[data-line-menu]").forEach(select => select.onchange = () => { items[Number(select.dataset.lineMenu)].menuId = Number(select.value); calculate(); });
+    document.querySelectorAll("[data-line-qty]").forEach(input => input.onchange = () => { items[Number(input.dataset.lineQty)].qty = Math.max(1, Number(input.value) || 1); calculate(); });
+    document.querySelectorAll("[data-remove-line]").forEach(button => button.onclick = () => { if (items.length > 1) { items.splice(Number(button.dataset.removeLine), 1); drawLines(); } });
     calculate();
   }
 
-  $("addMenuLine").onclick = () => {
-    items.push({menuId: state.menus[0]?.id || "", qty: 1});
-    drawLines();
-  };
-
+  $("addMenuLine").onclick = () => { items.push({menuId: state.menus[0]?.id || "", qty: 1}); drawLines(); };
   $("cancelModal").onclick = closeModal;
   drawLines();
 
   $("saveModal").onclick = () => {
-    if (!items.length || items.some(item =>
-      !getMenu(item.menuId) || Number(item.qty) < 1
-    )) {
-      toast("Pilih menu dan jumlah yang valid.");
-      return;
-    }
-
-    const total = items.reduce((sum, item) =>
-      sum + getMenu(item.menuId).price * Number(item.qty), 0
-    );
-
-    const date = $("txDate").value;
-    if (!date) {
-      toast("Pilih tanggal transaksi.");
-      return;
-    }
+    if (!items.length || items.some(item => !getMenu(item.menuId) || Number(item.qty) < 1)) { toast("Pilih menu dan jumlah yang valid."); return; }
+    
+    // Gabung input date dengan waktu saat ini (agar terbaca di chart harian)
+    const dateInput = $("txDate").value;
+    if (!dateInput) { toast("Pilih tanggal transaksi."); return; }
+    const timeNow = new Date().toISOString().substring(11, 19); 
+    const fullDateToSave = dateInput + "T" + timeNow;
 
     if (tx) {
-      tx.date = date;
+      tx.date = fullDateToSave;
       tx.items = items.map(item => ({...item}));
     } else {
       state.transactions.push({
         id: Math.max(0, ...state.transactions.map(t => t.id)) + 1,
         memberId: Number(memberId),
-        date,
+        date: fullDateToSave,
         items: items.map(item => ({...item}))
       });
     }
 
-    selectedMemberId = Number(memberId);
-    save();
-    closeModal();
-    toast(tx ? "Transaksi diperbarui." : "Transaksi ditambahkan.");
+    selectedMemberId = Number(memberId); save(); closeModal(); toast(tx ? "Transaksi diperbarui." : "Transaksi ditambahkan.");
   };
 }
 
 function deleteTransaction(id) {
-  const tx = getTransaction(id);
-  if (!tx) return;
-
-  if (confirm(
-    `Hapus transaksi tanggal ${fmtDate(tx.date)}? Poin transaksi ini juga akan dihapus.`
-  )) {
-    state.transactions = state.transactions.filter(t => t.id !== id);
-    save();
-    toast("Transaksi dihapus dan poin diperbarui.");
+  const tx = getTransaction(id); if (!tx) return;
+  if (confirm(`Hapus transaksi tanggal ${fmtDate(tx.date)}? Poin transaksi ini juga akan dihapus.`)) {
+    state.transactions = state.transactions.filter(t => t.id !== id); save(); toast("Transaksi dihapus.");
   }
 }
 
 function deleteMember(id) {
-  const member = getMember(id);
-  if (!member) return;
-
-  if (confirm(
-    `Hapus member ${member.name} beserta seluruh riwayat transaksinya?`
-  )) {
+  const member = getMember(id); if (!member) return;
+  if (confirm(`Hapus member ${member.name} beserta seluruh riwayat transaksinya?`)) {
     state.transactions = state.transactions.filter(t => t.memberId !== id);
     state.members = state.members.filter(m => m.id !== id);
-    selectedMemberId = null;
-    save();
-    toast("Member dihapus.");
+    selectedMemberId = null; save(); toast("Member dihapus.");
   }
 }
 
-/* Navigasi */
-document.querySelectorAll("[data-section]").forEach(button => {
-  button.onclick = () => showSection(button.dataset.section);
-});
-
-$("dashCheck").onclick = () => showSection("members");
-$("memberSearch").oninput = renderMemberLists;
-
-$("clearSearch").onclick = () => {
-  $("memberSearch").value = "";
-  renderMemberLists();
-};
-
-$("addMemberBtn").onclick = () => openMemberForm();
-
-/* Simulasi pergantian role */
-$("roleSelect").onchange = event => {
-  role = event.target.value;
-  renderAll();
-  toast("Mode tampilan: " + (role === "admin" ? "Admin" : "Kasir"));
-};
-
-/* Tambah menu: Admin saja */
-$("addMenuBtn").onclick = () => {
-  if (role !== "admin") return;
-
-  openModal(
-    "Tambah Menu",
-    `<div class="field">
-       <label>Nama menu</label>
-       <input id="newMenuName" placeholder="Nama menu">
-     </div>
-     <div class="field">
-       <label>Harga (Rp)</label>
-       <input id="newMenuPrice" type="number" min="0" placeholder="22000">
-     </div>`,
-    `<button class="btn-light" id="cancelModal">Batal</button>
-     <button class="btn-primary" id="saveModal">Tambah Menu</button>`
+// LOGIKA SCANNER QR
+$("scanQrBtn").onclick = () => {
+  openModal("Scan QR Member",
+    `<div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px;"></div>
+     <p class="muted" style="text-align:center">Arahkan kamera ke QR Code pelanggan.</p>`,
+    `<button class="btn-danger" id="closeScan">Tutup Kamera</button>`
   );
 
+  // Beri jeda agar DOM modal siap sebelum merender scanner
+  setTimeout(() => {
+      html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+      html5QrcodeScanner.render((decodedText) => {
+        html5QrcodeScanner.clear();
+        closeModal();
+        
+        // Cari member berdasarkan kode hasil scan
+        const member = state.members.find(m => m.code.toUpperCase() === decodedText.trim().toUpperCase());
+        if (member) {
+           $("memberSearch").value = member.code;
+           renderMemberLists();
+           selectMember(member.id);
+           toast("Member ditemukan!");
+        } else {
+           toast("Member tidak ditemukan (Kode: " + decodedText + ")");
+        }
+      }, (error) => {
+        // Abaikan frame error saat kamera mencari QR
+      });
+  }, 200);
+
+  $("closeScan").onclick = closeModal;
+};
+
+// Navigasi & Setup
+document.querySelectorAll("[data-section]").forEach(button => { button.onclick = () => showSection(button.dataset.section); });
+$("dashCheck").onclick = () => showSection("members");
+$("memberSearch").oninput = renderMemberLists;
+$("clearSearch").onclick = () => { $("memberSearch").value = ""; renderMemberLists(); };
+$("addMemberBtn").onclick = () => openMemberForm();
+$("roleSelect").onchange = event => { role = event.target.value; renderAll(); toast("Mode: " + (role === "admin" ? "Admin" : "Kasir")); };
+
+$("addMenuBtn").onclick = () => {
+  if (role !== "admin") return;
+  openModal(
+    "Tambah Menu",
+    `<div class="field"><label>Nama menu</label><input id="newMenuName" placeholder="Nama menu"></div>
+     <div class="field"><label>Harga (Rp)</label><input id="newMenuPrice" type="number" min="0" placeholder="22000"></div>`,
+    `<button class="btn-light" id="cancelModal">Batal</button><button class="btn-primary" id="saveModal">Tambah Menu</button>`
+  );
   $("cancelModal").onclick = closeModal;
-
   $("saveModal").onclick = () => {
-    const name = $("newMenuName").value.trim();
-    const price = Number($("newMenuPrice").value);
-
-    if (role !== "admin") {
-      toast("Akses ditolak.");
-      return;
-    }
-
-    if (!name || !Number.isFinite(price) || price < 0) {
-      toast("Masukkan nama dan harga yang valid.");
-      return;
-    }
-
-    state.menus.push({
-      id: Math.max(0, ...state.menus.map(m => m.id)) + 1,
-      name,
-      price
-    });
-
-    save();
-    closeModal();
-    toast("Menu ditambahkan.");
+    const name = $("newMenuName").value.trim(); const price = Number($("newMenuPrice").value);
+    if (!name || !Number.isFinite(price) || price < 0) { toast("Masukkan nama dan harga yang valid."); return; }
+    state.menus.push({ id: Math.max(0, ...state.menus.map(m => m.id)) + 1, name, price });
+    save(); closeModal(); toast("Menu ditambahkan.");
   };
 };
 
-/* Simpan promo: Admin saja */
 $("savePromo").onclick = () => {
-  if (role !== "admin") {
-    toast("Akses ditolak.");
-    return;
-  }
-
-  state.promo = {
-    title: $("promoTitle").value.trim() || "Promo PA.YU",
-    subtitle: $("promoSubtitle").value.trim(),
-    image: $("promoImage").value.trim()
-  };
-
-  save();
-  toast("Promo disimpan di browser ini.");
+  if (role !== "admin") { toast("Akses ditolak."); return; }
+  state.promo = { title: $("promoTitle").value.trim() || "Promo PA.YU", subtitle: $("promoSubtitle").value.trim(), image: $("promoImage").value.trim() };
+  save(); toast("Promo disimpan.");
 };
 
-/* Modal */
 $("modalClose").onclick = closeModal;
+$("modalBackdrop").onclick = event => { if (event.target === $("modalBackdrop")) closeModal(); };
+document.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
 
-$("modalBackdrop").onclick = event => {
-  if (event.target === $("modalBackdrop")) closeModal();
-};
-
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape") closeModal();
-});
-
-/* Inisialisasi */
+// Mulai
 renderAll();
 </script>
 </body>
