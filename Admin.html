@@ -72,6 +72,28 @@
     .scan-layout{display:grid;grid-template-columns:minmax(0,1fr) 180px;gap:18px}.scanner-box{min-height:240px;background:#f0f0e8;border:1px dashed #c7cdbf;border-radius:14px;overflow:hidden;display:grid;place-items:center;padding:10px}.scanner-instructions{font-size:11px;color:var(--muted);line-height:1.7}.scanner-instructions strong{display:block;font-size:12px;color:var(--ink);margin-bottom:8px}.scan-manual{display:flex;gap:7px;margin-top:15px}.scan-manual input{min-width:0}.status-line{font-size:11px;color:var(--muted);margin-top:10px;min-height:16px}
     .menu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.menu-card{border:1px solid var(--line);border-radius:15px;background:var(--paper);overflow:hidden}.menu-art{height:120px;background:linear-gradient(135deg,#d9dfd1,#f0e0c1);display:grid;place-items:center;font-size:42px}.menu-info{padding:14px}.menu-info h3{margin:0;font-size:13px}.menu-info p{color:var(--muted);font-size:10px;margin:5px 0 13px;min-height:28px;line-height:1.5}.menu-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}.price{font-size:13px;font-weight:750;color:var(--forest)}.menu-actions{display:flex;gap:5px}
     .promo-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.8fr);gap:20px}.promo-preview{background:#263021;border-radius:18px;overflow:hidden;color:white;min-height:330px;display:flex;flex-direction:column;position:relative}.promo-preview:before,.promo-preview:after{content:"";position:absolute;border-radius:50%;border:1px solid #ffffff2a;width:180px;height:180px;right:-52px;top:-55px}.promo-preview:after{width:230px;height:230px;right:-78px;top:-80px}.promo-top{padding:21px 22px;display:flex;justify-content:space-between;align-items:center;gap:10px;position:relative;z-index:1}.promo-brand{font-family:Georgia,serif;letter-spacing:.09em;font-size:14px}.promo-tag{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#d7ee78}.promo-content{padding:20px 24px 26px;position:relative;z-index:1;margin-top:auto}.promo-content small{letter-spacing:.15em;text-transform:uppercase;color:#d7ee78;font-size:10px}.promo-content h3{font-family:Georgia,serif;font-size:clamp(30px,4vw,43px);line-height:1.02;font-weight:500;margin:10px 0}.promo-content p{color:#d4dfd5;font-size:11px;line-height:1.7;max-width:270px}.promo-code{display:inline-block;border:1px dashed #d7ee78;border-radius:7px;padding:9px 11px;color:#d7ee78;font-size:11px;font-weight:750;letter-spacing:.12em;margin-top:7px}
+    .banner-manager{margin-top:20px}
+    .banner-manager-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:15px}
+    .banner-slot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .banner-slot-card{overflow:hidden;border:1px solid var(--line);border-radius:15px;background:var(--paper);min-width:0}
+    .banner-slot-preview{height:170px;position:relative;display:grid;place-items:center;background:linear-gradient(130deg,#263021,#66784d);overflow:hidden;color:#d7ee78}
+    .banner-slot-preview img{width:100%;height:100%;object-fit:cover;display:block}
+    .banner-slot-placeholder{text-align:center;padding:15px;line-height:1.5}
+    .banner-slot-placeholder span{font-size:28px;display:block;margin-bottom:8px}
+    .banner-slot-placeholder strong{display:block;font-size:12px;letter-spacing:.06em}
+    .banner-slot-placeholder small{display:block;color:#e0e7d8;font-size:10px;margin-top:5px}
+    .banner-slot-status{position:absolute;left:10px;top:10px;background:#263021e8;color:white;border-radius:30px;padding:5px 8px;font-size:9px;font-weight:750}
+    .banner-slot-body{padding:14px}
+    .banner-slot-title{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+    .banner-slot-title h3{font-size:13px;margin:0;line-height:1.4}
+    .banner-slot-title small{color:var(--muted);font-size:10px;display:block;line-height:1.5;margin-top:4px}
+    .banner-slot-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+    .banner-slot-actions .btn{flex:1;white-space:nowrap}
+    .banner-slot-actions label.btn{cursor:pointer}
+    .banner-slot-actions input[type=file]{display:none}
+    .banner-manager-note{padding:13px 14px;background:#f3f1e7;border:1px solid var(--line);border-radius:12px;color:#626a5f;font-size:11px;line-height:1.65;margin-bottom:16px}
+    .banner-file-meta{font-size:10px;color:var(--muted);margin-top:8px;overflow-wrap:anywhere}
+    @media(max-width:760px){.banner-slot-grid{grid-template-columns:1fr}.banner-slot-preview{height:155px}}
     .toast{position:fixed;right:22px;bottom:22px;z-index:100;background:#263021;color:#fff;padding:13px 17px;border-radius:12px;box-shadow:var(--shadow);font-size:12px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.25s;max-width:min(380px,calc(100vw - 35px))}.toast.show{opacity:1;transform:translateY(0)}
     .footer-note{margin-top:24px;text-align:center;color:#93988e;font-size:10px}
     @media(max-width:1100px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid{grid-template-columns:1fr}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -253,16 +275,23 @@
     </section>
 
     <section class="view" id="view-promo">
-      <div class="section-heading"><div><h2>Kelola Promo</h2><p>Ubah teks promo dan lihat pratinjau banner.</p></div><button class="btn secondary" onclick="resetPromo()">Pulihkan default</button></div>
-      <div class="promo-layout"><div class="panel"><div class="panel-head"><div><h2 class="panel-title">Informasi promosi</h2><p class="panel-subtitle">Perubahan langsung terlihat pada preview.</p></div></div><form id="promoForm" class="form-grid">
+      <div class="section-heading"><div><h2>Kelola Promo & Banner</h2><p>Atur teks promosi dan upload gambar untuk setiap area website PA.YU.</p></div><button class="btn secondary" onclick="resetPromo()">Pulihkan teks promo</button></div>
+      <div class="promo-layout"><div class="panel"><div class="panel-head"><div><h2 class="panel-title">Informasi promosi</h2><p class="panel-subtitle">Perubahan teks langsung terlihat pada preview.</p></div></div><form id="promoForm" class="form-grid">
         <div class="field full"><label for="promoTag">Label promo</label><input id="promoTag" maxlength="40" value="SPECIAL OFFER" /></div>
         <div class="field full"><label for="promoTitle">Judul promo</label><input id="promoTitle" maxlength="80" value="Your daily cup of joy." required /></div>
         <div class="field full"><label for="promoDescription">Deskripsi</label><textarea id="promoDescription" maxlength="240">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</textarea></div>
         <div class="field"><label for="promoCode">Kode promo</label><input id="promoCode" maxlength="24" value="PAYUFRIEND" /></div>
         <div class="field"><label for="promoDiscount">Diskon / penawaran</label><input id="promoDiscount" maxlength="32" value="SPECIAL PRICE" /></div>
-        <div class="field full"><button class="btn" type="submit">Simpan promo</button><p class="form-note">Promo disimpan di browser ini. Fitur ini belum mempublikasikan promo ke website atau aplikasi lain.</p></div>
+        <div class="field full"><button class="btn" type="submit">Simpan promo</button><p class="form-note">Teks promo tersimpan pada browser ini. Agar tampil di website publik untuk semua pengunjung, website publik perlu dihubungkan ke penyimpanan/backend yang sama.</p></div>
       </form></div>
-      <div><div class="promo-preview"><div class="promo-top"><div class="promo-brand">PA.YU COFFEE</div><div class="promo-tag" id="previewTag">SPECIAL OFFER</div></div><div class="promo-content"><small id="previewDiscount">SPECIAL PRICE</small><h3 id="previewTitle">Your daily cup of joy.</h3><p id="previewDescription">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</p><span class="promo-code" id="previewCode">PAYUFRIEND</span></div></div><p class="form-note" style="margin-top:12px">Preview banner · Tampilan ini merupakan pratinjau visual untuk admin.</p></div></div>
+      <div><div class="promo-preview"><div class="promo-top"><div class="promo-brand">PA.YU COFFEE</div><div class="promo-tag" id="previewTag">SPECIAL OFFER</div></div><div class="promo-content"><small id="previewDiscount">SPECIAL PRICE</small><h3 id="previewTitle">Your daily cup of joy.</h3><p id="previewDescription">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</p><span class="promo-code" id="previewCode">PAYUFRIEND</span></div></div><p class="form-note" style="margin-top:12px">Pratinjau teks promo. Untuk melihat gambar banner, gunakan slot banner di bawah.</p></div></div>
+
+      <section class="panel banner-manager">
+        <div class="banner-manager-head"><div><h2 class="panel-title">Banner website</h2><p class="panel-subtitle">Upload gambar hanya pada bagian yang ingin diganti.</p></div><button class="btn gold" type="button" onclick="addBannerSlot()">＋ Tambah slot banner</button></div>
+        <div class="banner-manager-note"><strong>Petunjuk:</strong> pilih tombol <b>Upload / Ganti gambar</b> pada slot yang diinginkan. Gambar akan diperkecil otomatis dan pratinjau tersimpan di browser admin. <b>Catatan:</b> perubahan belum otomatis dipublikasikan ke website publik; diperlukan koneksi backend atau mekanisme upload ke server website agar semua pengunjung melihat banner yang baru.</div>
+        <div id="bannerSlotGrid" class="banner-slot-grid"></div>
+        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn secondary" type="button" onclick="exportBannerConfig()">↓ Ekspor konfigurasi banner</button><span class="form-note">Gunakan ekspor untuk memindahkan data banner saat menghubungkan website publik.</span></div>
+      </section>
     </section>
   </main>
 </div>
@@ -339,10 +368,10 @@
       {id:'MENU-004',name:'Matcha Latte',category:'Non-Coffee',price:29000,emoji:'🍵',description:'Matcha pilihan dengan susu'},
       {id:'MENU-005',name:'Chocolate',category:'Non-Coffee',price:27000,emoji:'🧋',description:'Minuman cokelat lembut'},
       {id:'MENU-006',name:'Butter Croissant',category:'Food',price:20000,emoji:'🥐',description:'Pastry renyah dan buttery'}
-    ],pointRate:10000,transactions:[],promo:{tag:'SPECIAL OFFER',title:'Your daily cup of joy.',description:'Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.',code:'PAYUFRIEND',discount:'SPECIAL PRICE'}
+    ],pointRate:10000,transactions:[],bannerSlots:[{id:'hero-main',name:'Banner Utama',description:'Area hero / paling atas halaman utama',recommended:'1920 × 760 px',image:'',fileName:''},{id:'promo-banner',name:'Banner Promo',description:'Area promosi atau campaign terbaru',recommended:'1440 × 600 px',image:'',fileName:''},{id:'menu-banner',name:'Banner Menu',description:'Area pengenalan menu atau katalog',recommended:'1440 × 600 px',image:'',fileName:''},{id:'shop-photo-1',name:'Banner Foto 1',description:'Foto coffeeshop / suasana toko',recommended:'1200 × 800 px',image:'',fileName:''},{id:'shop-photo-2',name:'Banner Foto 2',description:'Foto interior, produk, atau detail toko',recommended:'1200 × 800 px',image:'',fileName:''},{id:'shop-photo-3',name:'Banner Foto 3',description:'Slot foto tambahan untuk website',recommended:'1200 × 800 px',image:'',fileName:''},{id:'shop-photo-4',name:'Banner Foto 4',description:'Slot foto tambahan untuk website',recommended:'1200 × 800 px',image:'',fileName:''}],promo:{tag:'SPECIAL OFFER',title:'Your daily cup of joy.',description:'Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.',code:'PAYUFRIEND',discount:'SPECIAL PRICE'}
   };
   function loadData(){
-    try { const raw=localStorage.getItem(STORAGE_KEY); if(raw){const d=JSON.parse(raw);return {members:Array.isArray(d.members)?d.members:structuredCloneSafe(seed.members),menus:Array.isArray(d.menus)?d.menus:structuredCloneSafe(seed.menus),transactions:Array.isArray(d.transactions)?d.transactions:[],pointRate:Number(d.pointRate)>0?Number(d.pointRate):10000,promo:{...seed.promo,...(d.promo||{})}};}} catch(e){console.warn('Data lokal tidak dapat dibaca:',e)}
+    try { const raw=localStorage.getItem(STORAGE_KEY); if(raw){const d=JSON.parse(raw);return {members:Array.isArray(d.members)?d.members:structuredCloneSafe(seed.members),menus:Array.isArray(d.menus)?d.menus:structuredCloneSafe(seed.menus),transactions:Array.isArray(d.transactions)?d.transactions:[],pointRate:Number(d.pointRate)>0?Number(d.pointRate):10000,promo:{...seed.promo,...(d.promo||{})},bannerSlots:Array.isArray(d.bannerSlots)?d.bannerSlots:structuredCloneSafe(seed.bannerSlots)};}} catch(e){console.warn('Data lokal tidak dapat dibaca:',e)}
     return structuredCloneSafe(seed);
   }
   function structuredCloneSafe(o){return JSON.parse(JSON.stringify(o))}
@@ -618,6 +647,50 @@
   document.getElementById('menuForm').addEventListener('submit',e=>{e.preventDefault();const id=document.getElementById('menuEditId').value;const item={name:document.getElementById('menuName').value.trim(),category:document.getElementById('menuCategory').value,price:Number(document.getElementById('menuPrice').value),emoji:document.getElementById('menuEmoji').value,description:document.getElementById('menuDescription').value.trim()};if(item.price<0||!Number.isFinite(item.price)){notify('Harga menu tidak valid.');return}if(id){const old=data.menus.find(m=>m.id===id);if(old)Object.assign(old,item);notify('Menu berhasil diperbarui.')}else{data.menus.push({...item,id:makeId('MENU')});notify('Menu berhasil ditambahkan.')}saveData();closeModal('menuModal');renderAll()});
   window.deleteMenu=id=>{const m=data.menus.find(x=>x.id===id);if(!m)return;if(!confirm(`Hapus menu ${m.name}?`))return;data.menus=data.menus.filter(x=>x.id!==id);saveData();renderAll();notify('Menu berhasil dihapus.')};
 
+  function renderBannerSlots(){
+    const grid=document.getElementById('bannerSlotGrid');
+    if(!grid)return;
+    if(!Array.isArray(data.bannerSlots))data.bannerSlots=structuredCloneSafe(seed.bannerSlots);
+    grid.innerHTML=data.bannerSlots.map(slot=>{
+      const uploaded=Boolean(slot.image);
+      const preview=uploaded?`<img src="${esc(slot.image)}" alt="Pratinjau ${esc(slot.name)}" loading="lazy" />`:`<div class="banner-slot-placeholder"><span>▧</span><strong>${esc(slot.name)}</strong><small>Belum ada gambar · ${esc(slot.recommended||'Ukuran fleksibel')}</small></div>`;
+      const custom=!seed.bannerSlots.some(base=>base.id===slot.id);
+      const fileName=slot.fileName?`<div class="banner-file-meta">File: ${esc(slot.fileName)}</div>`:'';
+      return `<article class="banner-slot-card"><div class="banner-slot-preview">${preview}<span class="banner-slot-status">${uploaded?'Gambar tersimpan':'Belum diatur'}</span></div><div class="banner-slot-body"><div class="banner-slot-title"><div><h3>${esc(slot.name)}</h3><small>${esc(slot.description||'Slot gambar website')}<br />Rekomendasi: ${esc(slot.recommended||'sesuaikan desain website')}</small></div>${custom?`<button type="button" class="btn danger small" title="Hapus slot" onclick="removeBannerSlot('${esc(slot.id)}')">×</button>`:''}</div>${fileName}<div class="banner-slot-actions"><label class="btn" for="banner-file-${esc(slot.id)}">↑ ${uploaded?'Ganti gambar':'Upload gambar'}</label><input id="banner-file-${esc(slot.id)}" type="file" accept="image/*" data-banner-upload="${esc(slot.id)}" />${uploaded?`<button class="btn secondary" type="button" onclick="downloadBannerImage('${esc(slot.id)}')">Unduh</button><button class="btn danger" type="button" onclick="clearBannerImage('${esc(slot.id)}')">Hapus gambar</button>`:''}</div></div></article>`;
+    }).join('');
+    grid.querySelectorAll('input[data-banner-upload]').forEach(input=>input.addEventListener('change',async e=>{
+      const file=e.target.files&&e.target.files[0];
+      const id=e.target.getAttribute('data-banner-upload');
+      if(file)await saveBannerImage(id,file);
+      e.target.value='';
+    }));
+  }
+  async function saveBannerImage(id,file){
+    const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;
+    if(!file.type||!file.type.startsWith('image/')){notify('Pilih file gambar seperti JPG, PNG, atau WebP.');return}
+    if(file.size>12*1024*1024){notify('Ukuran file maksimal 12 MB sebelum dikompres.');return}
+    const oldImage=slot.image||'';const oldName=slot.fileName||'';
+    try{
+      const objectUrl=URL.createObjectURL(file);
+      const image=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Gambar tidak dapat dibaca.'));img.src=objectUrl});
+      const maxW=1600,maxH=1100,scale=Math.min(1,maxW/image.naturalWidth,maxH/image.naturalHeight);
+      const width=Math.max(1,Math.round(image.naturalWidth*scale)),height=Math.max(1,Math.round(image.naturalHeight*scale));
+      const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+      const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas tidak tersedia.');
+      ctx.fillStyle='#fffef9';ctx.fillRect(0,0,width,height);ctx.drawImage(image,0,0,width,height);
+      URL.revokeObjectURL(objectUrl);
+      const compressed=canvas.toDataURL('image/jpeg',0.78);
+      slot.image=compressed;slot.fileName=file.name;slot.updatedAt=new Date().toISOString();
+      if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}
+      renderBannerSlots();notify(`Banner “${slot.name}” berhasil disimpan di browser ini.`);
+    }catch(err){console.error(err);notify('Gambar gagal diproses. Coba gunakan file JPG, PNG, atau WebP yang lain.');}
+  }
+  window.clearBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;if(!confirm(`Hapus gambar pada ${slot.name}?`))return;const oldImage=slot.image,oldName=slot.fileName;slot.image='';slot.fileName='';delete slot.updatedAt;if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}renderBannerSlots();notify(`Gambar ${slot.name} dihapus dari penyimpanan browser.`)};
+  window.downloadBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image){notify('Slot belum memiliki gambar.');return}const a=document.createElement('a');a.href=slot.image;const base=(slot.name||'banner').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'banner';a.download=`payu-${base}.jpg`;document.body.appendChild(a);a.click();a.remove();};
+  window.addBannerSlot=()=>{const name=prompt('Nama slot banner baru (contoh: Banner Foto 5):');if(!name||!name.trim())return;const clean=name.trim();if(data.bannerSlots.some(s=>s.name.toLowerCase()===clean.toLowerCase())){notify('Nama slot tersebut sudah ada.');return}const id='custom-'+makeId('BANNER').toLowerCase();data.bannerSlots.push({id,name:clean,description:'Slot banner tambahan untuk website',recommended:'sesuaikan desain website',image:'',fileName:''});if(saveData()){renderBannerSlots();notify(`Slot “${clean}” berhasil ditambahkan.`)}};
+  window.removeBannerSlot=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;if(seed.bannerSlots.some(s=>s.id===id)){notify('Slot bawaan tidak dapat dihapus. Hapus gambar saja jika tidak dipakai.');return}if(!confirm(`Hapus slot “${slot.name}” beserta gambar tersimpannya?`))return;data.bannerSlots=data.bannerSlots.filter(s=>s.id!==id);if(saveData()){renderBannerSlots();notify('Slot banner dihapus.')}};
+  window.exportBannerConfig=()=>{const payload={brand:'PA.YU Coffee',exportedAt:new Date().toISOString(),note:'Konfigurasi ini menyimpan gambar sebagai data URL. Website publik harus diintegrasikan untuk menggunakan file ini.',bannerSlots:data.bannerSlots};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='payu-banner-config.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Konfigurasi banner diekspor sebagai JSON.');};
+
   function loadPromoToForm(){const p=data.promo;document.getElementById('promoTag').value=p.tag;document.getElementById('promoTitle').value=p.title;document.getElementById('promoDescription').value=p.description;document.getElementById('promoCode').value=p.code;document.getElementById('promoDiscount').value=p.discount;updatePromoPreview()}
   function updatePromoPreview(){document.getElementById('previewTag').textContent=document.getElementById('promoTag').value||'PROMO';document.getElementById('previewTitle').textContent=document.getElementById('promoTitle').value||'PA.YU Coffee';document.getElementById('previewDescription').textContent=document.getElementById('promoDescription').value||'Nikmati kopi favoritmu bersama PA.YU Coffee.';document.getElementById('previewCode').textContent=document.getElementById('promoCode').value||'PA.YU';document.getElementById('previewDiscount').textContent=document.getElementById('promoDiscount').value||'SPECIAL OFFER'}
   ['promoTag','promoTitle','promoDescription','promoCode','promoDiscount'].forEach(id=>document.getElementById(id).addEventListener('input',updatePromoPreview));
@@ -631,7 +704,7 @@
   window.lookupScannedValue=value=>{const v=String(value||'').trim();if(!v){document.getElementById('scanStatus').textContent='Masukkan ID member terlebih dahulu.';return}const member=data.members.find(m=>m.id.toLowerCase()===v.toLowerCase()||m.phone===v||m.name.toLowerCase()===v.toLowerCase());if(member){document.getElementById('scanStatus').textContent=`Member ditemukan: ${member.name} · ${member.id} · ${number(member.points)} poin.`;document.getElementById('scanManualInput').value=member.id;notify(`Member ditemukan: ${member.name}`);if(scannerPurpose==='transaction'){stopScanner().then(()=>{closeModal('scannerModal');setTransactionMember(member.id);document.getElementById('transactionModal').classList.add('open')});return}stopScanner();if(!document.getElementById('view-members').classList.contains('active'))navigate('members');document.getElementById('memberSearch').value=member.id;renderMembers();openMemberProfile(member.id)}else{document.getElementById('scanStatus').textContent='Member tidak ditemukan. Periksa isi QR atau tambahkan member baru.';notify('ID QR tidak cocok dengan data member.')}};
 
   function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('File CSV berhasil dibuat.')}
-  function renderAll(){data.members.forEach(ensureMemberDefaults);document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();loadPromoToForm();populateTransactionOptions()}
+  function renderAll(){data.members.forEach(ensureMemberDefaults);document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();loadPromoToForm();renderBannerSlots();populateTransactionOptions()}
   // Inisialisasi data awal dan seluruh tampilan.
   renderAll();
 })();
