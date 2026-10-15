@@ -167,8 +167,8 @@
     .stats-chart-select select{padding:9px 11px;min-height:38px}
     .stats-chart-legend{display:flex;align-items:center;gap:7px;margin-top:14px;font-size:10px;color:var(--muted)}
     .stats-chart-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--forest-2);box-shadow:0 0 0 3px #66784d20}
-    .stats-chart-scroll{width:100%;overflow-x:auto;margin-top:2px}
-    #statsLineChart{display:block;width:100%;min-width:620px;height:auto;overflow:visible}
+    .stats-chart-scroll{width:100%;max-width:100%;min-width:0;overflow-x:auto;margin-top:2px}
+    #statsLineChart{display:block;width:100%;max-width:100%;min-width:0;height:auto;overflow:visible}
     .stats-chart-note{font-size:10px;line-height:1.6;color:var(--muted);margin:2px 0 0}
     .chart-grid-line{stroke:#e8e9e0;stroke-width:1}
     .chart-axis-label{fill:#81877c;font-size:11px;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
@@ -250,6 +250,72 @@
       .profile-header{gap:10px;padding:12px;}
       .profile-avatar{width:45px;height:45px;}
       .stats-metric-value{overflow-wrap:anywhere;}
+    }
+    /* Final responsive pass: ensure the page itself fits the phone viewport (not just its input fields). */
+    @media(max-width:760px){
+      html,body{width:100%;max-width:100%;overflow-x:hidden;}
+      .app{display:flex;flex-direction:column;width:100%;max-width:100%;min-width:0;overflow-x:clip;}
+      .sidebar{width:100%;max-width:100%;min-width:0;flex:0 0 auto;overflow:hidden;}
+      .sidebar>div,.brand,.brand>div,.nav,.main,.topbar,.topbar>div,.view,.view.active,
+      .section-heading,.section-heading>div,.welcome,.welcome-copy,.stats,.stat,.dashboard-grid,
+      .panel,.panel-head,.quick-actions,.quick-action,.toolbar,.search,.member-summary,
+      .stats-panel,.stats-filter-tools,.stats-metric-grid,.stats-chart-card,.stats-chart-head,
+      .stats-chart-scroll,.stats-report-grid,.stats-report-panel,.menu-grid,.banner-slot-grid,
+      .promo-layout,.scan-layout{min-width:0;max-width:100%;}
+      .main{width:100%;padding:15px 12px 26px;overflow-x:hidden;}
+      .topbar{width:100%;align-items:flex-start;gap:9px;}
+      .topbar>div:first-child{flex:1 1 auto;min-width:0;}
+      .page-title,.page-subtitle{overflow-wrap:anywhere;}
+      .top-actions{flex:0 0 auto;}
+      .nav{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;}
+      .nav-btn{flex:0 0 auto;max-width:none;}
+      .welcome{width:100%;padding:19px 16px;gap:13px;}
+      .welcome h2{font-size:clamp(22px,6vw,30px);}
+      .welcome p{max-width:100%;overflow-wrap:anywhere;}
+      .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+      .stat{padding:12px;overflow:hidden;}
+      .stat-top{align-items:flex-start;line-height:1.35;}
+      .stat-value{font-size:clamp(18px,5.2vw,23px);white-space:normal;overflow-wrap:anywhere;}
+      .dashboard-grid{grid-template-columns:minmax(0,1fr);}
+      .panel,.stats-panel{padding:13px;border-radius:15px;}
+      .panel-head{gap:9px;}
+      .panel-title,.panel-subtitle{overflow-wrap:anywhere;}
+      .quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));}
+      .quick-action{padding:12px;}
+      .stats-report-grid{grid-template-columns:minmax(0,1fr);}
+      .stats-report-panel{width:100%;padding:12px;}
+      .stats-chart-head{display:flex;flex-direction:column;gap:10px;}
+      .stats-chart-select{width:100%;min-width:0;}
+      .stats-chart-scroll{width:100%;overflow:hidden;}
+      #statsLineChart{width:100%;min-width:0;max-width:100%;}
+      .table-wrap{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;}
+      .table-wrap table{width:100%;}
+      .section-heading{width:100%;align-items:stretch;gap:12px;}
+      .section-heading .btn{max-width:100%;}
+      .toolbar{width:100%;}
+      .toolbar .search{width:100%;max-width:100%;min-width:0;flex:1 1 100%;}
+      .toolbar>.btn{min-width:0;max-width:100%;}
+      .inline-setting{grid-template-columns:minmax(0,1fr);}
+      .menu-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+      .modal-backdrop{width:100%;max-width:100%;}
+      .modal,.modal.wide{width:100%;max-width:100%;}
+    }
+    @media(max-width:390px){
+      .main{padding-left:10px;padding-right:10px;}
+      .topbar{gap:6px;}
+      .avatar{width:34px;height:34px;}
+      .page-title{font-size:22px;}
+      .stats{gap:7px;}
+      .stat{padding:10px;}
+      .stat-icon{width:27px;height:27px;}
+      .stat-top{font-size:10px;}
+      .stat-value{font-size:18px;}
+      .welcome{padding:17px 13px;}
+      .quick-actions{gap:7px;}
+      .quick-action{padding:10px;}
+      .toolbar>.btn{flex:1 1 100%;width:100%;}
+      .member-picker{grid-template-columns:minmax(0,1fr);}
+      .tx-item-row{grid-template-columns:minmax(0,1fr) 60px 30px;}
     }
     @media(prefers-reduced-motion:reduce){.view.active{animation:none}*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;}}
   </style>
@@ -585,7 +651,13 @@
     document.getElementById('statsChartSubtitle').textContent=period==='day'?`${title} berdasarkan jam pada ${formatISODate(day)}.`:period==='month'?`${title} per tanggal selama ${formatMonth(month)}.`:`${title} per bulan selama tahun ${year}.`;
     document.getElementById('statsChartLegend').textContent=legend;
     const dataPoints=buildDashboardChartPoints(period,day,month,year,filtered,metric);
-    const W=960,H=300,left=65,right=22,top=22,bottom=48,plotW=W-left-right,plotH=H-top-bottom;
+    /* Draw to the available width so the dashboard chart does not force mobile pages wider than the screen. */
+    const availableWidth=Math.round(chart.parentElement?.clientWidth || 960);
+    const W=Math.max(300,Math.min(960,availableWidth));
+    const H=W<420?248:W<600?270:300;
+    chart.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const left=W<420?48:W<600?56:65, right=W<420?12:22, top=22, bottom=W<420?42:48;
+    const plotW=W-left-right, plotH=H-top-bottom;
     const values=dataPoints.map(p=>p.value);const maxValue=Math.max(0,...values);const axisMax=maxValue===0?4:maxValue*1.15;const ticks=4;
     const x=i=>left+(dataPoints.length<=1?plotW/2:i*plotW/(dataPoints.length-1));
     const y=v=>top+plotH-(v/axisMax)*plotH;
@@ -645,6 +717,14 @@
   document.getElementById('statsPeriod').addEventListener('change',()=>{const period=document.getElementById('statsPeriod').value;document.getElementById('statsDateWrap').style.display=period==='day'?'grid':'none';document.getElementById('statsMonthWrap').style.display=period==='month'?'grid':'none';document.getElementById('statsYearWrap').style.display=period==='year'?'grid':'none';renderDashboardStats()});
   ['statsDate','statsMonth','statsYear'].forEach(id=>document.getElementById(id).addEventListener('change',renderDashboardStats));
   document.getElementById('statsChartMetric').addEventListener('change',renderDashboardStats);
+  let dashboardResizeTimer=null;
+  window.addEventListener('resize',()=>{
+    if(dashboardResizeTimer)clearTimeout(dashboardResizeTimer);
+    dashboardResizeTimer=setTimeout(()=>{
+      const dashboard=document.getElementById('view-dashboard');
+      if(dashboard?.classList.contains('active'))renderDashboardStats();
+    },140);
+  },{passive:true});
   document.getElementById('statsDate').value=todayISO();document.getElementById('statsMonth').value=todayISO().slice(0,7);document.getElementById('statsYear').value=todayISO().slice(0,4);
   function renderMembers(){
     const q=(document.getElementById('memberSearch').value||'').toLowerCase().trim();const list=data.members.filter(m=>[m.name,m.phone,m.id,m.email].some(v=>String(v||'').toLowerCase().includes(q)));
