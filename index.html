@@ -23,6 +23,101 @@ footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);font-s
 @media(max-width:780px){html{scroll-padding-top:78px}.wrap{width:calc(100% - 30px);max-width:600px}.nav{height:70px}.navlinks{display:none}.nav-right{gap:0}.login-btn{padding:10px 13px;font-size:.86rem}.hero{grid-template-columns:1fr;padding-top:25px;gap:20px}.hero-copy{padding:22px 0 10px}.hero-image{min-height:290px}.hero-image img{width:36%}.hero-tag{bottom:23px;left:24px}.section{padding:48px 0}.section-head{align-items:start;flex-direction:column;gap:12px}.leader-grid{grid-template-columns:1fr;gap:21px}.leader-intro h2 br{display:none}.leader-intro p{max-width:520px}.leader-stats{margin:20px 0 0;max-width:420px}.podium{gap:7px}.podium-card{padding:18px 7px 13px;border-radius:16px}.podium-card.first{padding-top:22px;padding-bottom:18px}.podium-avatar{width:49px;height:49px}.podium-card.first .podium-avatar{width:58px;height:58px}.podium-name{font-size:.78rem}.podium-tier{font-size:.65rem}.podium-score{font-size:.9rem}.podium-card.first .podium-score{font-size:1rem}.podium-medal{width:28px;height:28px;font-size:.8rem}.podium-ribbon{font-size:.56rem;padding:4px 6px}.leaderboard{padding:7px 12px}.leader-row{gap:9px;padding:12px 0;grid-template-columns:30px minmax(0,1fr) auto}.rank{width:28px;height:28px}.person{gap:8px}.person-name{font-size:.82rem}.person-tier{font-size:.68rem}.score{font-size:.81rem}.gallery-grid{grid-template-columns:1fr 1fr}.gallery-card:first-child{grid-column:span 2;min-height:230px}.gallery-card{min-height:190px;padding:17px}.promo-grid,.visit-grid{grid-template-columns:1fr}.footer-row{align-items:start;flex-direction:column}.section{scroll-margin-bottom:110px}main{padding-bottom:92px}.mobile-dock{position:fixed;z-index:30;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));padding:7px 6px calc(7px + env(safe-area-inset-bottom,0px));border:1px solid #ffffff95;border-radius:22px;background:rgba(255,253,249,.68);backdrop-filter:blur(22px) saturate(155%);-webkit-backdrop-filter:blur(22px) saturate(155%);box-shadow:0 10px 35px #2e201b24}.dock-link{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;min-width:0;padding:7px 1px 6px;border-radius:15px;color:#776c60;font-size:.62rem;font-weight:750;line-height:1.1;transition:background .18s,color .18s}.dock-link svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}.dock-link.active{background:#a6282310;color:var(--red)}.dock-link:active{transform:scale(.96)}.modal{padding:12px;align-items:center}.panel{padding:25px 21px;border-radius:21px;width:min(460px,100%);max-height:calc(100dvh - 24px)}.panel h2{font-size:1.75rem}}
 @media(max-width:400px){.wrap{width:calc(100% - 26px)}.brand{font-size:1.25rem}.brand img{width:38px;height:38px}.login-btn{font-size:.8rem;padding:10px 12px}.hero h1{font-size:clamp(2.9rem,13vw,4rem)}.gallery-grid{grid-template-columns:1fr}.gallery-card:first-child{grid-column:auto}.podium{gap:5px}.podium-card{padding-left:4px;padding-right:4px}.podium-name{font-size:.72rem}.podium-score{font-size:.83rem}.podium-card.first .podium-score{font-size:.92rem}.podium-ribbon{letter-spacing:0}.dock-link{font-size:.58rem}.mobile-dock{left:8px;right:8px}.leaderboard{padding-left:10px;padding-right:10px}.person-name{max-width:130px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
+
+/* Refinement pass: understated leaderboard, clearer CTA spacing, and premium member modal. */
+.leader-grid{gap:42px}
+.leader-intro{padding-right:12px}
+.leader-stats{margin:25px 0 0;gap:12px}
+.mini-stat{background:rgba(255,253,249,.58);border:1px solid rgba(255,255,255,.9);border-radius:14px;padding:15px 16px}
+.mini-stat strong{color:var(--green);font-size:1.15rem;letter-spacing:-.035em}
+.mini-stat span{display:block;margin-top:4px}
+.leader-cta-wrap{margin-top:25px;padding-top:20px;border-top:1px solid #d7ccbd;display:grid;gap:12px;max-width:330px}
+.leader-cta-copy{display:grid;gap:3px}
+.leader-cta-copy strong{font-size:.9rem;font-weight:800;letter-spacing:-.015em}
+.leader-cta-copy span{font-size:.8rem;color:var(--muted);line-height:1.55}
+.leader-cta{width:max-content;max-width:100%;margin-top:2px;box-shadow:0 5px 14px #a6282314}
+.podium{align-items:stretch;gap:12px;margin-bottom:17px}
+.podium-card,.podium-card.first,.podium-card.second,.podium-card.third{min-height:218px;padding:20px 12px 17px;background:#fffdf9;border:1px solid #e1d8cb;border-radius:16px;box-shadow:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.podium-card:before,.podium-card.first:before{display:none}
+.podium-card.first{background:#263b2d;border-color:#263b2d;color:#fffdf7;transform:none}
+.podium-medal,.podium-card.first .podium-medal,.podium-card.second .podium-medal,.podium-card.third .podium-medal{width:auto;height:auto;margin:0 auto 13px;display:block;background:none;border-radius:0;box-shadow:none;color:#8b806f;font-size:.64rem;font-weight:850;letter-spacing:.13em}
+.podium-card.first .podium-medal{color:#d7ee78}
+.podium-avatar,.podium-card.first .podium-avatar{width:52px;height:52px;margin:0 auto 11px;border:2px solid #f7f3ec;background:#e8d9c6;color:#394534;box-shadow:none;font-size:.82rem}
+.podium-name{font-size:.88rem;line-height:1.3;max-width:100%;color:var(--ink)}
+.podium-card.first .podium-name{color:#fffdf7}
+.podium-tier{margin-top:4px;font-size:.7rem;color:#898173}
+.podium-card.first .podium-tier{color:#d8dfd2}
+.podium-score,.podium-card.first .podium-score{font-size:1.02rem;font-weight:850;margin-top:auto;padding-top:13px;color:var(--green);letter-spacing:-.025em}
+.podium-card.first .podium-score{color:#d7ee78}
+.podium-ribbon{margin-top:7px;padding:4px 8px;background:#ffffff14;color:#e5e9da;border:1px solid #ffffff28;font-size:.58rem;font-weight:700;letter-spacing:.07em}
+.podium-card:not(.first) .podium-ribbon{background:#edf0e7;color:#53614d;border-color:#dce3d5}
+.leaderboard{background:#fffdf9;border:1px solid #e1d8cb;border-radius:17px;padding:5px 18px;box-shadow:none}
+.leader-row{padding:12px 0;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;border-bottom:1px solid #eee8df}
+.rank{width:auto;height:auto;background:transparent;border-radius:0;color:#8c8173;font-size:.78rem;font-weight:800;font-variant-numeric:tabular-nums}
+.avatar{background:#e9e4d9;color:#52604b;box-shadow:none}
+.score{color:var(--green);font-size:.84rem;font-variant-numeric:tabular-nums}
+.leader-foot{margin:13px 2px 0;color:#81796e}
+/* Member dialog */
+.modal{background:rgba(25,29,23,.68);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:22px;overscroll-behavior:contain}
+.panel{width:min(488px,100%);max-height:min(92dvh,820px);overflow-y:auto;padding:30px 32px 25px;background:#faf8f2;border:1px solid rgba(255,255,255,.74);border-radius:25px;box-shadow:0 34px 100px rgba(10,14,10,.34);isolation:isolate}
+.panel:before{content:"";position:absolute;z-index:-1;left:0;right:0;top:0;height:5px;border-radius:25px 25px 0 0;background:linear-gradient(90deg,#263b2d 0%,#66784d 55%,#d7ee78 100%)}
+.close{right:17px;top:17px;width:37px;height:37px;display:grid;place-items:center;background:#eeece3;color:#55604c;font-size:1.55rem;border:1px solid #e4e2d8;transition:background .18s,transform .18s}
+.close:hover{background:#e1e6d9;transform:rotate(90deg)}
+.auth-brand-row{display:flex;align-items:center;gap:10px;padding:1px 48px 19px 0;border-bottom:1px solid #e7e1d5}
+.auth-brand-logo{width:38px;height:38px;object-fit:cover;border-radius:50%;background:#fff;box-shadow:0 2px 8px #282b2010}
+.auth-brand-wordmark{display:grid;gap:0;line-height:1.1}
+.auth-brand-wordmark strong{font-size:1.1rem;font-weight:950;letter-spacing:-.07em;color:var(--red)}
+.auth-brand-wordmark span{font-size:.55rem;letter-spacing:.14em;color:#81796d;margin-top:4px;font-weight:800}
+.auth-brand-tag{margin-left:auto;align-self:center;font-size:.57rem;letter-spacing:.13em;font-weight:850;color:#66784d;border:1px solid #dce3d3;background:#f0f3e9;padding:6px 8px;border-radius:999px;white-space:nowrap}
+.auth-heading{padding-top:23px}
+.auth-heading .kicker{display:flex;align-items:center;gap:8px;font-size:.63rem;letter-spacing:.17em;color:#66784d}
+.auth-heading-dot{width:7px;height:7px;border-radius:50%;background:#8ea06f;box-shadow:0 0 0 4px #e8edde;display:inline-block}
+.panel h2{font-size:clamp(1.9rem,5vw,2.25rem);line-height:1.05;letter-spacing:-.065em;margin:11px 0 9px;color:#263021}
+.panel #authIntro{font-size:.9rem;line-height:1.65;color:#756f64;margin:0;max-width:380px}
+.auth-tabs{gap:4px;padding:4px;margin:21px 0 19px;background:#e9ecdf;border:1px solid #e0e4d6;border-radius:13px}
+.auth-tab{border-radius:10px;padding:11px 12px;color:#6f7768;font-size:.88rem;font-weight:800;transition:color .18s,background .18s,box-shadow .18s}
+.auth-tab.active{background:#fffdf9;color:#263b2d;box-shadow:0 3px 10px #2630210d;border:1px solid #e9e9df}
+.field{gap:7px;margin:15px 0}
+.field label{font-size:.78rem;letter-spacing:.015em;color:#4d5147;font-weight:800}
+.field input{padding:14px 15px;border:1px solid #dfdccc;border-radius:13px;background:#fffefa;color:#292d25;min-height:50px;transition:border-color .18s,box-shadow .18s}
+.field input::placeholder{color:#aaa395}
+.field input:focus{border-color:#7c8d66;box-shadow:0 0 0 3px #66784d1c}
+.panel .primary{min-height:50px;margin-top:10px;border-radius:13px;border-color:#263b2d;background:#263b2d;color:#fffdf7;box-shadow:0 7px 18px #263b2d20;transition:transform .18s,background .18s}
+.panel .primary:hover{background:#1d3023;transform:translateY(-1px)}
+.message{color:#9e332b;font-size:.8rem;line-height:1.5}
+.auth-note{border-top:1px solid #e7e1d5;padding-top:13px;margin-top:20px!important;color:#8a8377!important;line-height:1.55}
+@media(max-width:780px){
+ .leader-grid{gap:30px}
+ .leader-intro{padding-right:0}
+ .leader-cta-wrap{margin-top:24px;max-width:100%;gap:11px}
+ .podium{gap:8px}
+ .podium-card,.podium-card.first,.podium-card.second,.podium-card.third{min-height:204px;padding:17px 8px 14px;border-radius:14px}
+ .podium-avatar,.podium-card.first .podium-avatar{width:45px;height:45px;font-size:.76rem;margin-bottom:9px}
+ .podium-name{font-size:.75rem;line-height:1.3}
+ .podium-tier{font-size:.63rem}
+ .podium-score,.podium-card.first .podium-score{font-size:.83rem;padding-top:10px}
+ .podium-ribbon{font-size:.53rem;padding:4px 6px;letter-spacing:.025em}
+ .modal{padding:12px;align-items:center}
+ .panel{padding:25px 21px 21px;border-radius:22px;width:min(480px,100%);max-height:calc(100dvh - 24px)}
+ .panel:before{border-radius:22px 22px 0 0}
+ .auth-brand-tag{font-size:.52rem;padding:5px 7px}
+ .auth-brand-logo{width:34px;height:34px}
+ .auth-heading{padding-top:20px}
+ .auth-tabs{margin:18px 0 16px}
+ .auth-note{margin-top:17px!important;padding-top:12px}
+}
+@media(max-width:380px){
+ .leader-grid{gap:26px}
+ .podium{gap:5px}
+ .podium-card,.podium-card.first,.podium-card.second,.podium-card.third{padding-left:5px;padding-right:5px;min-height:194px}
+ .podium-medal,.podium-card.first .podium-medal,.podium-card.second .podium-medal,.podium-card.third .podium-medal{font-size:.56rem;letter-spacing:.07em}
+ .podium-name{font-size:.69rem}
+ .podium-tier{font-size:.59rem}
+ .podium-score,.podium-card.first .podium-score{font-size:.75rem}
+ .auth-brand-tag{display:none}
+ .panel{padding:23px 18px 19px}
+}
+
 </style>
 </head>
 <body>
@@ -34,10 +129,10 @@ footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);font-s
 </div></div></header>
 <main>
 <div class="wrap hero" id="home"><div class="hero-copy"><div class="kicker">Coffee • Friends • Good days</div><h1>Tempat pulang<br>untuk <em>cerita.</em></h1><p>pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.</p><div class="hero-actions"><a class="primary" href="#leaderboard">Lihat leaderboard ↗</a><a class="secondary" href="#visit">Temukan kami</a></div></div><div class="hero-image"><img src="pa-yu-logo.png" alt="Logo pa.yu"><div class="hero-tag">A little pause, a lot of stories.</div></div></div>
-<section class="leader-section section" id="leaderboard"><div class="wrap leader-grid"><div class="leader-intro"><span class="season-label">✳ Member community</span><div class="kicker" style="margin-top:24px">The people of pa.yu</div><h2>Papan poin<br>kerabat.</h2><p>Apresiasi untuk kerabat pa.yu yang aktif. Peringkat diperbarui mengikuti poin membership.</p><div class="leader-stats"><div class="mini-stat"><strong>Top 8</strong><span>Kerabat unggulan</span></div><div class="mini-stat"><strong>Rewards</strong><span>Poin jadi benefit</span></div></div><a class="primary" href="#" onclick="openLogin();return false">Masuk sebagai member ↗</a></div><div class="leaderboard-wrap"><div class="section-topline"><strong>Top kerabat</strong><span class="period-chip">✦ Periode berjalan</span></div>
+<section class="leader-section section" id="leaderboard"><div class="wrap leader-grid"><div class="leader-intro"><span class="season-label">✳ Member community</span><div class="kicker" style="margin-top:24px">The people of pa.yu</div><h2>Papan poin<br>kerabat.</h2><p>Apresiasi untuk kerabat pa.yu yang aktif. Peringkat diperbarui mengikuti poin membership.</p><div class="leader-stats"><div class="mini-stat"><strong>Top 8</strong><span>Kerabat unggulan</span></div><div class="mini-stat"><strong>Rewards</strong><span>Poin jadi benefit</span></div></div><div class="leader-cta-wrap"><div class="leader-cta-copy"><strong>Sudah menjadi kerabat?</strong><span>Lihat poin dan benefit membership kamu.</span></div><a class="primary leader-cta" href="#" onclick="openLogin();return false">Masuk sebagai member <span aria-hidden="true">↗</span></a></div></div><div class="leaderboard-wrap"><div class="section-topline"><strong>Top kerabat</strong><span class="period-chip">✦ Periode berjalan</span></div>
 <div class="podium" aria-label="Tiga member dengan poin tertinggi">
 <article class="podium-card second"><div class="podium-medal">2</div><div class="podium-avatar">AS</div><div class="podium-name">Arya Salim</div><div class="podium-tier">Silver member</div><div class="podium-score">960 pts</div></article>
-<article class="podium-card first"><div class="podium-medal">★</div><div class="podium-avatar">GF</div><div class="podium-name">Gusti Faraz</div><div class="podium-tier">Gold member</div><div class="podium-score">1.280 pts</div><span class="podium-ribbon">Top kerabat</span></article>
+<article class="podium-card first"><div class="podium-medal">01 / RANK</div><div class="podium-avatar">GF</div><div class="podium-name">Gusti Faraz</div><div class="podium-tier">Gold member</div><div class="podium-score">1.280 pts</div><span class="podium-ribbon">Peringkat tertinggi</span></article>
 <article class="podium-card third"><div class="podium-medal">3</div><div class="podium-avatar">AM</div><div class="podium-name">Aman Naja</div><div class="podium-tier">Silver member</div><div class="podium-score">825 pts</div></article>
 </div>
 <div class="leaderboard" aria-label="Peringkat member lainnya">
@@ -59,10 +154,10 @@ footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);font-s
 <a class="dock-link" href="#promo" aria-label="Promo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 0 6.5 10H7v4h-.5A2.5 2.5 0 0 0 4 16.5V19h16v-2.5a2.5 2.5 0 0 0-2.5-2.5H17v-4h.5A2.5 2.5 0 0 0 20 7.5V5H4z"/><path d="m9 9 6 6M15 9h.01M9 15h.01"/></svg><span>Promo</span></a>
 <a class="dock-link" href="#visit" aria-label="Alamat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Alamat</span></a>
 </nav>
-<div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle" aria-hidden="true"><div class="panel"><button class="close" onclick="closeLogin()" aria-label="Tutup dialog">×</button><div class="kicker">Welcome, kerabat.</div><h2 id="loginTitle">Member pa.yu</h2><p id="authIntro">Masuk untuk melihat profil, poin, peringkat, dan benefit membership kamu.</p><div class="auth-tabs" role="tablist" aria-label="Pilih login atau daftar"><button class="auth-tab active" id="loginTab" role="tab" aria-selected="true" onclick="switchAuth('login')">Masuk</button><button class="auth-tab" id="registerTab" role="tab" aria-selected="false" onclick="switchAuth('register')">Daftar member</button></div>
+<div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle" aria-hidden="true"><div class="panel"><button class="close" onclick="closeLogin()" aria-label="Tutup dialog">×</button><div class="auth-brand-row"><img src="pa-yu-logo.png" alt="" class="auth-brand-logo"><div class="auth-brand-wordmark"><strong>pa.yu</strong><span>COFFEE · COMMUNITY</span></div><span class="auth-brand-tag">MEMBER SPACE</span></div><div class="auth-heading"><div class="kicker"><span class="auth-heading-dot"></span> WELCOME, KERABAT</div><h2 id="loginTitle">Member pa.yu</h2><p id="authIntro">Masuk untuk melihat profil, poin, peringkat, dan benefit membership kamu.</p></div><div class="auth-tabs" role="tablist" aria-label="Pilih login atau daftar"><button class="auth-tab active" id="loginTab" role="tab" aria-selected="true" onclick="switchAuth('login')">Masuk</button><button class="auth-tab" id="registerTab" role="tab" aria-selected="false" onclick="switchAuth('register')">Daftar member</button></div>
 <form id="loginForm" class="auth-view"><div class="field"><label for="loginId">Email atau ID member</label><input id="loginId" name="loginId" autocomplete="username" required placeholder="Email / ID member"></div><div class="field"><label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button class="primary" type="submit">Masuk ke akun ↗</button><div class="message" id="loginMessage" aria-live="polite"></div></form>
 <form id="registerForm" class="auth-view" hidden><div class="field"><label for="fullName">Nama lengkap</label><input id="fullName" name="fullName" autocomplete="name" required placeholder="Nama sesuai identitas"></div><div class="field"><label for="registerPhone">Nomor HP</label><input id="registerPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required placeholder="08xxxxxxxxxx"></div><div class="field"><label for="registerEmail">Email</label><input id="registerEmail" name="email" type="email" autocomplete="email" required placeholder="nama@email.com"></div><div class="field"><label for="registerPassword">Buat password</label><input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="Minimal 8 karakter"></div><div class="field"><label for="confirmPassword">Konfirmasi password</label><input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Ulangi password"></div><button class="primary" type="submit">Buat akun member ↗</button><div class="message" id="registerMessage" aria-live="polite"></div></form>
-<p class="note">Saat ini login dan pendaftaran masih berupa prototype antarmuka. Akun, autentikasi, dan data pribadi member belum tersimpan di server. Jangan gunakan password asli sampai backend dan database PA.YU terhubung.</p></div></div>
+<p class="note auth-note">Saat ini login dan pendaftaran masih berupa prototype antarmuka. Akun, autentikasi, dan data pribadi member belum tersimpan di server. Jangan gunakan password asli sampai backend dan database PA.YU terhubung.</p></div></div>
 <script>
 const modal=document.getElementById('loginModal');
 const loginForm=document.getElementById('loginForm');
