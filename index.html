@@ -452,7 +452,12 @@ adminLoginForm.addEventListener('submit',e=>{
   e.preventDefault();
   const role=document.getElementById('adminRole').value;
   if(!role){document.getElementById('adminMessage').textContent='Pilih jabatan terlebih dahulu.';return;}
-  window.location.href='admin.html?role='+encodeURIComponent(role);
+  // Hapus sesi demo lama agar pilihan Akses Admin selalu meminta login ulang.
+  try { sessionStorage.removeItem('payu_admin_demo_session_v1'); } catch (_) {}
+  const target = new URL('admin.html', window.location.href);
+  target.searchParams.set('role', role);
+  target.searchParams.set('login', 'required');
+  window.location.assign(target.href);
 });
 document.getElementById('year').textContent=new Date().getFullYear();
 const dockLinks=[...document.querySelectorAll('.dock-link')];
