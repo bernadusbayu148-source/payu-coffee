@@ -359,7 +359,7 @@
       <button class="admin-login-submit" type="submit">Masuk ke Admin ↗</button>
       <div class="admin-login-error" id="adminGateError" aria-live="polite"></div>
     </form>
-    <p class="admin-login-foot">Untuk kembali ke website utama, buka index.html. Sesi dashboard demo berakhir saat Anda memilih Keluar atau menutup tab ini.</p>
+    <p class="admin-login-foot">Untuk kembali ke website utama, buka index.html. Login demo akan diminta kembali setiap kali halaman Admin dibuka atau dimuat ulang.</p>
   </section>
 </div>
 
@@ -941,11 +941,11 @@
     const user = document.getElementById('gateUsername');
     if (user) user.focus({ preventScroll:true });
   }
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
-    if (saved && saved.authenticated === true && roleNames[saved.role]) showDashboard(saved);
-    else showLogin();
-  } catch (_) { showLogin(); }
+  // Selalu tampilkan gerbang login setiap kali admin.html dimuat.
+  // Ini mencegah sesi demo lama di sessionStorage melewati layar login.
+  // Setelah login berhasil, dashboard tampil sampai halaman dimuat ulang/ditutup.
+  try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+  showLogin();
 
   form.addEventListener('submit', event => {
     event.preventDefault();
