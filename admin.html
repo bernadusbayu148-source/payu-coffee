@@ -28,6 +28,21 @@
     .nav-btn .nav-icon{width:22px;font-size:17px;text-align:center}
     .nav-btn:hover,.nav-btn.active{background:#ffffff17;color:#fff}
     .nav-btn.active{box-shadow:inset 3px 0 var(--gold)}
+    .nav-btn[hidden]{display:none!important}
+    .role-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+    .role-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+    .role-table-wrap{width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+    .role-table{width:100%;min-width:760px;border-collapse:collapse}
+    .role-table td,.role-table th{padding:13px 14px;border-bottom:1px solid #efeee7;font-size:12px;text-align:left;vertical-align:middle}
+    .role-table th{background:#f8f7f0;color:var(--muted);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+    .role-table tbody tr:last-child td{border-bottom:0}
+    .role-account-name{font-weight:750;color:var(--ink)}.role-account-user{font-size:11px;color:var(--muted);margin-top:3px}
+    .role-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .role-status{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:100px;font-size:10px;font-weight:700;background:#e7f2e6;color:#376548;white-space:nowrap}
+    .role-status.off{background:#f5e8e3;color:#9d4c3b}
+    .role-help{border:1px solid #e8dcc5;background:#fbf5e8;border-radius:13px;padding:13px 15px;color:#75644b;font-size:11px;line-height:1.65;margin-bottom:17px}
+    .role-modal-note{font-size:11px;color:var(--muted);line-height:1.6;margin:0}
+    @media(max-width:760px){.role-summary{grid-template-columns:1fr 1fr}.role-table td,.role-table th{padding:11px 10px}}
     .sidebar-bottom{margin-top:auto;border-top:1px solid #ffffff20;padding:17px 9px 0;color:#bfccbf;font-size:11px;line-height:1.7}
     .sidebar-bottom strong{display:block;color:#fff;font-size:12px}
     .main{min-width:0;padding:28px clamp(16px,3vw,42px) 40px}
@@ -377,6 +392,7 @@
         <button class="nav-btn" data-view="transactions"><span class="nav-icon">▤</span> Transaksi</button>
         <button class="nav-btn" data-view="menu"><span class="nav-icon">☕</span> Menu & Harga</button>
         <button class="nav-btn" data-view="promo"><span class="nav-icon">✦</span> Promo</button>
+        <button class="nav-btn" data-view="roles" id="rolesNavBtn" hidden><span class="nav-icon">♙</span> Role</button>
       </nav>
     </div>
     <div class="sidebar-bottom"><strong>PA.YU Coffee Admin</strong>Kelola member, transaksi, poin, dan promosi.<br />Data tersimpan di browser ini.</div>
@@ -474,8 +490,33 @@
         <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn secondary" type="button" onclick="exportBannerConfig()">↓ Ekspor konfigurasi banner</button><span class="form-note">Gunakan ekspor untuk memindahkan data banner saat menghubungkan website publik.</span></div>
       </section>
     </section>
+
+    <section class="view" id="view-roles">
+      <div class="section-heading"><div><h2>Pengaturan Role</h2><p>Kelola akun Master, Owner, Admin, dan tim kasir PA.YU.</p></div></div>
+      <div class="role-help"><strong>Pengelolaan akun demo.</strong> Perubahan username, password, dan status disimpan di browser ini. Untuk penggunaan nyata, autentikasi harus dipindahkan ke backend PHP/MySQL Rumahweb. Akun Master utama tidak dapat dihapus agar akses pengelolaan tetap tersedia.</div>
+      <div class="role-summary">
+        <article class="mini-stat"><span>Total akun role</span><strong id="roleCount">0</strong></article>
+        <article class="mini-stat"><span>Akun aktif</span><strong id="roleActiveCount">0</strong></article>
+        <article class="mini-stat"><span>Akun nonaktif</span><strong id="roleInactiveCount">0</strong></article>
+      </div>
+      <div class="panel">
+        <div class="role-toolbar"><div><h3 class="panel-title">Data akun role</h3><p class="panel-subtitle">Tambah akun baru, ubah username/password, atau nonaktifkan akun.</p></div><button class="btn" type="button" onclick="openRoleAccountModal()">＋ Tambah Role</button></div>
+        <div class="role-table-wrap"><table class="role-table"><thead><tr><th>Nama akun</th><th>Role</th><th>Username</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="roleAccountsBody"></tbody></table></div>
+        <p class="form-note" style="margin:12px 0 0">Akun yang dinonaktifkan tidak dapat login. Password ditampilkan sebagai titik dan tidak pernah ditampilkan kembali saat mengedit.</p>
+      </div>
+    </section>
   </main>
 </div>
+
+<!-- Modal pengaturan role -->
+<div class="modal-backdrop" id="roleAccountModal" role="dialog" aria-modal="true" aria-labelledby="roleAccountModalTitle"><div class="modal"><div class="modal-head"><div><h3 id="roleAccountModalTitle">Tambah akun role</h3><p>Atur nama akun, role, username, dan password login.</p></div><button class="close-btn" type="button" onclick="closeModal('roleAccountModal')" aria-label="Tutup">×</button></div><form id="roleAccountForm" class="form-grid"><input type="hidden" id="roleAccountId" />
+  <div class="field full"><label for="roleAccountName">Nama akun / nama petugas *</label><input id="roleAccountName" required maxlength="80" placeholder="Contoh: Kasir Pagi" /></div>
+  <div class="field"><label for="roleAccountType">Jenis role *</label><select id="roleAccountType" required><option value="master">Master</option><option value="owner">Owner</option><option value="admin">Admin</option><option value="kasir_satu">Kasir satu</option><option value="kasir_dua">Kasir dua</option></select></div>
+  <div class="field"><label for="roleAccountUsername">Username *</label><input id="roleAccountUsername" required maxlength="40" autocapitalize="none" autocomplete="off" placeholder="Username login" /></div>
+  <div class="field full"><label for="roleAccountPassword">Password <span id="rolePasswordRequiredNote">*</span></label><input id="roleAccountPassword" type="password" minlength="8" autocomplete="new-password" placeholder="Minimal 8 karakter" /><p class="role-modal-note" id="rolePasswordHelp">Password disimpan untuk demo pada browser ini. Gunakan backend aman sebelum rilis publik.</p></div>
+  <div class="field full"><label style="display:flex;align-items:center;gap:9px;font-weight:650"><input id="roleAccountActive" type="checkbox" checked style="width:auto;min-height:auto" /> Akun aktif dan dapat login</label></div>
+  <div class="field full"><div class="modal-footer"><button type="button" class="btn secondary" onclick="closeModal('roleAccountModal')">Batal</button><button type="submit" class="btn">Simpan akun</button></div></div>
+</form></div></div>
 
 <!-- Modal member -->
 <div class="modal-backdrop" id="memberModal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle"><div class="modal"><div class="modal-head"><div><h3 id="memberModalTitle">Tambah member</h3><p>Isi informasi pelanggan untuk membuat kartu member.</p></div><button class="close-btn" onclick="closeModal('memberModal')" aria-label="Tutup">×</button></div><form id="memberForm" class="form-grid"><input type="hidden" id="memberEditId" />
@@ -527,7 +568,8 @@
     members:['Loyalty program','Data Member','Kelola data pelanggan dan poin loyalitas.'],
     transactions:['Operasional toko','Transaksi','Riwayat pembelian dan poin member.'],
     menu:['Katalog produk','Menu & Harga','Kelola daftar menu dan harga jual.'],
-    promo:['Marketing','Promo','Atur konten promosi PA.YU Coffee.']
+    promo:['Marketing','Promo','Atur konten promosi PA.YU Coffee.'],
+    roles:['Akses & keamanan','Role','Kelola username, password, dan status akun tim PA.YU.']
   };
   const todayISO = () => new Date().toISOString().slice(0,10);
   const dateTime = () => new Date().toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -564,10 +606,11 @@
   window.closeModal = id => document.getElementById(id)?.classList.remove('open');
   window.navigate = view => {
     if(!PAGE_INFO[view]) return;
+    if(view==='roles' && !window.payuAdminCanManageRoles){notify('Menu Role hanya tersedia untuk Master dan Owner.');return;}
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
     document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));
     const [eye,title,sub]=PAGE_INFO[view];document.getElementById('pageEyebrow').textContent=eye;document.getElementById('pageTitle').textContent=title;document.getElementById('pageSubtitle').textContent=sub;
-    if(view==='members')renderMembers();if(view==='transactions')renderTransactions();if(view==='menu')renderMenu();if(view==='dashboard')renderDashboard();
+    if(view==='members')renderMembers();if(view==='transactions')renderTransactions();if(view==='menu')renderMenu();if(view==='dashboard')renderDashboard();if(view==='roles'&&window.renderRoleAccounts)window.renderRoleAccounts();
     window.scrollTo({top:0,behavior:'smooth'});
   };
   document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.view)));
@@ -908,76 +951,203 @@
 <script id="payu-admin-auth-script">
 (() => {
   'use strict';
-  /* DEMO ONLY. Static HTML on GitHub Pages cannot securely authenticate users.
-     Move credential verification to a server-side PHP endpoint before production. */
-  const SESSION_KEY = 'payu_admin_demo_session_v1';
-  const DEMO_MASTER_USERNAME = 'master';
-  const DEMO_MASTER_PASSWORD = 'PAyuMaster2026!';
+  /* DEMO ONLY: browser storage is not secure authentication. Move all credential checks to PHP/MySQL before production. */
+  const SESSION_KEY = 'payu_admin_demo_session_v2';
+  const ROLE_STORAGE_KEY = 'payu_admin_role_accounts_v1';
   const roleNames = { master:'Master', owner:'Owner', admin:'Admin', kasir_satu:'Kasir satu', kasir_dua:'Kasir dua' };
   const gate = document.getElementById('adminLoginGate');
   const app = document.querySelector('.app');
   const form = document.getElementById('adminGateForm');
   const roleSelect = document.getElementById('gateRole');
   const error = document.getElementById('adminGateError');
+  const navRoles = document.getElementById('rolesNavBtn');
   const query = new URLSearchParams(window.location.search);
   const requestedRole = query.get('role');
   if (requestedRole && roleNames[requestedRole]) roleSelect.value = requestedRole;
 
-  function showDashboard(session) {
-    gate.style.display = 'none';
+  const seedAccounts = [
+    {id:'role-master-primary',name:'Akun Master',role:'master',username:'master',password:'PAyuMaster2026!',active:true,protectedAccount:true,createdAt:Date.now()},
+    {id:'role-owner-primary',name:'Akun Owner',role:'owner',username:'owner',password:'PAyuOwner2026!',active:true,protectedAccount:false,createdAt:Date.now()},
+    {id:'role-admin-primary',name:'Akun Admin',role:'admin',username:'admin',password:'',active:false,protectedAccount:false,createdAt:Date.now()},
+    {id:'role-kasir-one-primary',name:'Akun Kasir Satu',role:'kasir_satu',username:'kasir1',password:'',active:false,protectedAccount:false,createdAt:Date.now()},
+    {id:'role-kasir-two-primary',name:'Akun Kasir Dua',role:'kasir_dua',username:'kasir2',password:'',active:false,protectedAccount:false,createdAt:Date.now()}
+  ];
+  function safeClone(value){return JSON.parse(JSON.stringify(value))}
+  function loadAccounts(){
+    try {
+      const raw=localStorage.getItem(ROLE_STORAGE_KEY);
+      if(raw){
+        const parsed=JSON.parse(raw);
+        if(Array.isArray(parsed) && parsed.length){
+          // Keep a protected Master recovery account present even if old demo data is incomplete.
+          if(!parsed.some(a=>a.id==='role-master-primary')) parsed.unshift(safeClone(seedAccounts[0]));
+          return parsed.map(a=>({...a, role:roleNames[a.role]?a.role:'admin', username:String(a.username||''), password:String(a.password||''), active:Boolean(a.active)}));
+        }
+      }
+    } catch(e){ console.warn('Data role tidak dapat dibaca:',e); }
+    const initial=safeClone(seedAccounts); saveAccounts(initial); return initial;
+  }
+  let accounts=loadAccounts();
+  let currentSession=null;
+  let activeEditId=null;
+  function saveAccounts(next=accounts){
+    try{localStorage.setItem(ROLE_STORAGE_KEY,JSON.stringify(next));return true}
+    catch(e){console.error(e);notifySafe('Akun role gagal disimpan. Periksa penyimpanan browser.');return false}
+  }
+  function notifySafe(message){const el=document.getElementById('toast');if(el){el.textContent=message;el.classList.add('show');window.setTimeout(()=>el.classList.remove('show'),3200)}else console.info(message)}
+  function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function initials(value){return String(value||'PA').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()}
+  function canManageRoles(role){return role==='master'||role==='owner'}
+  function updateGateRoles(){
+    const selected=roleSelect.value;
+    roleSelect.innerHTML=Object.entries(roleNames).map(([value,label])=>`<option value="${value}">${label}</option>`).join('');
+    roleSelect.value=roleNames[selected]?selected:(requestedRole&&roleNames[requestedRole]?requestedRole:'master');
+  }
+  function showDashboard(session){
+    currentSession=session;
+    gate.style.display='none';
+    app.style.display='';
     app.classList.add('admin-authenticated');
-    const role = session?.role || 'master';
-    const roleLabel = roleNames[role] || 'Master';
-    const roleChip = document.getElementById('adminSessionRole');
-    if (roleChip) roleChip.textContent = roleLabel;
-    const avatar = document.querySelector('.top-actions .avatar');
-    if (avatar) { avatar.textContent = role === 'master' ? 'MA' : roleLabel.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase(); avatar.title = roleLabel; }
+    const role=session.role;
+    const roleLabel=roleNames[role]||role;
+    const roleChip=document.getElementById('adminSessionRole');
+    if(roleChip)roleChip.textContent=roleLabel;
+    const avatar=document.querySelector('.top-actions .avatar');
+    if(avatar){avatar.textContent=initials(session.accountName||roleLabel);avatar.title=`${session.accountName||roleLabel} · ${roleLabel}`}
+    window.payuAdminCanManageRoles=canManageRoles(role);
+    if(navRoles)navRoles.hidden=!window.payuAdminCanManageRoles;
+    // If an existing view was Role but the current account lacks access, return to Dashboard.
+    if(!window.payuAdminCanManageRoles && document.getElementById('view-roles')?.classList.contains('active')) window.navigate('dashboard');
+    if(window.payuAdminCanManageRoles && typeof window.renderRoleAccounts==='function') window.renderRoleAccounts();
   }
-  function showLogin(message='') {
+  function showLogin(message=''){
+    currentSession=null;
+    window.payuAdminCanManageRoles=false;
+    if(navRoles)navRoles.hidden=true;
     app.classList.remove('admin-authenticated');
-    app.style.display = 'none';
-    gate.style.display = 'grid';
-    error.textContent = message;
-    const user = document.getElementById('gateUsername');
-    if (user) user.focus({ preventScroll:true });
+    app.style.display='none';
+    gate.style.display='grid';
+    error.textContent=message;
+    const user=document.getElementById('gateUsername');
+    if(user)user.focus({preventScroll:true});
   }
-  // Selalu tampilkan gerbang login setiap kali admin.html dimuat.
-  // Ini mencegah sesi demo lama di sessionStorage melewati layar login.
-  // Setelah login berhasil, dashboard tampil sampai halaman dimuat ulang/ditutup.
-  try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
-  showLogin();
-
-  form.addEventListener('submit', event => {
+  function uniqueUsername(username, exceptId=null){
+    return !accounts.some(a=>a.id!==exceptId&&a.username.toLowerCase()===username.toLowerCase());
+  }
+  function makeId(){return 'role-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}
+  function countLabel(role){return roleNames[role]||role}
+  function renderRoleAccounts(){
+    const tbody=document.getElementById('roleAccountsBody');
+    if(!tbody)return;
+    const roleCount=document.getElementById('roleCount');
+    const activeCount=document.getElementById('roleActiveCount');
+    const inactiveCount=document.getElementById('roleInactiveCount');
+    if(roleCount)roleCount.textContent=accounts.length;
+    if(activeCount)activeCount.textContent=accounts.filter(a=>a.active&&a.password).length;
+    if(inactiveCount)inactiveCount.textContent=accounts.filter(a=>!a.active||!a.password).length;
+    if(!accounts.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty">Belum ada akun role.</div></td></tr>';return}
+    tbody.innerHTML=accounts.map(a=>{
+      const active=Boolean(a.active&&a.password);
+      const isCurrent=Boolean(currentSession&&currentSession.accountId===a.id);
+      const isProtected=Boolean(a.protectedAccount);
+      return `<tr>
+        <td><div class="role-account-name">${esc(a.name||countLabel(a.role))}${isCurrent?' <span class="pill">Akun aktif</span>':''}</div><div class="role-account-user">${isProtected?'Akun Master utama':''}</div></td>
+        <td><span class="pill">${esc(countLabel(a.role))}</span></td>
+        <td><strong>${esc(a.username)}</strong><div class="role-account-user">Password: ••••••••</div></td>
+        <td><span class="role-status ${active?'':'off'}">${active?'Aktif':'Nonaktif'}</span></td>
+        <td><div class="role-actions"><button class="btn secondary small" type="button" onclick="window.editRoleAccount('${esc(a.id)}')">Edit</button>${isProtected?'<button class="btn secondary small" type="button" disabled title="Akun Master utama tidak dapat dihapus">Dilindungi</button>':`<button class="btn danger small" type="button" onclick="window.deleteRoleAccount('${esc(a.id)}')">Hapus</button>`}</div></td>
+      </tr>`;
+    }).join('');
+  }
+  window.renderRoleAccounts=renderRoleAccounts;
+  function openRoleAccountModal(id=null){
+    if(!window.payuAdminCanManageRoles){notifySafe('Menu Role hanya tersedia untuk Master dan Owner.');return}
+    activeEditId=id;
+    const account=id?accounts.find(a=>a.id===id):null;
+    document.getElementById('roleAccountForm').reset();
+    document.getElementById('roleAccountId').value=id||'';
+    document.getElementById('roleAccountModalTitle').textContent=account?'Edit akun role':'Tambah akun role';
+    document.getElementById('roleAccountName').value=account?.name||'';
+    document.getElementById('roleAccountType').value=account?.role||'admin';
+    document.getElementById('roleAccountUsername').value=account?.username||'';
+    document.getElementById('roleAccountPassword').value='';
+    document.getElementById('roleAccountPassword').required=!account;
+    document.getElementById('rolePasswordRequiredNote').textContent=account?'(kosongkan jika tidak diganti)':'*';
+    document.getElementById('rolePasswordHelp').textContent=account?'Isi hanya jika ingin mengubah password. Password lama tidak ditampilkan. Minimal 8 karakter jika diubah.':'Buat password minimal 8 karakter. Password akun demo disimpan di browser ini.';
+    document.getElementById('roleAccountActive').checked=account?Boolean(account.active):true;
+    document.getElementById('roleAccountModal').classList.add('open');
+  }
+  window.openRoleAccountModal=openRoleAccountModal;
+  window.editRoleAccount=id=>openRoleAccountModal(id);
+  window.deleteRoleAccount=id=>{
+    if(!window.payuAdminCanManageRoles){notifySafe('Hanya Master dan Owner yang dapat mengelola role.');return}
+    const account=accounts.find(a=>a.id===id);if(!account)return;
+    if(account.protectedAccount||account.id==='role-master-primary'){notifySafe('Akun Master utama tidak dapat dihapus.');return}
+    if(currentSession&&currentSession.accountId===id){notifySafe('Anda tidak dapat menghapus akun yang sedang digunakan.');return}
+    if(!confirm(`Hapus akun ${account.name||account.username} (${countLabel(account.role)})? Akun ini tidak bisa digunakan untuk login lagi.`))return;
+    accounts=accounts.filter(a=>a.id!==id);
+    if(saveAccounts()){
+      renderRoleAccounts();updateGateRoles();notifySafe('Akun role berhasil dihapus.');
+    }
+  };
+  document.getElementById('roleAccountForm').addEventListener('submit',event=>{
     event.preventDefault();
-    const role = roleSelect.value;
-    const username = document.getElementById('gateUsername').value.trim();
-    const password = document.getElementById('gatePassword').value;
-    if (role !== 'master') {
-      error.textContent = `Akun untuk role ${roleNames[role] || role} belum dikonfigurasi. Untuk sementara, gunakan akun demo Master.`;
-      return;
+    if(!window.payuAdminCanManageRoles){notifySafe('Hanya Master dan Owner yang dapat mengelola role.');return}
+    const id=document.getElementById('roleAccountId').value||null;
+    const name=document.getElementById('roleAccountName').value.trim();
+    const role=document.getElementById('roleAccountType').value;
+    const username=document.getElementById('roleAccountUsername').value.trim();
+    const password=document.getElementById('roleAccountPassword').value;
+    const active=document.getElementById('roleAccountActive').checked;
+    const existing=id?accounts.find(a=>a.id===id):null;
+    if(!name||!username){notifySafe('Nama akun dan username wajib diisi.');return}
+    if(!roleNames[role]){notifySafe('Pilih jenis role yang tersedia.');return}
+    if(!uniqueUsername(username,id)){notifySafe('Username sudah digunakan akun lain. Gunakan username yang berbeda.');return}
+    if(!existing&&!password){notifySafe('Password wajib diisi untuk akun baru.');return}
+    if(password && password.length<8){notifySafe('Password minimal 8 karakter.');return}
+    if(active && !(password||existing?.password)){notifySafe('Akun tidak bisa diaktifkan sebelum memiliki password.');return}
+    if(existing){
+      existing.name=name;existing.role=role;existing.username=username;
+      if(password)existing.password=password;
+      existing.active=active;
+      existing.updatedAt=Date.now();
+    }else{
+      accounts.push({id:makeId(),name,role,username,password,active,protectedAccount:false,createdAt:Date.now()});
     }
-    if (username.toLowerCase() !== DEMO_MASTER_USERNAME || password !== DEMO_MASTER_PASSWORD) {
-      error.textContent = 'Username atau password tidak sesuai.';
-      return;
+    if(saveAccounts()){
+      closeModal('roleAccountModal');renderRoleAccounts();updateGateRoles();
+      // Update the login selection to include account types that now have credentials.
+      notifySafe(existing?'Akun role berhasil diperbarui.':'Akun role baru berhasil ditambahkan.');
     }
-    const session = { authenticated:true, role:'master', username:DEMO_MASTER_USERNAME, createdAt:Date.now() };
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    const url = new URL(window.location.href);
-    url.searchParams.set('role','master');
-    history.replaceState({}, '', url.pathname + url.search + url.hash);
-    document.getElementById('gatePassword').value = '';
-    showDashboard(session);
   });
 
-  window.payuAdminLogout = () => {
-    sessionStorage.removeItem(SESSION_KEY);
-    document.getElementById('gatePassword').value = '';
-    form.reset();
-    roleSelect.value = 'master';
-    const cleanUrl = new URL(window.location.href);
-    cleanUrl.search = '';
-    cleanUrl.hash = '';
-    history.replaceState({}, '', cleanUrl.pathname);
+  // Always require fresh login each time admin.html is loaded.
+  try{sessionStorage.removeItem(SESSION_KEY)}catch(_){}
+  updateGateRoles();
+  showLogin();
+  form.addEventListener('submit',event=>{
+    event.preventDefault();
+    const role=roleSelect.value;
+    const username=document.getElementById('gateUsername').value.trim();
+    const password=document.getElementById('gatePassword').value;
+    const matching=accounts.find(a=>a.role===role&&a.username.toLowerCase()===username.toLowerCase());
+    if(!matching){error.textContent='Username tidak ditemukan untuk role yang dipilih.';return}
+    if(!matching.active||!matching.password){error.textContent=`Akun ${countLabel(role)} belum aktif. Minta Master/Owner mengatur password dan mengaktifkan akun pada menu Role.`;return}
+    if(matching.password!==password){error.textContent='Username atau password tidak sesuai.';return}
+    const session={authenticated:true,role:matching.role,username:matching.username,accountName:matching.name,accountId:matching.id,createdAt:Date.now()};
+    try{sessionStorage.setItem(SESSION_KEY,JSON.stringify(session))}catch(_){}
+    const url=new URL(window.location.href);
+    url.searchParams.set('role',matching.role);
+    history.replaceState({},'',url.pathname+url.search+url.hash);
+    document.getElementById('gatePassword').value='';
+    showDashboard(session);
+    if(!canManageRoles(matching.role)&&navRoles)navRoles.hidden=true;
+  });
+  window.payuAdminLogout=()=>{
+    try{sessionStorage.removeItem(SESSION_KEY)}catch(_){}
+    document.getElementById('gatePassword').value='';
+    form.reset();updateGateRoles();
+    const cleanUrl=new URL(window.location.href);cleanUrl.search='';cleanUrl.hash='';history.replaceState({},'',cleanUrl.pathname);
     showLogin('Anda sudah keluar dari dashboard. Silakan login kembali.');
   };
 })();
