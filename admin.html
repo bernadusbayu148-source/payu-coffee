@@ -342,7 +342,24 @@
 .password-toggle:focus-visible{outline:2px solid #66784d;outline-offset:1px}
 .password-toggle svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
-</style>
+
+    /* Statistik coffeeshop: keep the period/date controls aligned on mobile. */
+    .stats-filter-tools{min-width:0;}
+    .stats-filter{min-width:0;width:100%;max-width:100%;}
+    .stats-filter select,
+    .stats-filter input{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;}
+    #statsDateWrap,#statsMonthWrap,#statsYearWrap{min-width:0;width:100%;max-width:100%;}
+    @media(max-width:600px){
+      .stats-filter-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;align-items:stretch;width:100%;}
+      .stats-filter{grid-column:1 / -1;}
+      .stats-filter select,
+      .stats-filter input{width:100%;min-width:0;max-width:100%;}
+      .stats-filter input[type="date"],
+      .stats-filter input[type="month"],
+      .stats-filter input[type="number"]{font-size:16px!important;padding:10px 11px;}
+      .stats-export-btn{grid-column:1 / -1;width:100%;}
+    }
+  </style>
 
   <style id="payu-admin-auth-styles">
     .app{display:none!important}
