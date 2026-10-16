@@ -392,10 +392,10 @@ body.promo-viewer-open{overflow:hidden}
   <p class="note auth-note">Saat ini login dan pendaftaran member masih berupa prototype. Akun dan data member belum tersimpan di server.</p>
 </div>
 <div id="adminAccessView" class="auth-access-view" hidden>
-  <div class="admin-login-heading"><span class="admin-login-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"></path></svg></span><div><h3>Area kerja pa.yu</h3><p>Pilih jabatan dan masukkan akun tim untuk membuka dashboard.</p></div></div>
-  <form id="adminLoginForm"><div class="field"><label for="adminRole">Jabatan / role</label><select id="adminRole" name="role" required><option value="" selected disabled>Pilih role admin</option><option value="master">Master</option><option value="owner">Owner</option><option value="admin">Admin</option><option value="kasir_satu">Kasir satu</option><option value="kasir_dua">Kasir dua</option></select></div><div class="field"><label for="adminLoginId">Username atau email admin</label><input id="adminLoginId" name="username" autocomplete="username" required placeholder="Username / email admin"></div><div class="field"><label for="adminLoginPassword">Password</label><input id="adminLoginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Password admin"></div><button class="primary" type="submit">Masuk ke dashboard ↗</button><div class="message" id="adminMessage" aria-live="polite"></div></form>
+  <div class="admin-login-heading"><span class="admin-login-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"></path></svg></span><div><h3>Area kerja pa.yu</h3><p>Pilih jabatan. Verifikasi username dan password akan dilakukan di halaman Admin.</p></div></div>
+  <form id="adminLoginForm"><div class="field"><label for="adminRole">Jabatan / role</label><select id="adminRole" name="role" required><option value="master" selected>Master</option><option value="owner">Owner</option><option value="admin">Admin</option><option value="kasir_satu">Kasir satu</option><option value="kasir_dua">Kasir dua</option></select></div><button class="primary" type="submit">Lanjut ke login Admin ↗</button><div class="message" id="adminMessage" aria-live="polite"></div></form>
   <button type="button" class="back-to-member" onclick="switchAccess('member')">← Kembali ke akses member</button>
-  <p class="note auth-note access-note">Akses ini masih prototype. Pemilihan role belum memverifikasi identitas; autentikasi server harus aktif sebelum website dipakai secara publik.</p>
+  <p class="note auth-note access-note">Anda akan diminta memasukkan username dan password di halaman Admin. Login demo saat ini hanya tersedia untuk role Master; role lain perlu dikonfigurasi.</p>
 </div>
 </div></div>
 
@@ -451,8 +451,7 @@ registerForm.addEventListener('submit',e=>{e.preventDefault();const password=doc
 adminLoginForm.addEventListener('submit',e=>{
   e.preventDefault();
   const role=document.getElementById('adminRole').value;
-  if(!role){document.getElementById('adminMessage').textContent='Pilih role terlebih dahulu.';return;}
-  /* Prototype routing only; the selected role and password are NOT authenticated here. */
+  if(!role){document.getElementById('adminMessage').textContent='Pilih jabatan terlebih dahulu.';return;}
   window.location.href='admin.html?role='+encodeURIComponent(role);
 });
 document.getElementById('year').textContent=new Date().getFullYear();
