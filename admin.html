@@ -385,6 +385,52 @@
     @media(max-width:420px){.admin-login-gate{padding:14px}.admin-login-card{border-radius:21px}.admin-login-brand img{height:40px;width:40px}}
   </style>
 
+
+  <style id="payu-stats-date-overflow-fix">
+    /* Keep native date/month inputs constrained by a fixed-width outer frame. */
+    .stats-filter-tools,
+    .stats-filter-tools > .stats-filter,
+    .stats-filter-tools > .stats-export-btn,
+    .stats-control-frame {min-width:0;max-width:100%;box-sizing:border-box;}
+    .stats-filter-tools > .stats-filter {width:100%;}
+    .stats-control-frame {
+      display:flex;align-items:center;width:100%;min-height:41px;
+      overflow:hidden;border:1px solid var(--line);border-radius:10px;
+      background:#fffefa;
+    }
+    .stats-control-frame input {
+      display:block;flex:1 1 0%;width:0;min-width:0;max-width:100%;
+      box-sizing:border-box;border:0!important;border-radius:0!important;
+      margin:0!important;padding:9px 8px!important;background:transparent!important;
+      outline-offset:-2px;
+    }
+    @media(max-width:760px){
+      .stats-panel .stats-panel-head,.stats-panel .stats-filter-tools {
+        width:100%;min-width:0;max-width:100%;
+      }
+      .stats-panel .stats-filter-tools {
+        display:flex!important;flex-direction:column!important;align-items:stretch!important;
+        gap:10px!important;overflow:hidden;
+      }
+      .stats-panel .stats-filter-tools > .stats-filter {
+        display:grid;grid-template-columns:minmax(0,1fr);flex:0 0 auto;
+        width:100%!important;min-width:0!important;max-width:100%!important;
+      }
+      .stats-panel .stats-filter-tools > .stats-export-btn {
+        display:block;flex:0 0 auto;width:100%!important;min-width:0!important;max-width:100%!important;
+      }
+      .stats-panel #statsDateWrap,
+      .stats-panel #statsMonthWrap,
+      .stats-panel #statsYearWrap,
+      .stats-panel .stats-control-frame,
+      .stats-panel .stats-control-frame input,
+      .stats-panel #statsPeriod {
+        width:100%;min-width:0;max-width:100%;box-sizing:border-box;
+      }
+      .stats-panel .stats-control-frame input {width:0!important;flex:1 1 0%;font-size:16px!important;}
+    }
+  </style>
+
 </head>
 <body>
 <div id="adminLoginGate" class="admin-login-gate">
@@ -452,9 +498,9 @@
           <div><h2 class="panel-title">Statistik coffeeshop</h2><p class="panel-subtitle">Pantau omzet, transaksi, menu terjual, dan aktivitas member per hari, bulan, atau tahun.</p></div>
           <div class="stats-filter-tools">
             <label class="stats-filter"><span>Periode</span><select id="statsPeriod"><option value="day">Per hari</option><option value="month">Per bulan</option><option value="year">Per tahun</option></select></label>
-            <label class="stats-filter" id="statsDateWrap"><span>Tanggal</span><input id="statsDate" type="date" /></label>
-            <label class="stats-filter" id="statsMonthWrap" style="display:none"><span>Bulan</span><input id="statsMonth" type="month" /></label>
-            <label class="stats-filter" id="statsYearWrap" style="display:none"><span>Tahun</span><input id="statsYear" type="number" min="2000" max="2200" step="1" /></label>
+            <label class="stats-filter" id="statsDateWrap"><span>Tanggal</span><div class="stats-control-frame"><input id="statsDate" type="date" /></div></label>
+            <label class="stats-filter" id="statsMonthWrap" style="display:none"><span>Bulan</span><div class="stats-control-frame"><input id="statsMonth" type="month" /></div></label>
+            <label class="stats-filter" id="statsYearWrap" style="display:none"><span>Tahun</span><div class="stats-control-frame"><input id="statsYear" type="number" min="2000" max="2200" step="1" /></div></label>
             <button class="btn secondary stats-export-btn" type="button" onclick="exportDashboardStats()">↓ Export CSV</button>
           </div>
         </div>
