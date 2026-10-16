@@ -319,8 +319,50 @@
     }
     @media(prefers-reduced-motion:reduce){.view.active{animation:none}*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;}}
   </style>
+
+  <style id="payu-admin-auth-styles">
+    .app{display:none!important}
+    .app.admin-authenticated{display:grid!important}
+    .admin-login-gate{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 12% 10%,#f2e4d5 0,transparent 34%),linear-gradient(145deg,#f7f3ec,#eee7dc);color:#292723}
+    .admin-login-card{width:min(440px,100%);padding:clamp(23px,5vw,38px);border:1px solid #ded5c9;border-radius:25px;background:rgba(255,253,249,.96);box-shadow:0 24px 80px rgba(56,35,25,.14)}
+    .admin-login-brand{display:flex;align-items:center;gap:12px;padding-bottom:22px;border-bottom:1px solid #e9dfd3}
+    .admin-login-brand img{height:46px;width:46px;object-fit:contain;border-radius:13px;background:#f7f3ec;padding:3px}
+    .admin-login-brand strong{display:block;color:#a62823;font-size:1.34rem;letter-spacing:-.07em;font-weight:900}
+    .admin-login-brand small{display:block;margin-top:3px;color:#777066;font-size:.65rem;letter-spacing:.15em}
+    .admin-login-overline{margin:24px 0 7px;color:#a62823;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
+    .admin-login-card h1{margin:0;color:#4b3028;font-size:clamp(1.7rem,5vw,2.2rem);letter-spacing:-.055em;line-height:1.1}
+    .admin-login-intro{margin:10px 0 23px;color:#777066;font-size:.9rem;line-height:1.65}
+    .admin-login-form{display:grid;gap:14px}
+    .admin-login-form label{display:block;margin-bottom:7px;color:#54483e;font-size:.78rem;font-weight:750}
+    .admin-login-form input,.admin-login-form select{width:100%;min-height:49px;padding:12px 14px;border:1px solid #ded5c9;border-radius:12px;background:#fff;color:#292723;font:inherit;font-size:16px;outline:none}
+    .admin-login-form input:focus,.admin-login-form select:focus{border-color:#a62823;box-shadow:0 0 0 3px #a6282317}
+    .admin-login-submit{min-height:49px;border:0;border-radius:12px;background:#a62823;color:white;font:inherit;font-size:.9rem;font-weight:800;cursor:pointer;transition:filter .15s,transform .15s}
+    .admin-login-submit:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    .admin-login-error{min-height:18px;color:#a62823;font-size:.8rem;line-height:1.5}
+    .admin-login-foot{margin:17px 0 0;color:#887d71;font-size:.7rem;line-height:1.6}
+    .admin-logout-button{white-space:nowrap}
+    @media(max-width:420px){.admin-login-gate{padding:14px}.admin-login-card{border-radius:21px}.admin-login-brand img{height:40px;width:40px}}
+  </style>
+
 </head>
 <body>
+<div id="adminLoginGate" class="admin-login-gate">
+  <section class="admin-login-card" aria-labelledby="adminGateTitle">
+    <div class="admin-login-brand"><img src="Asset/img/logo.png" alt="Logo PA.YU Coffee" onerror="this.style.display='none'"><div><strong>pa.yu</strong><small>COFFEE · MEMBER & STORE ADMIN</small></div></div>
+    <div class="admin-login-overline">AREA TERBATAS</div>
+    <h1 id="adminGateTitle">Masuk ke dashboard</h1>
+    <p class="admin-login-intro">Gunakan akun tim PA.YU untuk melanjutkan. Pilihan jabatan di sini menentukan role yang akan digunakan.</p>
+    <form id="adminGateForm" class="admin-login-form">
+      <div><label for="gateRole">Jabatan / role</label><select id="gateRole" name="role" required><option value="master">Master</option><option value="owner">Owner</option><option value="admin">Admin</option><option value="kasir_satu">Kasir satu</option><option value="kasir_dua">Kasir dua</option></select></div>
+      <div><label for="gateUsername">Username</label><input id="gateUsername" name="username" autocomplete="username" autocapitalize="none" required placeholder="Masukkan username"></div>
+      <div><label for="gatePassword">Password</label><input id="gatePassword" name="password" type="password" autocomplete="current-password" required placeholder="Masukkan password"></div>
+      <button class="admin-login-submit" type="submit">Masuk ke Admin ↗</button>
+      <div class="admin-login-error" id="adminGateError" aria-live="polite"></div>
+    </form>
+    <p class="admin-login-foot">Untuk kembali ke website utama, buka index.html. Sesi dashboard demo berakhir saat Anda memilih Keluar atau menutup tab ini.</p>
+  </section>
+</div>
+
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
@@ -343,7 +385,7 @@
   <main class="main">
     <header class="topbar">
       <div><div class="eyebrow" id="pageEyebrow">Ringkasan toko</div><h1 class="page-title" id="pageTitle">Dashboard</h1><p class="page-subtitle" id="pageSubtitle">Pantau aktivitas PA.YU Coffee hari ini.</p></div>
-      <div class="top-actions"><div class="date-chip" id="todayLabel">Memuat tanggal...</div><div class="avatar" title="Administrator">AD</div></div>
+      <div class="top-actions"><div class="date-chip" id="todayLabel">Memuat tanggal...</div><div class="date-chip" id="adminSessionRole" aria-label="Role aktif">Master</div><button type="button" class="btn secondary small admin-logout-button" onclick="window.payuAdminLogout()">Keluar</button><div class="avatar" title="Administrator">MA</div></div>
     </header>
 
     <section class="view active" id="view-dashboard">
@@ -862,5 +904,84 @@
   renderAll();
 })();
 </script>
+
+<script id="payu-admin-auth-script">
+(() => {
+  'use strict';
+  /* DEMO ONLY. Static HTML on GitHub Pages cannot securely authenticate users.
+     Move credential verification to a server-side PHP endpoint before production. */
+  const SESSION_KEY = 'payu_admin_demo_session_v1';
+  const DEMO_MASTER_USERNAME = 'master';
+  const DEMO_MASTER_PASSWORD = 'PAyuMaster2026!';
+  const roleNames = { master:'Master', owner:'Owner', admin:'Admin', kasir_satu:'Kasir satu', kasir_dua:'Kasir dua' };
+  const gate = document.getElementById('adminLoginGate');
+  const app = document.querySelector('.app');
+  const form = document.getElementById('adminGateForm');
+  const roleSelect = document.getElementById('gateRole');
+  const error = document.getElementById('adminGateError');
+  const query = new URLSearchParams(window.location.search);
+  const requestedRole = query.get('role');
+  if (requestedRole && roleNames[requestedRole]) roleSelect.value = requestedRole;
+
+  function showDashboard(session) {
+    gate.style.display = 'none';
+    app.classList.add('admin-authenticated');
+    const role = session?.role || 'master';
+    const roleLabel = roleNames[role] || 'Master';
+    const roleChip = document.getElementById('adminSessionRole');
+    if (roleChip) roleChip.textContent = roleLabel;
+    const avatar = document.querySelector('.top-actions .avatar');
+    if (avatar) { avatar.textContent = role === 'master' ? 'MA' : roleLabel.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase(); avatar.title = roleLabel; }
+  }
+  function showLogin(message='') {
+    app.classList.remove('admin-authenticated');
+    app.style.display = 'none';
+    gate.style.display = 'grid';
+    error.textContent = message;
+    const user = document.getElementById('gateUsername');
+    if (user) user.focus({ preventScroll:true });
+  }
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+    if (saved && saved.authenticated === true && roleNames[saved.role]) showDashboard(saved);
+    else showLogin();
+  } catch (_) { showLogin(); }
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const role = roleSelect.value;
+    const username = document.getElementById('gateUsername').value.trim();
+    const password = document.getElementById('gatePassword').value;
+    if (role !== 'master') {
+      error.textContent = `Akun untuk role ${roleNames[role] || role} belum dikonfigurasi. Untuk sementara, gunakan akun demo Master.`;
+      return;
+    }
+    if (username.toLowerCase() !== DEMO_MASTER_USERNAME || password !== DEMO_MASTER_PASSWORD) {
+      error.textContent = 'Username atau password tidak sesuai.';
+      return;
+    }
+    const session = { authenticated:true, role:'master', username:DEMO_MASTER_USERNAME, createdAt:Date.now() };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    const url = new URL(window.location.href);
+    url.searchParams.set('role','master');
+    history.replaceState({}, '', url.pathname + url.search + url.hash);
+    document.getElementById('gatePassword').value = '';
+    showDashboard(session);
+  });
+
+  window.payuAdminLogout = () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    document.getElementById('gatePassword').value = '';
+    form.reset();
+    roleSelect.value = 'master';
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.search = '';
+    cleanUrl.hash = '';
+    history.replaceState({}, '', cleanUrl.pathname);
+    showLogin('Anda sudah keluar dari dashboard. Silakan login kembali.');
+  };
+})();
+</script>
+
 </body>
 </html>
