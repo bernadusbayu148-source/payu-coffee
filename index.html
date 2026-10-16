@@ -118,6 +118,69 @@ footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);font-s
  .panel{padding:23px 18px 19px}
 }
 
+
+/* Main hero banner: text sits over a real cover image, with a soft readability gradient. */
+.hero{display:block;padding:28px 0 40px}
+.hero-banner{position:relative;isolation:isolate;display:flex;align-items:center;min-height:clamp(430px,48vw,570px);overflow:hidden;border-radius:26px;background:radial-gradient(circle at 76% 24%,#b87551 0,#8d4e39 36%,#4b3028 78%);box-shadow:0 24px 55px #3c261a1c}
+.hero-banner-bg{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;object-position:center 52%;}
+.hero-banner-bg[hidden]{display:none}
+.hero-banner:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(35,20,15,.91) 0%,rgba(35,20,15,.82) 31%,rgba(35,20,15,.56) 53%,rgba(35,20,15,.16) 76%,rgba(35,20,15,.05) 100%),linear-gradient(0deg,rgba(30,17,13,.28),transparent 48%)}
+.hero-banner:after{content:"";position:absolute;inset:17px;border:1px solid #ffffff45;border-radius:17px;pointer-events:none;z-index:0}
+.hero-banner .hero-copy{position:relative;z-index:1;width:min(66%,720px);padding:clamp(34px,5.6vw,68px);margin:0}
+.hero-banner .kicker{color:#edc2a8;font-size:.72rem;letter-spacing:.2em}
+.hero-banner h1{color:#fffaf3;font-size:clamp(3.3rem,6.25vw,5.8rem);line-height:.93;letter-spacing:-.075em;margin:18px 0 21px;text-shadow:0 3px 26px #160d0a54}
+.hero-banner h1 em{color:#edb394;font-style:normal}
+.hero-banner .hero-copy p{max-width:525px;color:#f3e4d8;font-size:clamp(.97rem,1.2vw,1.08rem);line-height:1.75;margin:0;text-shadow:0 2px 12px #160d0a45}
+.hero-banner .hero-tag{z-index:2;right:30px;left:auto;bottom:28px;display:inline-flex;align-items:center;gap:9px;max-width:calc(100% - 60px);padding:10px 14px;border:1px solid #ffffff46;border-radius:999px;background:rgba(49,29,22,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:.66rem;letter-spacing:.13em;color:#fffaf3}
+.hero-banner .hero-tag span{color:#edb394;font-size:1rem}
+/* Login modal access selector: member access and staff/admin access. */
+.auth-access-switch{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:21px 0 2px}
+.auth-access-option{display:flex;align-items:center;gap:11px;min-width:0;padding:12px 13px;border:1px solid #e2d9cc;border-radius:14px;background:#fffdf9;color:#665b50;text-align:left;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s,transform .18s}
+.auth-access-option:hover{transform:translateY(-1px);border-color:#c9a697}
+.auth-access-option.active{border-color:#a62823;background:#fbefeb;box-shadow:0 4px 14px #a628230d;color:#8e251f}
+.auth-access-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:11px;background:#eee7dc;color:#6d3528}
+.auth-access-option.active .auth-access-icon{background:#a62823;color:#fffaf3}
+.auth-access-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.auth-access-copy{display:grid;gap:2px;min-width:0}
+.auth-access-copy strong{font-size:.82rem;font-weight:850;line-height:1.2}
+.auth-access-copy small{font-size:.67rem;color:#82786c;line-height:1.35}
+.admin-login-heading{display:flex;align-items:center;gap:13px;margin:22px 0 13px;padding:15px;border-radius:15px;background:#eee7dc80;border:1px solid #e4dbcf}
+.admin-login-symbol{width:43px;height:43px;flex:0 0 43px;border-radius:13px;display:grid;place-items:center;background:#4b3028;color:#fffaf3}
+.admin-login-symbol svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.admin-login-heading h3{margin:0 0 3px;font-size:.96rem;letter-spacing:-.02em}
+.admin-login-heading p{margin:0;font-size:.78rem;line-height:1.5;color:#777066}
+.field select{padding:13px 14px;border:1px solid #dfdccc;border-radius:13px;background:#fffefa;color:#292d25;width:100%;min-height:50px;font-size:16px;outline:none}
+.field select:focus{border-color:#a62823;box-shadow:0 0 0 3px #a6282318}
+.back-to-member{display:flex;align-items:center;justify-content:center;width:100%;margin-top:13px;padding:10px;border:0;background:transparent;color:#796e62;font-size:.82rem;font-weight:800;cursor:pointer}
+.back-to-member:hover{color:#a62823}
+.access-note{font-size:.72rem!important;line-height:1.55!important}
+.auth-access-view[hidden],#memberAccessView[hidden]{display:none!important}
+@media(max-width:780px){
+ .hero{padding:18px 0 31px}
+ .hero-banner{min-height:500px;border-radius:22px;align-items:flex-start}
+ .hero-banner:before{background:linear-gradient(180deg,rgba(35,20,15,.79) 0%,rgba(35,20,15,.69) 37%,rgba(35,20,15,.43) 68%,rgba(35,20,15,.3) 100%)}
+ .hero-banner:after{inset:11px;border-radius:15px}
+ .hero-banner .hero-copy{width:100%;padding:42px 28px 94px}
+ .hero-banner h1{font-size:clamp(3rem,10.5vw,4.35rem);margin:17px 0 18px}
+ .hero-banner .hero-copy p{max-width:520px;font-size:.96rem;line-height:1.68}
+ .hero-banner .hero-tag{right:24px;bottom:23px;left:24px;max-width:calc(100% - 48px);width:max-content;font-size:.59rem;letter-spacing:.09em;padding:9px 12px}
+ .auth-access-switch{gap:7px;margin-top:18px}
+ .auth-access-option{padding:10px 9px;gap:8px}
+ .auth-access-icon{width:31px;height:31px;flex-basis:31px}
+ .auth-access-copy strong{font-size:.78rem}
+ .auth-access-copy small{font-size:.62rem}
+}
+@media(max-width:400px){
+ .hero-banner{min-height:480px}
+ .hero-banner .hero-copy{padding:37px 22px 91px}
+ .hero-banner h1{font-size:clamp(2.75rem,11.7vw,3.25rem)}
+ .hero-banner .kicker{font-size:.63rem;letter-spacing:.16em}
+ .hero-banner .hero-copy p{font-size:.9rem}
+ .hero-banner .hero-tag{left:21px;right:21px;max-width:calc(100% - 42px);font-size:.55rem}
+ .auth-access-switch{grid-template-columns:1fr;}
+ .auth-access-option{padding:10px 12px}
+}
+
 </style>
 </head>
 <body>
@@ -128,7 +191,17 @@ footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);font-s
 <button class="login-btn" onclick="openLogin()" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.5 3.1-5.3 7-5.3s6.2 1.8 7 5.3"/></svg><span>Login Member</span></button>
 </div></div></header>
 <main>
-<div class="wrap hero" id="home"><div class="hero-copy"><div class="kicker">Coffee • Friends • Good days</div><h1>Tempat pulang<br>untuk <em>cerita.</em></h1><p>pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.</p><div class="hero-actions"><a class="primary" href="#leaderboard">Lihat leaderboard ↗</a><a class="secondary" href="#visit">Temukan kami</a></div></div><div class="hero-image"><img src="pa-yu-logo.png" alt="Logo pa.yu"><div class="hero-tag">A little pause, a lot of stories.</div></div></div>
+<section class="wrap hero" id="home" aria-label="Beranda pa.yu">
+  <div class="hero-banner">
+    <img class="hero-banner-bg" src="banner-utama.jpg" alt="" aria-hidden="true" onerror="this.hidden=true">
+    <div class="hero-copy">
+      <div class="kicker">Coffee • Friends • Good days</div>
+      <h1>Tempat pulang<br>untuk <em>cerita.</em></h1>
+      <p>pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.</p>
+    </div>
+    <div class="hero-tag"><span aria-hidden="true">✳</span> A little pause, a lot of stories.</div>
+  </div>
+</section>
 <section class="leader-section section" id="leaderboard"><div class="wrap leader-grid"><div class="leader-intro"><span class="season-label">✳ Member community</span><div class="kicker" style="margin-top:24px">The people of pa.yu</div><h2>Papan poin<br>kerabat.</h2><p>Apresiasi untuk kerabat pa.yu yang aktif. Peringkat diperbarui mengikuti poin membership.</p><div class="leader-stats"><div class="mini-stat"><strong>Top 8</strong><span>Kerabat unggulan</span></div><div class="mini-stat"><strong>Rewards</strong><span>Poin jadi benefit</span></div></div><div class="leader-cta-wrap"><div class="leader-cta-copy"><strong>Sudah menjadi kerabat?</strong><span>Lihat poin dan benefit membership kamu.</span></div><a class="primary leader-cta" href="#" onclick="openLogin();return false">Masuk sebagai member <span aria-hidden="true">↗</span></a></div></div><div class="leaderboard-wrap"><div class="section-topline"><strong>Top kerabat</strong><span class="period-chip">✦ Periode berjalan</span></div>
 <div class="podium" aria-label="Tiga member dengan poin tertinggi">
 <article class="podium-card second"><div class="podium-medal">2</div><div class="podium-avatar">AS</div><div class="podium-name">Arya Salim</div><div class="podium-tier">Silver member</div><div class="podium-score">960 pts</div></article>
@@ -154,18 +227,58 @@ footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);font-s
 <a class="dock-link" href="#promo" aria-label="Promo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 0 6.5 10H7v4h-.5A2.5 2.5 0 0 0 4 16.5V19h16v-2.5a2.5 2.5 0 0 0-2.5-2.5H17v-4h.5A2.5 2.5 0 0 0 20 7.5V5H4z"/><path d="m9 9 6 6M15 9h.01M9 15h.01"/></svg><span>Promo</span></a>
 <a class="dock-link" href="#visit" aria-label="Alamat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Alamat</span></a>
 </nav>
-<div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle" aria-hidden="true"><div class="panel"><button class="close" onclick="closeLogin()" aria-label="Tutup dialog">×</button><div class="auth-brand-row"><img src="pa-yu-logo.png" alt="" class="auth-brand-logo"><div class="auth-brand-wordmark"><strong>pa.yu</strong><span>COFFEE · COMMUNITY</span></div><span class="auth-brand-tag">MEMBER SPACE</span></div><div class="auth-heading"><div class="kicker"><span class="auth-heading-dot"></span> WELCOME, KERABAT</div><h2 id="loginTitle">Member pa.yu</h2><p id="authIntro">Masuk untuk melihat profil, poin, peringkat, dan benefit membership kamu.</p></div><div class="auth-tabs" role="tablist" aria-label="Pilih login atau daftar"><button class="auth-tab active" id="loginTab" role="tab" aria-selected="true" onclick="switchAuth('login')">Masuk</button><button class="auth-tab" id="registerTab" role="tab" aria-selected="false" onclick="switchAuth('register')">Daftar member</button></div>
-<form id="loginForm" class="auth-view"><div class="field"><label for="loginId">Email atau ID member</label><input id="loginId" name="loginId" autocomplete="username" required placeholder="Email / ID member"></div><div class="field"><label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button class="primary" type="submit">Masuk ke akun ↗</button><div class="message" id="loginMessage" aria-live="polite"></div></form>
-<form id="registerForm" class="auth-view" hidden><div class="field"><label for="fullName">Nama lengkap</label><input id="fullName" name="fullName" autocomplete="name" required placeholder="Nama sesuai identitas"></div><div class="field"><label for="registerPhone">Nomor HP</label><input id="registerPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required placeholder="08xxxxxxxxxx"></div><div class="field"><label for="registerEmail">Email</label><input id="registerEmail" name="email" type="email" autocomplete="email" required placeholder="nama@email.com"></div><div class="field"><label for="registerPassword">Buat password</label><input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="Minimal 8 karakter"></div><div class="field"><label for="confirmPassword">Konfirmasi password</label><input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Ulangi password"></div><button class="primary" type="submit">Buat akun member ↗</button><div class="message" id="registerMessage" aria-live="polite"></div></form>
-<p class="note auth-note">Saat ini login dan pendaftaran masih berupa prototype antarmuka. Akun, autentikasi, dan data pribadi member belum tersimpan di server. Jangan gunakan password asli sampai backend dan database PA.YU terhubung.</p></div></div>
+<div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle" aria-hidden="true"><div class="panel"><button class="close" onclick="closeLogin()" aria-label="Tutup dialog">×</button>
+<div class="auth-brand-row"><img src="pa-yu-logo.png" alt="" class="auth-brand-logo"><div class="auth-brand-wordmark"><strong>pa.yu</strong><span>COFFEE · COMMUNITY</span></div><span class="auth-brand-tag">MEMBER SPACE</span></div>
+<div class="auth-heading"><div class="kicker" id="authKicker"><span class="auth-heading-dot"></span> WELCOME, KERABAT</div><h2 id="loginTitle">Member pa.yu</h2><p id="authIntro">Masuk untuk melihat profil, poin, peringkat, dan benefit membership kamu.</p></div>
+<div class="auth-access-switch" role="group" aria-label="Pilih jenis akses">
+  <button type="button" id="memberAccessBtn" class="auth-access-option active" onclick="switchAccess('member')" aria-pressed="true">
+    <span class="auth-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.8-3.5 3.1-5.3 7-5.3s6.2 1.8 7 5.3"></path></svg></span>
+    <span class="auth-access-copy"><strong>Member</strong><small>Profil, poin & benefit</small></span>
+  </button>
+  <button type="button" id="adminAccessBtn" class="auth-access-option" onclick="switchAccess('admin')" aria-pressed="false">
+    <span class="auth-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"></path><path d="m9 12 2 2 4-4"></path></svg></span>
+    <span class="auth-access-copy"><strong>Akses Admin</strong><small>Masuk untuk tim PA.YU</small></span>
+  </button>
+</div>
+<div id="memberAccessView">
+  <div class="auth-tabs" role="tablist" aria-label="Pilih login atau daftar"><button class="auth-tab active" id="loginTab" role="tab" aria-selected="true" onclick="switchAuth('login')">Masuk</button><button class="auth-tab" id="registerTab" role="tab" aria-selected="false" onclick="switchAuth('register')">Daftar member</button></div>
+  <form id="loginForm" class="auth-view"><div class="field"><label for="loginId">Email atau ID member</label><input id="loginId" name="loginId" autocomplete="username" required placeholder="Email / ID member"></div><div class="field"><label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button class="primary" type="submit">Masuk ke akun ↗</button><div class="message" id="loginMessage" aria-live="polite"></div></form>
+  <form id="registerForm" class="auth-view" hidden><div class="field"><label for="fullName">Nama lengkap</label><input id="fullName" name="fullName" autocomplete="name" required placeholder="Nama sesuai identitas"></div><div class="field"><label for="registerPhone">Nomor HP</label><input id="registerPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required placeholder="08xxxxxxxxxx"></div><div class="field"><label for="registerEmail">Email</label><input id="registerEmail" name="email" type="email" autocomplete="email" required placeholder="nama@email.com"></div><div class="field"><label for="registerPassword">Buat password</label><input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="Minimal 8 karakter"></div><div class="field"><label for="confirmPassword">Konfirmasi password</label><input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Ulangi password"></div><button class="primary" type="submit">Buat akun member ↗</button><div class="message" id="registerMessage" aria-live="polite"></div></form>
+  <p class="note auth-note">Saat ini login dan pendaftaran member masih berupa prototype. Akun dan data member belum tersimpan di server.</p>
+</div>
+<div id="adminAccessView" class="auth-access-view" hidden>
+  <div class="admin-login-heading"><span class="admin-login-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"></path></svg></span><div><h3>Area kerja pa.yu</h3><p>Pilih jabatan dan masukkan akun tim untuk membuka dashboard.</p></div></div>
+  <form id="adminLoginForm"><div class="field"><label for="adminRole">Jabatan / role</label><select id="adminRole" name="role" required><option value="" selected disabled>Pilih role admin</option><option value="master">Master</option><option value="owner">Owner</option><option value="admin">Admin</option><option value="kasir_satu">Kasir satu</option><option value="kasir_dua">Kasir dua</option></select></div><div class="field"><label for="adminLoginId">Username atau email admin</label><input id="adminLoginId" name="username" autocomplete="username" required placeholder="Username / email admin"></div><div class="field"><label for="adminLoginPassword">Password</label><input id="adminLoginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Password admin"></div><button class="primary" type="submit">Masuk ke dashboard ↗</button><div class="message" id="adminMessage" aria-live="polite"></div></form>
+  <button type="button" class="back-to-member" onclick="switchAccess('member')">← Kembali ke akses member</button>
+  <p class="note auth-note access-note">Akses ini masih prototype. Pemilihan role belum memverifikasi identitas; autentikasi server harus aktif sebelum website dipakai secara publik.</p>
+</div>
+</div></div>
 <script>
 const modal=document.getElementById('loginModal');
 const loginForm=document.getElementById('loginForm');
 const registerForm=document.getElementById('registerForm');
+const adminLoginForm=document.getElementById('adminLoginForm');
 function openLogin(mode='login'){
-  modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');switchAuth(mode);
+  modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');switchAccess('member');switchAuth(mode);
 }
 function closeLogin(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open')}
+function switchAccess(access){
+  const isAdmin=access==='admin';
+  document.getElementById('memberAccessView').hidden=isAdmin;
+  document.getElementById('adminAccessView').hidden=!isAdmin;
+  document.getElementById('memberAccessBtn').classList.toggle('active',!isAdmin);
+  document.getElementById('adminAccessBtn').classList.toggle('active',isAdmin);
+  document.getElementById('memberAccessBtn').setAttribute('aria-pressed',String(!isAdmin));
+  document.getElementById('adminAccessBtn').setAttribute('aria-pressed',String(isAdmin));
+  if(isAdmin){
+    document.getElementById('authKicker').innerHTML='<span class="auth-heading-dot"></span> TEAM ACCESS';
+    document.getElementById('loginTitle').textContent='Login admin pa.yu';
+    document.getElementById('authIntro').textContent='Akses khusus untuk tim operasional dan pengelola PA.YU.';
+    document.getElementById('adminMessage').textContent='';
+  }else{
+    switchAuth('login');
+  }
+}
 function switchAuth(mode){
   const registering=mode==='register';
   loginForm.hidden=registering;registerForm.hidden=!registering;
@@ -173,14 +286,22 @@ function switchAuth(mode){
   document.getElementById('registerTab').classList.toggle('active',registering);
   document.getElementById('loginTab').setAttribute('aria-selected',String(!registering));
   document.getElementById('registerTab').setAttribute('aria-selected',String(registering));
+  document.getElementById('authKicker').innerHTML='<span class="auth-heading-dot"></span> WELCOME, KERABAT';
   document.getElementById('loginTitle').textContent=registering?'Bergabung dengan pa.yu':'Member pa.yu';
   document.getElementById('authIntro').textContent=registering?'Daftar menjadi bagian dari komunitas dan nikmati benefit membership pa.yu.':'Masuk untuk melihat profil, poin, peringkat, dan benefit membership kamu.';
   document.getElementById('loginMessage').textContent='';document.getElementById('registerMessage').textContent='';
 }
 modal.addEventListener('click',e=>{if(e.target===modal)closeLogin()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLogin()});
-loginForm.addEventListener('submit',e=>{e.preventDefault();document.getElementById('loginMessage').textContent='Demo saja: login belum terhubung ke sistem akun PA.YU.'});
+loginForm.addEventListener('submit',e=>{e.preventDefault();document.getElementById('loginMessage').textContent='Demo saja: login member belum terhubung ke sistem akun PA.YU.'});
 registerForm.addEventListener('submit',e=>{e.preventDefault();const password=document.getElementById('registerPassword').value;const confirm=document.getElementById('confirmPassword').value;if(password!==confirm){document.getElementById('registerMessage').textContent='Konfirmasi password belum sama.';return}document.getElementById('registerMessage').textContent='Demo saja: pendaftaran belum terhubung ke database PA.YU.'});
+adminLoginForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const role=document.getElementById('adminRole').value;
+  if(!role){document.getElementById('adminMessage').textContent='Pilih role terlebih dahulu.';return;}
+  /* Prototype routing only; the selected role and password are NOT authenticated here. */
+  window.location.href='admin.html?role='+encodeURIComponent(role);
+});
 document.getElementById('year').textContent=new Date().getFullYear();
 const dockLinks=[...document.querySelectorAll('.dock-link')];
 function setActiveNav(id){dockLinks.forEach(link=>link.classList.toggle('active',link.getAttribute('href')==='#'+id));document.querySelectorAll('.navlinks a').forEach(link=>link.classList.toggle('active',link.getAttribute('href')==='#'+id))}
