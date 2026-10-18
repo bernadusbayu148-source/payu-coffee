@@ -1620,10 +1620,6 @@ renderAll(); })();
     finally{if(saveButton){saveButton.disabled=false;saveButton.textContent='Simpan akun'}}
   });
 
-  // Always require fresh login each time admin.html is loaded.
-  try{sessionStorage.removeItem(SESSION_KEY)}catch(_){}
-  updateGateRoles();
-  showLogin();
   const API_BASE = 'https://api.kopimanupi.space/api.php';
   const backendRoleToUiRole = {
     master: 'master',
@@ -1726,6 +1722,56 @@ renderAll(); })();
   updateGateRoles();
   showLogin();
 
+
+  async function restoreStaffSession(){
+    updateGateRoles();
+    try {
+      // The server session cookie is authoritative; sessionStorage is only a UI cache.
+      const response = await callApi('auth/me', {method:'GET', headers:{'Accept':'application/json'}});
+      const payload = await readApiJson(response);
+      const user = payload.user;
+      const uiRole = user && backendRoleToUiRole[user.role];
+      if (!user || !uiRole) {
+        try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+        showLogin();
+        return;
+      }
+
+      let csrfToken = payload.csrf_token || '';
+      if (!csrfToken) {
+        const csrfResponse = await callApi('auth/csrf', {method:'GET', headers:{'Accept':'application/json'}});
+        const csrfPayload = await readApiJson(csrfResponse);
+        csrfToken = csrfPayload.csrf_token || '';
+      }
+      if (!csrfToken) throw new Error('Token keamanan tidak tersedia.');
+
+      const session = {
+        authenticated: true,
+        backendAuthenticated: true,
+        role: uiRole,
+        backendRole: user.role,
+        username: user.username || '',
+        accountName: user.display_name || user.username || 'Staf PA.YU',
+        accountId: String(user.id),
+        userId: user.id,
+        csrfToken,
+        mustChangePassword: Boolean(user.must_change_password),
+        createdAt: Date.now()
+      };
+      try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (_) {}
+      roleSelect.value = uiRole;
+      const url = new URL(window.location.href);
+      url.searchParams.set('role', uiRole);
+      url.searchParams.delete('login');
+      history.replaceState({}, '', url.pathname + url.search + url.hash);
+      showDashboard(session);
+    } catch (e) {
+      // If the server has no valid staff session, show the login form without treating cached data as authentication.
+      try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+      showLogin();
+    }
+  }
+
   form.addEventListener('submit', async event => {
     event.preventDefault();
     error.textContent = '';
@@ -1825,6 +1871,8 @@ renderAll(); })();
     history.replaceState({}, '', cleanUrl.pathname);
     showLogin('Anda sudah keluar dari dashboard. Silakan login kembali.');
   };
+
+  restoreStaffSession();
 })();
 </script>
 
