@@ -983,10 +983,26 @@
     }
     const i=Number(String(couponId||'').replace('C',''))-1;return couponTemplates(memberLevel(member?.points))[i]||null;
   }
+  function transactionHasRewardProduct(tpl){
+    if(tpl?.type!=='free_product')return true;
+    const rewardId=String(tpl.rewardMenuId||'');
+    if(!rewardId)return false;
+    return [...document.querySelectorAll('#txItems .tx-item-row')].some(row=>
+      String(row.querySelector('.tx-item-menu')?.value||'')===rewardId &&
+      (Number(row.querySelector('.tx-item-qty')?.value)||0)>=1
+    );
+  }
   function calcCouponDiscount(member,couponId,subtotal){
     if(!member||!couponId)return 0;const c=couponFor(member,couponId);const tpl=couponTemplate(member,couponId);if(!c||!tpl)return 0;
     if(c.used && c.transactionId!==editingTransactionId)return 0;
     if(Number(subtotal)<tpl.min)return 0;
+    if(tpl.type==='custom')return 0;
+    if(tpl.type==='free_product'){
+      if(!transactionHasRewardProduct(tpl))return 0;
+      const rewardMenu=data.menus.find(m=>String(m.id)===String(tpl.rewardMenuId));
+      return Math.min(Number(subtotal)||0,Number(rewardMenu?.price)||0);
+    }
+    if(tpl.type!=='fixed'&&tpl.type!=='percent')return 0;
     return Math.min(Number(subtotal)||0,tpl.type==='percent'?Math.min(Number(subtotal)*tpl.value/100,tpl.max||Infinity):tpl.value);
   }
   async function ensureRemoteMemberCoupons(member){
@@ -1022,8 +1038,10 @@
         const tpl=couponTemplate(member,c.id)||{label:c.name||c.coupon_code||'Kupon member',min:Number(c.min_spend||0)};
         const isCurrent=Boolean(c.used&&oldTx&&String(c.transactionId)===String(oldTx.id));
         const used=c.status==='used'||c.used;
-        const disabled=(used&&!isCurrent)||subtotal<Number(tpl.min||0);
-        const status=used&&!isCurrent?'— sudah dipakai':(subtotal<Number(tpl.min||0)?'— min. '+money(tpl.min):'');
+        const expired=c.status==='expired'||(tpl.expiresAt&&Date.parse(String(tpl.expiresAt).replace(' ','T'))<Date.now());
+        const rewardMissing=tpl.type==='free_product'&&!transactionHasRewardProduct(tpl);
+        const disabled=(used&&!isCurrent)||expired||subtotal<Number(tpl.min||0)||rewardMissing;
+        const status=used&&!isCurrent?'— sudah dipakai':(expired?'— kedaluwarsa':(subtotal<Number(tpl.min||0)?'— min. '+money(tpl.min):(rewardMissing?'— tambahkan produk hadiah ke transaksi':'')));
         return '<option value="'+esc(c.id)+'" '+(disabled?'disabled':'')+'>'+esc(tpl.label)+' · Min. '+money(tpl.min)+status+'</option>';
       }).join('');
       const preferred=oldTx&&oldTx.couponId?String(oldTx.couponId):previous;
@@ -1031,7 +1049,7 @@
       document.getElementById('txCouponNote').textContent=member.couponsLoadError?'Kupon tidak dapat dimuat: '+member.couponsLoadError:(coupons.length?'Level '+level+'. Kupon divalidasi kembali oleh server saat transaksi disimpan.':'Belum ada kupon tersedia untuk level '+level+'.');
       return;
     }
-    const level=memberLevel(member.points);select.innerHTML='<option value="">Tidak menggunakan kupon</option>'+member.coupons.map(c=>{const tpl=couponTemplate(member,c.id);const isCurrent=c.used&&c.transactionId===editingTransactionId;const eligible=subtotal>=tpl.min;const disabled=(c.used&&!isCurrent)||(!eligible);const status=c.used&&!isCurrent?'— sudah dipakai':(!eligible?'— min. '+money(tpl.min):'');return '<option value="'+c.id+'" '+(disabled?'disabled':'')+'>'+esc(tpl.label)+status+'</option>'}).join('');
+    const level=memberLevel(member.points);select.innerHTML='<option value="">Tidak menggunakan kupon</option>'+member.coupons.map(c=>{const tpl=couponTemplate(member,c.id);const isCurrent=c.used&&c.transactionId===editingTransactionId;const eligible=subtotal>=tpl.min;const expired=Boolean(tpl.expiresAt&&Date.parse(String(tpl.expiresAt).replace(' ','T'))<Date.now());const rewardMissing=tpl.type==='free_product'&&!transactionHasRewardProduct(tpl);const disabled=(c.used&&!isCurrent)||(!eligible)||expired||rewardMissing;const status=c.used&&!isCurrent?'— sudah dipakai':(expired?'— kedaluwarsa':(!eligible?'— min. '+money(tpl.min):(rewardMissing?'— tambahkan produk hadiah ke transaksi':'')));return '<option value="'+c.id+'" '+(disabled?'disabled':'')+'>'+esc(tpl.label)+status+'</option>'}).join('');
     if(previous&&[...select.options].some(o=>o.value===previous&&!o.disabled))select.value=previous;else select.value='';
     document.getElementById('txCouponNote').textContent='Level '+level+'. Setiap kupon hanya dapat digunakan satu kali; syarat minimum belanja mengikuti level saat transaksi.';
   }
