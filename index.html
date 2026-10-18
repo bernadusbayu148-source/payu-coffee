@@ -354,7 +354,10 @@ body.promo-viewer-open{overflow:hidden}
 .gallery-card .caption h3{white-space:pre-line;overflow-wrap:anywhere}
 @media(max-width:640px){.promo-info-card{grid-template-columns:minmax(0,1fr);gap:17px;padding:20px;margin-bottom:22px;border-radius:18px}.promo-info-copy h3{font-size:1.65rem}.promo-info-copy p{font-size:.85rem}.promo-info-code{padding:13px 15px}.promo-info-code strong{font-size:1.08rem}}
 
-</style>
+
+    /* Keep modal panels hidden even when their class defines display:grid/flex. */
+    #memberAccessView [hidden] { display: none !important; }
+  </style>
 
 <style id="payu-editable-hero-promo-overlay">
 /* Promo images are backgrounds; editable PA.YU copy sits above them on carousel cards. */
