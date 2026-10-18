@@ -1383,9 +1383,33 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('File CSV berhasil dibuat.')}
   function renderAll(){data.members.forEach(ensureMemberDefaults);data.benefitRules=benefitRules;document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();renderBenefitRulesForm();loadPromoToForm();loadHeroContentToForm();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();populateTransactionOptions()}
   async function persistPublicCopyToServer(){
-  const payload={promo:data.promo,heroContent:data.heroContent||readHeroForm(),galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft};
+  const payload={promo:data.promo,heroContent:data.heroContent||readHeroForm(),galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft,benefitRules:benefitRules};
   await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(payload)}}});
 }
+document.addEventListener('submit',async event=>{
+ if(event.target?.id!=='benefitRulesForm')return;
+ event.preventDefault();
+ const form=event.target;
+ const thresholds={Bronze:0,Silver:Number(form.elements['threshold_Silver'].value),Gold:Number(form.elements['threshold_Gold'].value),Platinum:Number(form.elements['threshold_Platinum'].value)};
+ if(!Number.isInteger(thresholds.Silver)||!Number.isInteger(thresholds.Gold)||!Number.isInteger(thresholds.Platinum)||thresholds.Silver<1||thresholds.Gold<=thresholds.Silver||thresholds.Platinum<=thresholds.Gold){notify('Urutan level harus naik: Silver < Gold < Platinum, dengan nilai poin positif.');return;}
+ const coupons={};
+ for(const level of ['Bronze','Silver','Gold','Platinum']){
+  coupons[level]=[];
+  for(let i=0;i<5;i++){
+   const type=form.elements['type_'+level+'_'+i].value;
+   const value=Number(form.elements['value_'+level+'_'+i].value),min=Number(form.elements['min_'+level+'_'+i].value),max=Number(form.elements['max_'+level+'_'+i].value);
+   if(!Number.isInteger(value)||value<1||(type==='percent'&&value>100)||!Number.isInteger(min)||min<0||!Number.isInteger(max)||max<0){notify('Periksa kembali nilai diskon dan minimum transaksi kupon '+level+' ke-'+(i+1)+'.');return;}
+   coupons[level].push({type,value,min,max:max===0?null:max});
+  }
+ }
+ benefitRules=normalizeBenefitRules({thresholds,coupons});data.benefitRules=benefitRules;saveData();renderBenefitRulesForm();
+ if(remoteOperationalMode){
+  const submit=form.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
+  try{await persistPublicCopyToServer();await window.payuAdminHydrateFromServer();notify('Aturan benefit berhasil disimpan ke konfigurasi PA.YU.');}
+  catch(err){notify('Aturan benefit belum tersimpan: '+err.message);}
+  finally{const fresh=document.getElementById('benefitRulesForm')?.querySelector('button[type="submit"]');if(fresh)fresh.disabled=false;}
+ }else notify('Aturan benefit disimpan pada browser ini saja. Login ke backend untuk menyimpan ke server.');
+});
 window.payuAdminHydrateFromServer=async function(){
  const request=window.payuAdminApiRequest;if(typeof request!=='function')throw new Error('Helper API belum siap.');
  const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings'),request('public/banners')]);
@@ -1439,7 +1463,7 @@ window.payuAdminHydrateFromServer=async function(){
  document.getElementById('publicInfoHours').value=settingValue('business_hours');
  document.getElementById('publicInfoInstagram').value=settingValue('instagram_url');
  document.getElementById('publicInfoMaps').value=settingValue('google_maps_url');
- if(promoSetting&&promoSetting.setting_value){try{const savedCopy=JSON.parse(promoSetting.setting_value);if(savedCopy&&typeof savedCopy==='object'){data.promo=savedCopy.promo&&typeof savedCopy.promo==='object'?savedCopy.promo:(savedCopy.title?savedCopy:data.promo);if(savedCopy.heroContent)data.heroContent=savedCopy.heroContent;if(Array.isArray(savedCopy.galleryContent)){data.galleryContent=savedCopy.galleryContent;galleryDraft=structuredCloneSafe(savedCopy.galleryContent)}if(Array.isArray(savedCopy.promoCards)){data.promoCards=savedCopy.promoCards;promoCardsDraft=structuredCloneSafe(savedCopy.promoCards)}}}catch(_){}}
+ if(promoSetting&&promoSetting.setting_value){try{const savedCopy=JSON.parse(promoSetting.setting_value);if(savedCopy&&typeof savedCopy==='object'){data.promo=savedCopy.promo&&typeof savedCopy.promo==='object'?savedCopy.promo:(savedCopy.title?savedCopy:data.promo);if(savedCopy.heroContent)data.heroContent=savedCopy.heroContent;if(Array.isArray(savedCopy.galleryContent)){data.galleryContent=savedCopy.galleryContent;galleryDraft=structuredCloneSafe(savedCopy.galleryContent)}if(Array.isArray(savedCopy.promoCards)){data.promoCards=savedCopy.promoCards;promoCardsDraft=structuredCloneSafe(savedCopy.promoCards)}if(savedCopy.benefitRules){benefitRules=normalizeBenefitRules(savedCopy.benefitRules);data.benefitRules=benefitRules}}}catch(_){}}
  const banners=Array.isArray(results[4].banners)?results[4].banners:[];
  const keyForSlot=id=>id==='hero-main'?'banner_utama':id==='menu-banner'?'banner_menu':id==='promo-poster-1'?'banner_promo':id==='promo-poster-2'?'foto_4':id==='promo-poster-3'?'foto_5':(/^shop-photo-(\\d+)$/.test(id)?'foto_'+(Number(id.match(/(\\d+)$/)?.[1])+5):'');
  data.bannerSlots=data.bannerSlots.map(slot=>{const key=keyForSlot(slot.id),remote=banners.find(b=>b.slot_key===key);return {...slot,image:remote?.image_url||'',fileName:remote?.title||''};});
