@@ -565,6 +565,7 @@
           <button class="quick-action" onclick="navigate('promo')"><span class="qa-icon">✦</span><strong>Atur promo</strong><small>Perbarui banner promosi</small></button>
         </div></article>
       </div>
+      <article class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Transaksi terbaru</h2><p class="panel-subtitle">Lima transaksi terakhir yang tersimpan di server.</p></div><button class="text-btn" type="button" onclick="navigate('transactions')">Lihat semua →</button></div><div id="dashboardRecentTransactions"></div></article>
       <article class="panel stats-panel" aria-label="Statistik coffeeshop">
         <div class="panel-head stats-panel-head">
           <div><h2 class="panel-title">Statistik coffeeshop</h2><p class="panel-subtitle">Pantau omzet, transaksi, menu terjual, dan aktivitas member per hari, bulan, atau tahun.</p></div>
@@ -782,7 +783,7 @@
     promo:['Marketing','Promo','Atur konten promosi PA.YU Coffee.'],
     roles:['Akses & keamanan','Role','Kelola username, password, dan status akun tim PA.YU.']
   };
-  const todayISO = () => new Date().toISOString().slice(0,10);
+  const todayISO = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
   const dateTime = () => new Date().toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const money = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n)||0);
   const number = n => new Intl.NumberFormat('id-ID').format(Number(n)||0);
@@ -917,6 +918,9 @@
     const today=todayISO();const todays=data.transactions.filter(t=>transactionDateISO(t)===today);const totalRevenue=todays.reduce((s,t)=>s+(Number(t.total)||0),0);const points=data.members.reduce((s,m)=>s+(Number(m.points)||0),0);
     document.getElementById('statMembers').textContent=number(data.members.length);document.getElementById('statTransactions').textContent=number(todays.length);document.getElementById('statRevenue').textContent=money(totalRevenue);document.getElementById('statPoints').textContent=number(points);
     document.getElementById('recentMembers').innerHTML=data.members.length?`<div class="table-wrap"><table><thead><tr><th>Member</th><th>ID member</th><th>Poin</th></tr></thead><tbody>${[...data.members].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,5).map(m=>`<tr><td><div class="member-cell"><span class="mini-avatar">${esc(initials(m.name))}</span><div><strong>${esc(m.name)}</strong><small>${esc(m.phone)}</small></div></div></td><td>${esc(m.id)}</td><td><b>${number(m.points)}</b></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><div class="empty-icon">♙</div>Belum ada member. Tambahkan member pertama.</div>`;
+    const recent=[...data.transactions].sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||''))).slice(0,5);
+    const recentBox=document.getElementById('dashboardRecentTransactions');
+    if(recentBox)recentBox.innerHTML=recent.length?'<div class="table-wrap"><table><thead><tr><th>Waktu / ID</th><th>Member</th><th>Total</th><th>Poin</th></tr></thead><tbody>'+recent.map(t=>'<tr><td><strong>'+esc(t.transactionCode||t.id)+'</strong><small style="display:block;color:var(--muted);margin-top:4px">'+esc(t.createdAt||transactionDateISO(t)||'-')+'</small></td><td><strong>'+esc(t.memberName||'Member')+'</strong></td><td><b>'+money(t.total)+'</b></td><td><span class="pill">+'+number(t.points)+' poin</span></td></tr>').join('')+'</tbody></table></div>':'<div class="empty"><div class="empty-icon">▤</div>Belum ada transaksi yang tercatat.</div>';
     renderDashboardStats();
   }
   function transactionDateISO(t){
