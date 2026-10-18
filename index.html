@@ -355,6 +355,24 @@ body.promo-viewer-open{overflow:hidden}
 @media(max-width:640px){.promo-info-card{grid-template-columns:minmax(0,1fr);gap:17px;padding:20px;margin-bottom:22px;border-radius:18px}.promo-info-copy h3{font-size:1.65rem}.promo-info-copy p{font-size:.85rem}.promo-info-code{padding:13px 15px}.promo-info-code strong{font-size:1.08rem}}
 
 </style>
+
+<style id="payu-editable-hero-promo-overlay">
+/* Promo images are backgrounds; editable PA.YU copy sits above them on carousel cards. */
+.poster-art{isolation:isolate}
+.poster-art img{z-index:0!important;object-fit:cover;object-position:center;width:100%;height:100%;inset:0}
+.poster-art:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(41,25,20,.38) 0%,rgba(41,25,20,.12) 27%,rgba(41,25,20,.22) 56%,rgba(41,25,20,.66) 100%)}
+.poster-art:before{z-index:4}
+.poster-eyebrow,.poster-bottom,.poster-copy{position:relative;z-index:3}
+.poster-deco{z-index:2;pointer-events:none}
+.poster-copy strong [data-promo-copy-field="headline"]{overflow-wrap:anywhere}
+.poster-description{white-space:pre-line;position:relative;z-index:3}
+/* The lightbox intentionally shows the chosen background image only, without overlay copy. */
+.promo-viewer-zoom .poster-art{padding:0!important}
+.promo-viewer-zoom .poster-art:before,.promo-viewer-zoom .poster-art:after{display:none!important}
+.promo-viewer-zoom .poster-eyebrow,.promo-viewer-zoom .poster-deco,.promo-viewer-zoom .poster-copy,.promo-viewer-zoom .poster-bottom{display:none!important}
+.promo-viewer-zoom .poster-art img{z-index:1!important;object-fit:contain;background:transparent}
+@media(max-width:780px){.promo-poster-meta{padding-top:10px}.promo-poster-meta strong{display:block;overflow-wrap:anywhere}}
+</style>
 </head>
 <body>
 <header><div class="wrap nav">
@@ -368,11 +386,11 @@ body.promo-viewer-open{overflow:hidden}
   <div class="hero-banner">
     <img class="hero-banner-bg" src="banner-utama.jpg" alt="" aria-hidden="true" onerror="this.hidden=true">
     <div class="hero-copy">
-      <div class="kicker">Coffee • Friends • Good days</div>
-      <h1>Tempat pulang<br>untuk <em>cerita.</em></h1>
-      <p>pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.</p>
+      <div class="kicker" id="heroKickerText">Coffee • Friends • Good days</div>
+      <h1><span id="heroHeadlineTop">Tempat pulang</span><br><span id="heroHeadlineBottomPrefix">untuk</span> <em id="heroHeadlineAccent">cerita.</em></h1>
+      <p id="heroDescriptionText">pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.</p>
     </div>
-    <div class="hero-tag"><span aria-hidden="true">✳</span> A little pause, a lot of stories.</div>
+    <div class="hero-tag"><span aria-hidden="true">✳</span> <span id="heroTaglineText">A little pause, a lot of stories.</span></div>
   </div>
 </section>
 <section class="leader-section section" id="leaderboard"><div class="wrap leader-grid"><div class="leader-intro"><span class="season-label">✳ Member community</span><div class="kicker" style="margin-top:24px">The people of pa.yu</div><h2>Papan poin<br>kerabat.</h2><p>Apresiasi untuk kerabat pa.yu yang aktif. Peringkat diperbarui mengikuti poin membership.</p><div class="leader-cta-wrap"><div class="leader-cta-copy"><strong>Sudah menjadi kerabat?</strong><span>Lihat poin dan benefit membership kamu.</span></div><a class="primary leader-cta" href="#" onclick="openLogin();return false">Masuk sebagai member <span aria-hidden="true">↗</span></a></div></div><div class="leaderboard-wrap"><div class="section-topline"><strong>Top kerabat</strong><span class="period-chip">✦ Periode berjalan</span></div>
@@ -400,9 +418,12 @@ body.promo-viewer-open{overflow:hidden}
   </article>
   <div class="promo-carousel" aria-label="Galeri poster promo pa.yu">
     <div class="promo-track" id="promoTrack" tabindex="0" aria-label="Geser horizontal untuk melihat poster">
-      <button type="button" class="promo-poster" data-promo-index="0" data-promo-title="Promo spesial pa.yu" aria-label="Buka poster Promo spesial pa.yu" onclick="openPromoViewer(0)"><span class="poster-frame"><span class="poster-art poster-art-one"><span class="poster-eyebrow">PA.YU COFFEE · 01</span><span class="poster-deco poster-deco-one" aria-hidden="true">✳</span><span class="poster-copy"><span class="poster-small">A LITTLE TREAT</span><strong>Ngopi lebih<br><em>hemat.</em></strong><span class="poster-description">Waktu istimewa,<br>secangkir cerita.</span></span><span class="poster-bottom">PROMO SPESIAL <span>PA.YU</span></span><img src="poster-promo-1.jpg" alt="Poster promo spesial pa.yu" loading="lazy" onerror="this.style.display='none'"></span></span><span class="promo-poster-meta"><strong>Promo spesial</strong></span></button>
-      <button type="button" class="promo-poster" data-promo-index="1" data-promo-title="Menu pilihan pa.yu" aria-label="Buka poster Menu pilihan pa.yu" onclick="openPromoViewer(1)"><span class="poster-frame"><span class="poster-art poster-art-two"><span class="poster-eyebrow">PA.YU COFFEE · 02</span><span class="poster-deco poster-deco-two" aria-hidden="true">◒</span><span class="poster-copy"><span class="poster-small">MADE FOR YOUR PAUSE</span><strong>Menu<br><em>pilihan.</em></strong><span class="poster-description">Teman terbaik untuk<br>hari yang berjalan.</span></span><span class="poster-bottom">SIP · SLOW · SMILE <span>PA.YU</span></span><img src="poster-promo-2.jpg" alt="Poster menu pilihan pa.yu" loading="lazy" onerror="this.style.display='none'"></span></span><span class="promo-poster-meta"><strong>Menu pilihan</strong></span></button>
-      <button type="button" class="promo-poster" data-promo-index="2" data-promo-title="Cerita komunitas pa.yu" aria-label="Buka poster Cerita komunitas pa.yu" onclick="openPromoViewer(2)"><span class="poster-frame"><span class="poster-art poster-art-three"><span class="poster-eyebrow">PA.YU COFFEE · 03</span><span class="poster-deco poster-deco-three" aria-hidden="true">✳</span><span class="poster-copy"><span class="poster-small">COFFEE · FRIENDS · GOOD DAYS</span><strong>Lebih dari<br>sekadar <em>kopi.</em></strong><span class="poster-description">Tempat bertemu,<br>berbagi, dan bercerita.</span></span><span class="poster-bottom">SEE YOU AROUND <span>PA.YU</span></span><img src="poster-promo-3.jpg" alt="Poster komunitas pa.yu" loading="lazy" onerror="this.style.display='none'"></span></span><span class="promo-poster-meta"><strong>Cerita komunitas</strong></span></button>
+      <button type="button" class="promo-poster" data-promo-index="0" data-promo-title="Promo spesial pa.yu" aria-label="Buka poster Promo spesial pa.yu" onclick="openPromoViewer(0)"><span class="poster-frame"><span class="poster-art poster-art-one" data-promo-art="0"><span class="poster-eyebrow" data-promo-copy-field="eyebrow">PA.YU COFFEE · 01</span><span class="poster-deco poster-deco-one" aria-hidden="true">✳</span><span class="poster-copy"><span class="poster-small" data-promo-copy-field="overline">A LITTLE TREAT</span><strong><span data-promo-copy-field="headline">Ngopi lebih</span><br><em data-promo-copy-field="accent">hemat.</em></strong><span class="poster-description" data-promo-copy-field="description">Waktu istimewa,
+secangkir cerita.</span></span><span class="poster-bottom"><span data-promo-copy-field="footer">PROMO SPESIAL</span> <span data-promo-copy-field="brand">PA.YU</span></span><img src="poster-promo-1.jpg" alt="Foto latar promo promo spesial pa.yu" loading="lazy" onerror="this.style.display='none'"></span></span><span class="promo-poster-meta"><strong data-promo-copy-field="label">Promo spesial</strong></span></button>
+      <button type="button" class="promo-poster" data-promo-index="1" data-promo-title="Menu pilihan pa.yu" aria-label="Buka poster Menu pilihan pa.yu" onclick="openPromoViewer(1)"><span class="poster-frame"><span class="poster-art poster-art-two" data-promo-art="1"><span class="poster-eyebrow" data-promo-copy-field="eyebrow">PA.YU COFFEE · 02</span><span class="poster-deco poster-deco-two" aria-hidden="true">◒</span><span class="poster-copy"><span class="poster-small" data-promo-copy-field="overline">MADE FOR YOUR PAUSE</span><strong><span data-promo-copy-field="headline">Menu</span><br><em data-promo-copy-field="accent">pilihan.</em></strong><span class="poster-description" data-promo-copy-field="description">Teman terbaik untuk
+hari yang berjalan.</span></span><span class="poster-bottom"><span data-promo-copy-field="footer">SIP · SLOW · SMILE</span> <span data-promo-copy-field="brand">PA.YU</span></span><img src="poster-promo-2.jpg" alt="Foto latar promo menu pilihan pa.yu" loading="lazy" onerror="this.style.display='none'"></span></span><span class="promo-poster-meta"><strong data-promo-copy-field="label">Menu pilihan</strong></span></button>
+      <button type="button" class="promo-poster" data-promo-index="2" data-promo-title="Cerita komunitas pa.yu" aria-label="Buka poster Cerita komunitas pa.yu" onclick="openPromoViewer(2)"><span class="poster-frame"><span class="poster-art poster-art-three" data-promo-art="2"><span class="poster-eyebrow" data-promo-copy-field="eyebrow">PA.YU COFFEE · 03</span><span class="poster-deco poster-deco-three" aria-hidden="true">✳</span><span class="poster-copy"><span class="poster-small" data-promo-copy-field="overline">COFFEE · FRIENDS · GOOD DAYS</span><strong><span data-promo-copy-field="headline">Lebih dari</span><br><em data-promo-copy-field="accent">sekadar kopi.</em></strong><span class="poster-description" data-promo-copy-field="description">Tempat bertemu,
+berbagi, dan bercerita.</span></span><span class="poster-bottom"><span data-promo-copy-field="footer">SEE YOU AROUND</span> <span data-promo-copy-field="brand">PA.YU</span></span><img src="poster-promo-3.jpg" alt="Foto latar promo cerita komunitas pa.yu" loading="lazy" onerror="this.style.display='none'"></span></span><span class="promo-poster-meta"><strong data-promo-copy-field="label">Cerita komunitas</strong></span></button>
     </div>
   </div>
 </div></section>
@@ -525,6 +546,25 @@ function readAdminBannerSlots(){
 }
 function syncPromoAndGalleryContentFromAdmin(){
   const stored=readAdminData();
+  const heroContent=stored.heroContent;
+  if(heroContent&&typeof heroContent==='object'){
+    const heroTextMap={heroKickerText:heroContent.kicker,heroHeadlineTop:heroContent.headlineTop,heroHeadlineBottomPrefix:heroContent.headlineBottomPrefix,heroHeadlineAccent:heroContent.headlineAccent,heroDescriptionText:heroContent.description,heroTaglineText:heroContent.tagline};
+    Object.entries(heroTextMap).forEach(([id,value])=>{const el=document.getElementById(id);if(el&&typeof value==='string')el.textContent=value;});
+  }
+  const promoCards=stored.promoCards;
+  if(Array.isArray(promoCards)){
+    promoSlides.forEach((slide,index)=>{
+      const card=promoCards.find(item=>item&&item.id===PROMO_SLOT_IDS[index])||promoCards[index];
+      if(!card)return;
+      slide.querySelectorAll('[data-promo-copy-field]').forEach(el=>{
+        const key=el.getAttribute('data-promo-copy-field');
+        if(typeof card[key]==='string')el.textContent=card[key];
+      });
+      const label=String(card.label||'Poster Promo '+(index+1));
+      slide.dataset.promoTitle=label+' pa.yu';
+      slide.setAttribute('aria-label','Buka poster '+label+' pa.yu');
+    });
+  }
   const promo=stored.promo;
   if(promo&&typeof promo==='object'){
     const textMap={publicPromoTag:promo.tag,publicPromoDiscount:promo.discount,publicPromoTitle:promo.title,publicPromoDescription:promo.description,publicPromoCode:promo.code};
