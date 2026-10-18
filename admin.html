@@ -536,6 +536,7 @@
         <button class="nav-btn" data-view="transactions"><span class="nav-icon">▤</span> Transaksi</button>
         <button class="nav-btn" data-view="menu"><span class="nav-icon">☕</span> Menu & Harga</button>
         <button class="nav-btn" data-view="promo"><span class="nav-icon">✦</span> Promo</button>
+        <button class="nav-btn" data-view="benefits" id="benefitsNavBtn" hidden><span class="nav-icon">♧</span> Benefit & Kupon</button>
         <button class="nav-btn" data-view="roles" id="rolesNavBtn" hidden><span class="nav-icon">♙</span> Role</button>
       </nav>
     </div>
@@ -614,6 +615,12 @@
       <div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Pengaturan poin member</h2><p class="panel-subtitle">Atur nilai belanja untuk mendapatkan 1 poin. Perubahan berlaku untuk transaksi baru dan saat riwayat transaksi diedit.</p></div></div><form id="pointRateForm" class="inline-setting"><div><strong style="font-size:12px">Konversi belanja ke poin</strong><p>Masukkan kelipatan Rp1.000. Contoh: Rp1.000 = 1 poin atau Rp10.000 = 1 poin. Poin dibulatkan ke bawah dari total setelah diskon.</p></div><div class="field"><label for="pointRateInput">Setiap belanja (Rp)</label><input id="pointRateInput" type="number" min="1000" max="100000000" step="1000" value="10000" required /><small style="display:block;color:var(--muted);margin-top:5px">Minimal Rp1.000; naikkan per Rp1.000.</small></div><button class="btn" type="submit">Simpan aturan</button></form></div>
       <div class="toolbar"><div class="search"><span class="search-icon">⌕</span><input id="menuSearch" type="search" placeholder="Cari nama menu..." /></div><select id="menuCategoryFilter" style="width:auto;min-width:145px"><option value="all">Semua kategori</option><option value="Coffee">Coffee</option><option value="Non-Coffee">Non-Coffee</option><option value="Food">Food</option></select></div>
       <div class="menu-grid" id="menuGrid"></div>
+    </section>
+
+    <section class="view" id="view-benefits">
+      <div class="section-heading"><div><h2>Aturan Benefit & Kupon</h2><p>Atur poin minimum untuk setiap level dan syarat lima kupon pada masing-masing level.</p></div></div>
+      <div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Ambang poin level</h2><p class="panel-subtitle">Bronze adalah level awal; Silver, Gold, dan Platinum harus meningkat bertahap.</p></div></div><div id="benefitRulesEditor"></div></div>
+      <p class="form-note" style="margin:0 0 18px">Perubahan aturan disimpan ke konfigurasi PA.YU. Penerapan validasi kupon dan perubahan level otomatis pada server membutuhkan dukungan API benefit.</p>
     </section>
 
     <section class="view" id="view-promo">
@@ -775,12 +782,14 @@
   const STORAGE_KEY = 'payuCoffeeAdmin_v1';
   let remoteOperationalMode=false;
   let remoteTransactionFallbackCache=null;
+  let benefitRules=null;
   const PAGE_INFO = {
     dashboard:['Ringkasan toko','Dashboard','Pantau aktivitas PA.YU Coffee hari ini.'],
     members:['Loyalty program','Data Member','Kelola data pelanggan dan poin loyalitas.'],
     transactions:['Operasional toko','Transaksi','Riwayat pembelian dan poin member.'],
     menu:['Katalog produk','Menu & Harga','Kelola daftar menu dan harga jual.'],
     promo:['Marketing','Promo','Atur konten promosi PA.YU Coffee.'],
+    benefits:['Loyalty program','Benefit & Kupon','Atur ambang poin level dan nilai minimum belanja untuk kupon.'],
     roles:['Akses & keamanan','Role','Kelola username, password, dan status akun tim PA.YU.']
   };
   const todayISO = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
@@ -867,7 +876,8 @@
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
     document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));
     const [eye,title,sub]=PAGE_INFO[view];document.getElementById('pageEyebrow').textContent=eye;document.getElementById('pageTitle').textContent=title;document.getElementById('pageSubtitle').textContent=sub;
-    if(view==='members')renderMembers();if(view==='transactions')renderTransactions();if(view==='menu')renderMenu();if(view==='dashboard')renderDashboard();if(view==='roles'&&window.renderRoleAccounts)window.renderRoleAccounts();
+    if(view==='benefits'&&!['master','owner','admin'].includes(currentSession?.backendRole)){notify('Pengaturan benefit hanya tersedia untuk Master, Owner, dan Admin.');return;}
+    if(view==='members')renderMembers();if(view==='transactions')renderTransactions();if(view==='menu')renderMenu();if(view==='dashboard')renderDashboard();if(view==='benefits')renderBenefitRulesForm();if(view==='roles'&&window.renderRoleAccounts)window.renderRoleAccounts();
     window.scrollTo({top:0,behavior:'smooth'});
   };
   document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.view)));
@@ -875,14 +885,48 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-backdrop.open').forEach(m=>{if(m.id==='scannerModal')closeScanner();else m.classList.remove('open')})}});
   document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
 
-  function memberLevel(points){const p=Number(points)||0;if(p>=600)return 'Platinum';if(p>=300)return 'Gold';if(p>=100)return 'Silver';return 'Bronze'}
+  const BASE_LEVEL_THRESHOLDS={Bronze:0,Silver:100,Gold:300,Platinum:600};
+  const BASE_COUPON_TEMPLATES={
+    Bronze:[{type:'fixed',value:3000,min:20000,max:3000},{type:'percent',value:5,min:25000,max:5000},{type:'fixed',value:5000,min:35000,max:5000},{type:'percent',value:7,min:45000,max:8000},{type:'fixed',value:10000,min:65000,max:10000}],
+    Silver:[{type:'fixed',value:5000,min:20000,max:5000},{type:'percent',value:7,min:25000,max:8000},{type:'fixed',value:8000,min:35000,max:8000},{type:'percent',value:10,min:45000,max:12000},{type:'fixed',value:15000,min:65000,max:15000}],
+    Gold:[{type:'fixed',value:7000,min:20000,max:7000},{type:'percent',value:10,min:25000,max:12000},{type:'fixed',value:10000,min:35000,max:10000},{type:'percent',value:12,min:45000,max:18000},{type:'fixed',value:20000,min:65000,max:20000}],
+    Platinum:[{type:'fixed',value:10000,min:20000,max:10000},{type:'percent',value:12,min:25000,max:15000},{type:'fixed',value:15000,min:35000,max:15000},{type:'percent',value:15,min:45000,max:25000},{type:'fixed',value:25000,min:65000,max:25000}]
+  };
+  function normalizeBenefitRules(raw){
+    const result={thresholds:{...BASE_LEVEL_THRESHOLDS},coupons:JSON.parse(JSON.stringify(BASE_COUPON_TEMPLATES))};
+    if(!raw||typeof raw!=='object')return result;
+    const incoming=raw.thresholds&&typeof raw.thresholds==='object'?raw.thresholds:(raw.levelThresholds&&typeof raw.levelThresholds==='object'?raw.levelThresholds:null);
+    if(incoming)for(const level of ['Silver','Gold','Platinum']){const n=Number(incoming[level]);if(Number.isInteger(n)&&n>=1&&n<=10000000)result.thresholds[level]=n;}
+    if(raw.coupons&&typeof raw.coupons==='object'){
+      for(const level of ['Bronze','Silver','Gold','Platinum']){
+        if(!Array.isArray(raw.coupons[level]))continue;
+        result.coupons[level]=Array.from({length:5},(_,i)=>{
+          const base=BASE_COUPON_TEMPLATES[level][i],c=raw.coupons[level][i]||base;
+          const type=c.type==='percent'||c.discount_type==='percent'?'percent':'fixed';
+          const value=Number(c.value??c.discount_value),min=Number(c.min??c.min_spend),maxRaw=c.max??c.max_discount,max=Number(maxRaw);
+          return {type,value:Number.isInteger(value)&&value>=1?Math.min(value,type==='percent'?100:2000000000):base.value,min:Number.isInteger(min)&&min>=0?Math.min(min,2000000000):base.min,max:Number.isInteger(max)&&max>0?Math.min(max,2000000000):(maxRaw===null?null:base.max)};
+        });
+      }
+    }
+    result.thresholds.Bronze=0;
+    if(!(result.thresholds.Silver>0))result.thresholds.Silver=BASE_LEVEL_THRESHOLDS.Silver;
+    if(!(result.thresholds.Gold>result.thresholds.Silver))result.thresholds.Gold=Math.max(BASE_LEVEL_THRESHOLDS.Gold,result.thresholds.Silver+1);
+    if(!(result.thresholds.Platinum>result.thresholds.Gold))result.thresholds.Platinum=Math.max(BASE_LEVEL_THRESHOLDS.Platinum,result.thresholds.Gold+1);
+    return result;
+  }
+  benefitRules=normalizeBenefitRules(typeof data!=='undefined'?data.benefitRules:null);
+  function memberLevel(points){
+    const p=Number(points)||0,t=benefitRules.thresholds;
+    if(p>=t.Platinum)return 'Platinum';if(p>=t.Gold)return 'Gold';if(p>=t.Silver)return 'Silver';return 'Bronze';
+  }
   function couponTemplates(level){
-    const templates={
-      Bronze:[{label:'Kupon 1 · Rp3.000',type:'fixed',value:3000,min:20000},{label:'Kupon 2 · Diskon 5%',type:'percent',value:5,max:5000,min:25000},{label:'Kupon 3 · Rp5.000',type:'fixed',value:5000,min:35000},{label:'Kupon 4 · Diskon 7%',type:'percent',value:7,max:8000,min:45000},{label:'Kupon 5 · Rp10.000',type:'fixed',value:10000,min:65000}],
-      Silver:[{label:'Kupon 1 · Rp5.000',type:'fixed',value:5000,min:20000},{label:'Kupon 2 · Diskon 7%',type:'percent',value:7,max:8000,min:25000},{label:'Kupon 3 · Rp8.000',type:'fixed',value:8000,min:35000},{label:'Kupon 4 · Diskon 10%',type:'percent',value:10,max:12000,min:45000},{label:'Kupon 5 · Rp15.000',type:'fixed',value:15000,min:65000}],
-      Gold:[{label:'Kupon 1 · Rp7.000',type:'fixed',value:7000,min:20000},{label:'Kupon 2 · Diskon 10%',type:'percent',value:10,max:12000,min:25000},{label:'Kupon 3 · Rp10.000',type:'fixed',value:10000,min:35000},{label:'Kupon 4 · Diskon 12%',type:'percent',value:12,max:18000,min:45000},{label:'Kupon 5 · Rp20.000',type:'fixed',value:20000,min:65000}],
-      Platinum:[{label:'Kupon 1 · Rp10.000',type:'fixed',value:10000,min:20000},{label:'Kupon 2 · Diskon 12%',type:'percent',value:12,max:15000,min:25000},{label:'Kupon 3 · Rp15.000',type:'fixed',value:15000,min:35000},{label:'Kupon 4 · Diskon 15%',type:'percent',value:15,max:25000,min:45000},{label:'Kupon 5 · Rp25.000',type:'fixed',value:25000,min:65000}]
-    };return templates[level]||templates.Bronze;
+    const templates=benefitRules.coupons[level]||BASE_COUPON_TEMPLATES.Bronze;
+    return templates.map((t,i)=>({...t,label:'Kupon '+(i+1)+' · '+(t.type==='percent'?'Diskon '+t.value+'%':'Potongan '+money(t.value)),min:Number(t.min)||0,max:t.max==null?null:Number(t.max)}));
+  }
+  function renderBenefitRulesForm(){
+    const host=document.getElementById('benefitRulesEditor');if(!host)return;
+    const levels=['Bronze','Silver','Gold','Platinum'];
+    host.innerHTML='<form id="benefitRulesForm"><div class="form-grid" style="margin-bottom:16px">'+levels.filter(level=>level!=='Bronze').map(level=>'<div class="field"><label for="benefitThreshold_'+level+'">Minimum poin level '+level+'</label><input id="benefitThreshold_'+level+'" name="threshold_'+level+'" type="number" min="1" max="10000000" step="1" value="'+Number(benefitRules.thresholds[level])+'" required /><small style="color:var(--muted)">Bronze otomatis mulai dari 0 poin.</small></div>').join('')+'</div><div style="display:grid;gap:14px">'+levels.map(level=>'<section class="panel" style="box-shadow:none;background:#fffefa;border:1px solid var(--line)"><div class="panel-head"><div><h3 class="panel-title">'+level+'</h3><p class="panel-subtitle">'+(level==='Bronze'?'Level awal untuk semua member.':'Mulai '+number(benefitRules.thresholds[level])+' poin.')+'</p></div></div><div class="table-wrap"><table><thead><tr><th>Kupon</th><th>Jenis diskon</th><th>Nilai diskon</th><th>Min. transaksi (Rp)</th><th>Maks. diskon (Rp)</th></tr></thead><tbody>'+couponTemplates(level).map((c,i)=>'<tr><td><strong>Kupon '+(i+1)+'</strong></td><td><select name="type_'+level+'_'+i+'" aria-label="Jenis diskon '+level+' kupon '+(i+1)+'"><option value="fixed" '+(c.type==='fixed'?'selected':'')+'>Nominal (Rp)</option><option value="percent" '+(c.type==='percent'?'selected':'')+'>Persentase (%)</option></select></td><td><input name="value_'+level+'_'+i+'" type="number" min="1" max="'+(c.type==='percent'?100:2000000000)+'" step="1" value="'+Number(c.value)+'" required aria-label="Nilai diskon '+level+' kupon '+(i+1)+'" /></td><td><input name="min_'+level+'_'+i+'" type="number" min="0" max="2000000000" step="1000" value="'+Number(c.min)+'" required aria-label="Minimum transaksi '+level+' kupon '+(i+1)+'" /></td><td><input name="max_'+level+'_'+i+'" type="number" min="0" max="2000000000" step="1000" value="'+Number(c.max??0)+'" required aria-label="Maksimum diskon '+level+' kupon '+(i+1)+'" /></td></tr>').join('')+'</tbody></table></div></section>').join('')+'</div><div class="form-grid" style="margin-top:16px"><button class="btn" type="submit">Simpan aturan benefit</button><p class="form-note">Nilai maksimum 0 berarti tanpa batas tambahan untuk kupon persentase.</p></div></form>';
   }
   function ensureMemberDefaults(m){
     if(!m||typeof m!=='object')return;
@@ -1337,7 +1381,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   window.lookupScannedValue=value=>{const raw=String(value||'').trim();if(!raw){document.getElementById('scanStatus').textContent='Masukkan ID member terlebih dahulu.';return}const v=raw.replace(/^PAYU:/i,'').trim();const member=data.members.find(m=>String(m.memberCode||'').toLowerCase()===v.toLowerCase()||String(m.id||'').toLowerCase()===v.toLowerCase()||String(m.phone||'')===v||String(m.name||'').toLowerCase()===v.toLowerCase());if(member){document.getElementById('scanStatus').textContent=`Member ditemukan: ${member.name} · ${member.id} · ${number(member.points)} poin.`;document.getElementById('scanManualInput').value=member.id;notify(`Member ditemukan: ${member.name}`);if(scannerPurpose==='transaction'){stopScanner().then(()=>{closeModal('scannerModal');setTransactionMember(member.id);document.getElementById('transactionModal').classList.add('open')});return}stopScanner();if(!document.getElementById('view-members').classList.contains('active'))navigate('members');document.getElementById('memberSearch').value=member.id;renderMembers();openMemberProfile(member.id)}else{document.getElementById('scanStatus').textContent='Member tidak ditemukan. Periksa isi QR atau tambahkan member baru.';notify('ID QR tidak cocok dengan data member.')}};
 
   function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('File CSV berhasil dibuat.')}
-  function renderAll(){data.members.forEach(ensureMemberDefaults);document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();loadPromoToForm();loadHeroContentToForm();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();populateTransactionOptions()}
+  function renderAll(){data.members.forEach(ensureMemberDefaults);data.benefitRules=benefitRules;document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();renderBenefitRulesForm();loadPromoToForm();loadHeroContentToForm();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();populateTransactionOptions()}
   async function persistPublicCopyToServer(){
   const payload={promo:data.promo,heroContent:data.heroContent||readHeroForm(),galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft};
   await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(payload)}}});
@@ -1489,6 +1533,7 @@ renderAll(); })();
     const forced=Boolean(session.mustChangePassword);
     window.payuAdminCanManageRoles=canManageRoles(role)&&!forced;
     if(navRoles)navRoles.hidden=!window.payuAdminCanManageRoles;
+    const benefitsNav=document.getElementById('benefitsNavBtn');if(benefitsNav)benefitsNav.hidden=forced||!['master','owner','admin'].includes(session.backendRole);
     if(!window.payuAdminCanManageRoles && document.getElementById('view-roles')?.classList.contains('active')) window.navigate('dashboard');
 
     if(forced){
