@@ -431,6 +431,40 @@
     }
   </style>
 
+
+  <style id="payu-promo-gallery-refinement">
+    /* PA.YU palette: cream, terracotta, and coffee brown; avoid the former dominant green promo preview. */
+    .promo-preview{background:linear-gradient(145deg,#fffdf9 0%,#f7f3ec 62%,#eee2d5 100%);color:#4b3028;border:1px solid #e0d1c2;box-shadow:0 18px 38px rgba(75,48,40,.10)}
+    .promo-preview:before,.promo-preview:after{border-color:#a6282323}
+    .promo-top{border-bottom:1px solid #4b302810}
+    .promo-brand{color:#4b3028}
+    .promo-tag{color:#a62823;background:#f3e2d8;border:1px solid #e9c9b8;border-radius:999px;padding:6px 8px}
+    .promo-content small{color:#a62823}
+    .promo-content h3{color:#4b3028}
+    .promo-content p{color:#78695e}
+    .promo-code{border-color:#a62823;color:#a62823;background:#fffaf6}
+    .banner-slot-preview{background:linear-gradient(135deg,#4b3028,#8f4433 62%,#c58c68);color:#fffaf3}
+    .banner-slot-placeholder small{color:#f3ded0}
+    .banner-slot-status{background:#4b3028e8}
+    .banner-manager-note{background:#fbf1e8;border-color:#e9d3c5;color:#75584b}
+    .gallery-content-manager{margin-top:20px}
+    .gallery-copy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .gallery-copy-card{min-width:0;border:1px solid #e4d7c9;border-radius:15px;background:#fffdf9;overflow:hidden}
+    .gallery-copy-preview{position:relative;aspect-ratio:1.34 / 1;min-height:190px;overflow:hidden;display:flex;align-items:flex-end;padding:18px;color:#fffaf3;background:linear-gradient(145deg,#4b3028,#8f4433 58%,#c58c68);isolation:isolate}
+    .gallery-copy-preview-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+    .gallery-copy-preview-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(33,19,15,.82),rgba(33,19,15,.10) 80%)}
+    .gallery-copy-preview-caption{min-width:0;max-width:100%;text-shadow:0 2px 12px #1d0f0d70}
+    .gallery-copy-preview-caption small{display:block;font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#f2c7ad;line-height:1.45;overflow-wrap:anywhere}
+    .gallery-copy-preview-caption h3{margin:8px 0 0;font-family:Georgia,serif;font-size:clamp(20px,1.9vw,28px);font-weight:500;line-height:1.05;letter-spacing:-.035em;white-space:pre-line;overflow-wrap:anywhere}
+    .gallery-copy-fields{display:grid;gap:12px;padding:14px}
+    .gallery-copy-fields label{display:block;font-size:11px;font-weight:750;color:#54483e;margin-bottom:6px}
+    .gallery-copy-fields input,.gallery-copy-fields textarea{font-size:13px;min-width:0;background:#fffefa;border-color:#e3d8cc}
+    .gallery-copy-fields textarea{min-height:68px;resize:vertical;white-space:pre-wrap}
+    .gallery-copy-fields .field-note{font-size:10px;color:#887d71;line-height:1.5;margin-top:4px}
+    @media(max-width:1050px){.gallery-copy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.gallery-copy-grid{grid-template-columns:1fr}.gallery-copy-preview{aspect-ratio:1.5 / 1;min-height:200px}.promo-preview{min-height:280px}}
+  </style>
+
 </head>
 <body>
 <div id="adminLoginGate" class="admin-login-gate">
@@ -551,9 +585,15 @@
         <div class="field full"><label for="promoDescription">Deskripsi</label><textarea id="promoDescription" maxlength="240">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</textarea></div>
         <div class="field"><label for="promoCode">Kode promo</label><input id="promoCode" maxlength="24" value="PAYUFRIEND" /></div>
         <div class="field"><label for="promoDiscount">Diskon / penawaran</label><input id="promoDiscount" maxlength="32" value="SPECIAL PRICE" /></div>
-        <div class="field full"><button class="btn" type="submit">Simpan promo</button><p class="form-note">Teks promo tersimpan pada browser ini. Agar tampil di website publik untuk semua pengunjung, website publik perlu dihubungkan ke penyimpanan/backend yang sama.</p></div>
+        <div class="field full"><button class="btn" type="submit">Simpan promo</button><p class="form-note">Teks ini ditampilkan sebagai kartu informasi di bagian Promo pada index.html. Saat ini tersimpan di browser ini; backend diperlukan agar semua pengunjung melihat perubahan.</p></div>
       </form></div>
       <div><div class="promo-preview"><div class="promo-top"><div class="promo-brand">PA.YU COFFEE</div><div class="promo-tag" id="previewTag">SPECIAL OFFER</div></div><div class="promo-content"><small id="previewDiscount">SPECIAL PRICE</small><h3 id="previewTitle">Your daily cup of joy.</h3><p id="previewDescription">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</p><span class="promo-code" id="previewCode">PAYUFRIEND</span></div></div><p class="form-note" style="margin-top:12px">Pratinjau teks promo. Untuk melihat gambar banner, gunakan slot banner di bawah.</p></div></div>
+
+      <section class="panel gallery-content-manager">
+        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Foto Galeri</h2><p class="panel-subtitle">Lihat pratinjau setiap foto dan ubah tulisan yang tampil di atas foto pada website utama.</p></div></div>
+        <div class="gallery-copy-grid" id="galleryCopyGrid"></div>
+        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn" type="button" onclick="saveGalleryContent()">Simpan teks galeri</button><span class="form-note">Pratinjau berubah langsung saat diketik. Klik Simpan agar teks tersimpan di browser ini dan dibaca oleh index.html.</span></div>
+      </section>
 
       <section class="panel banner-manager">
         <div class="banner-manager-head"><div><h2 class="panel-title">Banner website</h2><p class="panel-subtitle">Upload gambar hanya pada bagian yang ingin diganti.</p></div><button class="btn gold" type="button" onclick="addBannerSlot()">＋ Tambah slot banner</button></div>
@@ -673,6 +713,10 @@
       {id:'shop-photo-2',name:'Foto Galeri 2',description:'Mengubah foto kedua pada bagian Galeri di index.html',recommended:'1200 × 800 px · rasio 3:2',image:'',fileName:''},
       {id:'shop-photo-3',name:'Foto Galeri 3',description:'Mengubah foto ketiga pada bagian Galeri di index.html',recommended:'1200 × 800 px · rasio 3:2',image:'',fileName:''},
       {id:'shop-photo-4',name:'Foto Tambahan 4',description:'Slot foto tambahan untuk pengembangan website berikutnya',recommended:'1200 × 800 px',image:'',fileName:''}
+    ],galleryContent:[
+      {slotId:'shop-photo-1',eyebrow:'01 / Our space',title:'Tempat untuk\nberlama-lama.'},
+      {slotId:'shop-photo-2',eyebrow:'02 / Slow down',title:'Take a\ncoffee break.'},
+      {slotId:'shop-photo-3',eyebrow:'03 / Our people',title:'Meet your\nkind of people.'}
     ],promo:{tag:'SPECIAL OFFER',title:'Your daily cup of joy.',description:'Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.',code:'PAYUFRIEND',discount:'SPECIAL PRICE'}
   };
   function mergeBannerSlots(savedSlots){
@@ -691,12 +735,17 @@
     const custom=normalized.filter(x=>!seed.bannerSlots.some(base=>base.id===x.id));
     return [...standard,...custom];
   }
+  function mergeGalleryContent(savedContent){
+    const saved=Array.isArray(savedContent)?savedContent.filter(x=>x&&typeof x==='object'&&x.slotId):[];
+    const bySlot=new Map(saved.map(x=>[x.slotId,x]));
+    return seed.galleryContent.map(base=>({...base,...(bySlot.get(base.slotId)||{}),slotId:base.slotId}));
+  }
   function loadData(){
-    try { const raw=localStorage.getItem(STORAGE_KEY); if(raw){const d=JSON.parse(raw);return {members:Array.isArray(d.members)?d.members:structuredCloneSafe(seed.members),menus:Array.isArray(d.menus)?d.menus:structuredCloneSafe(seed.menus),transactions:Array.isArray(d.transactions)?d.transactions:[],pointRate:Number(d.pointRate)>0?Number(d.pointRate):10000,promo:{...seed.promo,...(d.promo||{})},bannerSlots:mergeBannerSlots(d.bannerSlots)};}} catch(e){console.warn('Data lokal tidak dapat dibaca:',e)}
+    try { const raw=localStorage.getItem(STORAGE_KEY); if(raw){const d=JSON.parse(raw);return {members:Array.isArray(d.members)?d.members:structuredCloneSafe(seed.members),menus:Array.isArray(d.menus)?d.menus:structuredCloneSafe(seed.menus),transactions:Array.isArray(d.transactions)?d.transactions:[],pointRate:Number(d.pointRate)>0?Number(d.pointRate):10000,promo:{...seed.promo,...(d.promo||{})},bannerSlots:mergeBannerSlots(d.bannerSlots),galleryContent:mergeGalleryContent(d.galleryContent)};}} catch(e){console.warn('Data lokal tidak dapat dibaca:',e)}
     return structuredCloneSafe(seed);
   }
   function structuredCloneSafe(o){return JSON.parse(JSON.stringify(o))}
-  let data = loadData(); let scanner = null; let toastTimer = null; let scannerPurpose = 'members'; let editingTransactionId = null;
+  let data = loadData(); let galleryDraft=structuredCloneSafe(data.galleryContent||seed.galleryContent); let scanner = null; let toastTimer = null; let scannerPurpose = 'members'; let editingTransactionId = null;
   data.pointRate = Number(data.pointRate)>0 ? Number(data.pointRate) : 10000;
   data.members.forEach(ensureMemberDefaults);
   function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true}catch(e){notify('Data gagal disimpan. Periksa ruang penyimpanan browser.');console.error(e);return false}}
@@ -983,6 +1032,40 @@
   document.getElementById('menuForm').addEventListener('submit',e=>{e.preventDefault();const id=document.getElementById('menuEditId').value;const item={name:document.getElementById('menuName').value.trim(),category:document.getElementById('menuCategory').value,price:Number(document.getElementById('menuPrice').value),emoji:document.getElementById('menuEmoji').value,description:document.getElementById('menuDescription').value.trim()};if(item.price<0||!Number.isFinite(item.price)){notify('Harga menu tidak valid.');return}if(id){const old=data.menus.find(m=>m.id===id);if(old)Object.assign(old,item);notify('Menu berhasil diperbarui.')}else{data.menus.push({...item,id:makeId('MENU')});notify('Menu berhasil ditambahkan.')}saveData();closeModal('menuModal');renderAll()});
   window.deleteMenu=id=>{const m=data.menus.find(x=>x.id===id);if(!m)return;if(!confirm(`Hapus menu ${m.name}?`))return;data.menus=data.menus.filter(x=>x.id!==id);saveData();renderAll();notify('Menu berhasil dihapus.')};
 
+  function renderGalleryEditors(){
+    const grid=document.getElementById('galleryCopyGrid');
+    if(!grid)return;
+    if(!Array.isArray(galleryDraft))galleryDraft=structuredCloneSafe(seed.galleryContent);
+    const defaults=seed.galleryContent;
+    grid.innerHTML=defaults.map(base=>{
+      const content=galleryDraft.find(x=>x.slotId===base.slotId)||base;
+      const slot=data.bannerSlots.find(x=>x.id===base.slotId);
+      const image=slot&&slot.image?`<img class="gallery-copy-preview-image" src="${esc(slot.image)}" alt="" />`:'';
+      return `<article class="gallery-copy-card" data-gallery-copy-editor="${esc(base.slotId)}">
+        <div class="gallery-copy-preview" id="gallery-preview-${esc(base.slotId)}">${image}<div class="gallery-copy-preview-shade"></div><div class="gallery-copy-preview-caption"><small data-gallery-preview-field="eyebrow">${esc(content.eyebrow||'')}</small><h3 data-gallery-preview-field="title">${esc(content.title||'')}</h3></div></div>
+        <div class="gallery-copy-fields">
+          <div><label for="gallery-eyebrow-${esc(base.slotId)}">Tulisan kecil</label><input id="gallery-eyebrow-${esc(base.slotId)}" data-gallery-copy-input="eyebrow" value="${esc(content.eyebrow||'')}" maxlength="60" /></div>
+          <div><label for="gallery-title-${esc(base.slotId)}">Judul pada foto</label><textarea id="gallery-title-${esc(base.slotId)}" data-gallery-copy-input="title" rows="2" maxlength="100">${esc(content.title||'')}</textarea><div class="field-note">Tekan Enter untuk membuat baris baru seperti pada tampilan website.</div></div>
+        </div>
+      </article>`;
+    }).join('');
+    grid.querySelectorAll('[data-gallery-copy-input]').forEach(input=>input.addEventListener('input',()=>{
+      const card=input.closest('[data-gallery-copy-editor]');
+      if(!card)return;
+      const slotId=card.getAttribute('data-gallery-copy-editor');
+      const field=input.getAttribute('data-gallery-copy-input');
+      let content=galleryDraft.find(x=>x.slotId===slotId);
+      if(!content){content={slotId,eyebrow:'',title:''};galleryDraft.push(content)}
+      content[field]=input.value;
+      const target=card.querySelector(`[data-gallery-preview-field="${field}"]`);
+      if(target)target.textContent=input.value|| (field==='eyebrow'?'01 / Our space':'Judul galeri');
+    }));
+  }
+  window.saveGalleryContent=()=>{
+    data.galleryContent=structuredCloneSafe(galleryDraft);
+    if(saveData())notify('Teks foto Galeri berhasil disimpan. Buka atau muat ulang index.html untuk melihat hasilnya.');
+  };
+
   function renderBannerSlots(){
     const grid=document.getElementById('bannerSlotGrid');
     if(!grid)return;
@@ -1019,17 +1102,17 @@
       const compressed=canvas.toDataURL('image/jpeg',0.74);
       slot.image=compressed;slot.fileName=file.name;slot.updatedAt=new Date().toISOString();
       if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}
-      renderBannerSlots();notify(`Gambar “${slot.name}” berhasil disimpan di browser ini.`);
+      renderBannerSlots();renderGalleryEditors();notify(`Gambar “${slot.name}” berhasil disimpan di browser ini.`);
     }catch(err){console.error(err);notify('Gambar gagal diproses. Coba gunakan file JPG, PNG, atau WebP yang lain.');}
   }
-  window.clearBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;if(!confirm(`Hapus gambar pada ${slot.name}?`))return;const oldImage=slot.image,oldName=slot.fileName;slot.image='';slot.fileName='';delete slot.updatedAt;if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}renderBannerSlots();notify(`Gambar ${slot.name} dihapus dari penyimpanan browser.`)};
+  window.clearBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;if(!confirm(`Hapus gambar pada ${slot.name}?`))return;const oldImage=slot.image,oldName=slot.fileName;slot.image='';slot.fileName='';delete slot.updatedAt;if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}renderBannerSlots();renderGalleryEditors();notify(`Gambar ${slot.name} dihapus dari penyimpanan browser.`)};
   window.downloadBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image){notify('Slot belum memiliki gambar.');return}const a=document.createElement('a');a.href=slot.image;const base=(slot.name||'banner').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'banner';a.download=`payu-${base}.jpg`;document.body.appendChild(a);a.click();a.remove();};
   window.addBannerSlot=()=>{const name=prompt('Nama slot banner baru (contoh: Banner Foto 5):');if(!name||!name.trim())return;const clean=name.trim();if(data.bannerSlots.some(s=>s.name.toLowerCase()===clean.toLowerCase())){notify('Nama slot tersebut sudah ada.');return}const id='custom-'+makeId('BANNER').toLowerCase();data.bannerSlots.push({id,name:clean,description:'Slot banner tambahan untuk website',recommended:'sesuaikan desain website',image:'',fileName:''});if(saveData()){renderBannerSlots();notify(`Slot “${clean}” berhasil ditambahkan.`)}};
   window.removeBannerSlot=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;if(seed.bannerSlots.some(s=>s.id===id)){notify('Slot bawaan tidak dapat dihapus. Hapus gambar saja jika tidak dipakai.');return}if(!confirm(`Hapus slot “${slot.name}” beserta gambar tersimpannya?`))return;data.bannerSlots=data.bannerSlots.filter(s=>s.id!==id);if(saveData()){renderBannerSlots();notify('Slot banner dihapus.')}};
-  window.exportBannerConfig=()=>{const payload={brand:'PA.YU Coffee',exportedAt:new Date().toISOString(),note:'Slot hero-main mengubah background Beranda; shop-photo-1 sampai shop-photo-3 mengubah foto Galeri; promo-poster-1 sampai promo-poster-3 mengubah poster Promo. Saat ini gambar disimpan di localStorage browser yang sama; penyimpanan online diperlukan agar semua pengunjung melihat perubahan.',bannerSlots:data.bannerSlots};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='payu-banner-config.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Konfigurasi banner diekspor sebagai JSON.');};
+  window.exportBannerConfig=()=>{const payload={brand:'PA.YU Coffee',exportedAt:new Date().toISOString(),note:'Slot hero-main mengubah background Beranda; shop-photo-1 sampai shop-photo-3 mengubah foto Galeri; promo-poster-1 sampai promo-poster-3 mengubah poster Promo. File ini juga menyertakan teks promosi dan caption foto Galeri. Saat ini gambar dan teks disimpan di localStorage browser yang sama; penyimpanan online diperlukan agar semua pengunjung melihat perubahan.',bannerSlots:data.bannerSlots,promo:data.promo,galleryContent:data.galleryContent};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='payu-banner-config.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Konfigurasi banner diekspor sebagai JSON.');};
 
   function loadPromoToForm(){const p=data.promo;document.getElementById('promoTag').value=p.tag;document.getElementById('promoTitle').value=p.title;document.getElementById('promoDescription').value=p.description;document.getElementById('promoCode').value=p.code;document.getElementById('promoDiscount').value=p.discount;updatePromoPreview()}
-  function updatePromoPreview(){document.getElementById('previewTag').textContent=document.getElementById('promoTag').value||'PROMO';document.getElementById('previewTitle').textContent=document.getElementById('promoTitle').value||'PA.YU Coffee';document.getElementById('previewDescription').textContent=document.getElementById('promoDescription').value||'Nikmati kopi favoritmu bersama PA.YU Coffee.';document.getElementById('previewCode').textContent=document.getElementById('promoCode').value||'PA.YU';document.getElementById('previewDiscount').textContent=document.getElementById('promoDiscount').value||'SPECIAL OFFER'}
+  function updatePromoPreview(){const tag=document.getElementById('promoTag').value.trim();const title=document.getElementById('promoTitle').value.trim();const description=document.getElementById('promoDescription').value.trim();const code=document.getElementById('promoCode').value.trim();const discount=document.getElementById('promoDiscount').value.trim();document.getElementById('previewTag').textContent=tag;document.getElementById('previewTag').hidden=!tag;document.getElementById('previewTitle').textContent=title||'PA.YU Coffee';document.getElementById('previewDescription').textContent=description;document.getElementById('previewCode').textContent=code;document.getElementById('previewCode').hidden=!code;document.getElementById('previewDiscount').textContent=discount;document.getElementById('previewDiscount').hidden=!discount}
   ['promoTag','promoTitle','promoDescription','promoCode','promoDiscount'].forEach(id=>document.getElementById(id).addEventListener('input',updatePromoPreview));
   document.getElementById('promoForm').addEventListener('submit',e=>{e.preventDefault();data.promo={tag:document.getElementById('promoTag').value.trim(),title:document.getElementById('promoTitle').value.trim(),description:document.getElementById('promoDescription').value.trim(),code:document.getElementById('promoCode').value.trim(),discount:document.getElementById('promoDiscount').value.trim()};saveData();loadPromoToForm();notify('Konten promo disimpan.')});
   window.resetPromo=()=>{if(!confirm('Pulihkan teks promo ke pengaturan awal?'))return;data.promo={...seed.promo};saveData();loadPromoToForm();notify('Promo default dipulihkan.')};
@@ -1041,7 +1124,7 @@
   window.lookupScannedValue=value=>{const v=String(value||'').trim();if(!v){document.getElementById('scanStatus').textContent='Masukkan ID member terlebih dahulu.';return}const member=data.members.find(m=>m.id.toLowerCase()===v.toLowerCase()||m.phone===v||m.name.toLowerCase()===v.toLowerCase());if(member){document.getElementById('scanStatus').textContent=`Member ditemukan: ${member.name} · ${member.id} · ${number(member.points)} poin.`;document.getElementById('scanManualInput').value=member.id;notify(`Member ditemukan: ${member.name}`);if(scannerPurpose==='transaction'){stopScanner().then(()=>{closeModal('scannerModal');setTransactionMember(member.id);document.getElementById('transactionModal').classList.add('open')});return}stopScanner();if(!document.getElementById('view-members').classList.contains('active'))navigate('members');document.getElementById('memberSearch').value=member.id;renderMembers();openMemberProfile(member.id)}else{document.getElementById('scanStatus').textContent='Member tidak ditemukan. Periksa isi QR atau tambahkan member baru.';notify('ID QR tidak cocok dengan data member.')}};
 
   function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('File CSV berhasil dibuat.')}
-  function renderAll(){data.members.forEach(ensureMemberDefaults);document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();loadPromoToForm();renderBannerSlots();populateTransactionOptions()}
+  function renderAll(){data.members.forEach(ensureMemberDefaults);document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();loadPromoToForm();renderBannerSlots();renderGalleryEditors();populateTransactionOptions()}
   // Inisialisasi data awal dan seluruh tampilan.
   renderAll();
 })();
