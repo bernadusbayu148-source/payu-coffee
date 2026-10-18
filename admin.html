@@ -620,7 +620,7 @@
     <section class="view" id="view-benefits">
       <div class="section-heading"><div><h2>Aturan Benefit & Kupon</h2><p>Atur poin minimum untuk setiap level dan syarat lima kupon pada masing-masing level.</p></div></div>
       <div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Ambang poin level</h2><p class="panel-subtitle">Bronze adalah level awal; Silver, Gold, dan Platinum harus meningkat bertahap.</p></div></div><div id="benefitRulesEditor"></div></div>
-      <p class="form-note" style="margin:0 0 18px">Perubahan aturan disimpan ke konfigurasi PA.YU. Penerapan validasi kupon dan perubahan level otomatis pada server membutuhkan dukungan API benefit.</p>
+      <p class="form-note" style="margin:0 0 18px">Perubahan aturan baru berlaku untuk level dan validasi kupon server setelah pembaruan API benefit dipasang.</p>
     </section>
 
     <section class="view" id="view-promo">
@@ -1384,7 +1384,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   function renderAll(){data.members.forEach(ensureMemberDefaults);data.benefitRules=benefitRules;document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();renderBenefitRulesForm();loadPromoToForm();loadHeroContentToForm();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();populateTransactionOptions()}
   async function persistPublicCopyToServer(){
   const payload={promo:data.promo,heroContent:data.heroContent||readHeroForm(),galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft,benefitRules:benefitRules};
-  await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(payload)}}});
+  return await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(payload)}}});
 }
 document.addEventListener('change',event=>{
  const target=event.target;
@@ -1412,8 +1412,8 @@ document.addEventListener('submit',async event=>{
  benefitRules=normalizeBenefitRules({thresholds,coupons});data.benefitRules=benefitRules;saveData();renderBenefitRulesForm();
  if(remoteOperationalMode){
   const submit=form.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
-  try{await persistPublicCopyToServer();await window.payuAdminHydrateFromServer();notify('Aturan benefit berhasil disimpan ke konfigurasi PA.YU.');}
-  catch(err){notify('Aturan benefit belum tersimpan: '+err.message);}
+  try{const result=await persistPublicCopyToServer();if(result?.benefit_rules_applied!==true)throw new Error('API Rumahweb belum menerapkan aturan benefit. Pasang pembaruan API PA.YU terlebih dahulu.');await window.payuAdminHydrateFromServer();notify('Aturan level dan kupon berhasil disimpan dan diterapkan di server.');}
+  catch(err){notify('Aturan benefit belum diterapkan: '+err.message);}
   finally{const fresh=document.getElementById('benefitRulesForm')?.querySelector('button[type="submit"]');if(fresh)fresh.disabled=false;}
  }else notify('Aturan benefit disimpan pada browser ini saja. Login ke backend untuk menyimpan ke server.');
 });
