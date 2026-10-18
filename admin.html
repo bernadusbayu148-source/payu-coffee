@@ -1190,9 +1190,9 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
     updateHeroContentPreview();
   }
   ['heroKickerInput','heroTitleTopInput','heroBottomPrefixInput','heroAccentInput','heroDescriptionInput','heroTaglineInput'].forEach(id=>document.getElementById(id).addEventListener('input',updateHeroContentPreview));
-  document.getElementById('heroContentForm').addEventListener('submit',event=>{
-    event.preventDefault();
-    data.heroContent=readHeroForm();
+  document.getElementById('heroContentForm').addEventListener('submit',async event=>{
+    event.preventDefault();data.heroContent=readHeroForm();
+    if(remoteOperationalMode){try{await persistPublicCopyToServer();notify('Teks Banner Utama disimpan ke database.')}catch(err){notify('Teks Banner gagal disimpan: '+err.message)}return}
     if(saveData())notify('Teks Banner Utama berhasil disimpan.');
   });
 
@@ -1226,8 +1226,9 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
       const target=card.querySelector(`[data-promo-preview-field="${field}"]`);if(target)target.textContent=input.value;
     }));
   }
-  window.savePromoCardContent=()=>{
+  window.savePromoCardContent=async()=>{
     data.promoCards=structuredCloneSafe(promoCardsDraft);
+    if(remoteOperationalMode){try{await persistPublicCopyToServer();notify('Teks poster promo disimpan ke database.')}catch(err){notify('Teks poster gagal disimpan: '+err.message)}return}
     if(saveData())notify('Teks di atas poster dan judul di bawah poster berhasil disimpan.');
   };
 
@@ -1260,8 +1261,9 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
       if(target)target.textContent=input.value|| (field==='eyebrow'?'01 / Our space':'Judul galeri');
     }));
   }
-  window.saveGalleryContent=()=>{
+  window.saveGalleryContent=async()=>{
     data.galleryContent=structuredCloneSafe(galleryDraft);
+    if(remoteOperationalMode){try{await persistPublicCopyToServer();notify('Teks foto Galeri disimpan ke database.')}catch(err){notify('Teks Galeri gagal disimpan: '+err.message)}return}
     if(saveData())notify('Teks foto Galeri berhasil disimpan. Buka atau muat ulang index.html untuk melihat hasilnya.');
   };
 
@@ -1319,8 +1321,8 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   function loadPromoToForm(){const p=data.promo;document.getElementById('promoTag').value=p.tag;document.getElementById('promoTitle').value=p.title;document.getElementById('promoDescription').value=p.description;document.getElementById('promoCode').value=p.code;document.getElementById('promoDiscount').value=p.discount;updatePromoPreview()}
   function updatePromoPreview(){const tag=document.getElementById('promoTag').value.trim();const title=document.getElementById('promoTitle').value.trim();const description=document.getElementById('promoDescription').value.trim();const code=document.getElementById('promoCode').value.trim();const discount=document.getElementById('promoDiscount').value.trim();document.getElementById('previewTag').textContent=tag;document.getElementById('previewTag').hidden=!tag;document.getElementById('previewTitle').textContent=title||'PA.YU Coffee';document.getElementById('previewDescription').textContent=description;document.getElementById('previewCode').textContent=code;document.getElementById('previewCode').hidden=!code;document.getElementById('previewDiscount').textContent=discount;document.getElementById('previewDiscount').hidden=!discount}
   ['promoTag','promoTitle','promoDescription','promoCode','promoDiscount'].forEach(id=>document.getElementById(id).addEventListener('input',updatePromoPreview));
-  document.getElementById('promoForm').addEventListener('submit',async e=>{e.preventDefault();data.promo={tag:document.getElementById('promoTag').value.trim(),title:document.getElementById('promoTitle').value.trim(),description:document.getElementById('promoDescription').value.trim(),code:document.getElementById('promoCode').value.trim(),discount:document.getElementById('promoDiscount').value.trim()};if(remoteOperationalMode){try{await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(data.promo)}}});loadPromoToForm();notify('Konten promo disimpan ke database.')}catch(err){notify('Konten promo gagal disimpan: '+err.message)}return}saveData();loadPromoToForm();notify('Konten promo disimpan.')});
-  window.resetPromo=()=>{if(!confirm('Pulihkan teks promo ke pengaturan awal?'))return;data.promo={...seed.promo};saveData();loadPromoToForm();notify('Promo default dipulihkan.')};
+  document.getElementById('promoForm').addEventListener('submit',async e=>{e.preventDefault();data.promo={tag:document.getElementById('promoTag').value.trim(),title:document.getElementById('promoTitle').value.trim(),description:document.getElementById('promoDescription').value.trim(),code:document.getElementById('promoCode').value.trim(),discount:document.getElementById('promoDiscount').value.trim()};if(remoteOperationalMode){try{await persistPublicCopyToServer();loadPromoToForm();notify('Konten promo disimpan ke database.')}catch(err){notify('Konten promo gagal disimpan: '+err.message)}return}saveData();loadPromoToForm();notify('Konten promo disimpan.')});
+  window.resetPromo=async()=>{if(!confirm('Pulihkan teks promo ke pengaturan awal?'))return;data.promo={...seed.promo};if(remoteOperationalMode){try{await persistPublicCopyToServer();loadPromoToForm();notify('Promo default disimpan ke database.')}catch(err){notify('Promo gagal dipulihkan: '+err.message)}return}saveData();loadPromoToForm();notify('Promo default dipulihkan.')};
 
   window.openScanner=(purpose='members')=>{scannerPurpose=purpose;document.getElementById('scannerModal').classList.add('open');const selectedCamera=cameraFacingMode==='environment'?'belakang':'depan';document.getElementById('scanStatus').textContent=purpose==='transaction'?'Pindai QR member untuk mengisi transaksi. Kamera '+selectedCamera+' dipilih.':'Tekan “Mulai kamera” untuk memulai pemindaian. Kamera '+selectedCamera+' dipilih.';document.getElementById('scanManualInput').value='';document.getElementById('startScannerBtn').disabled=false;document.getElementById('stopScannerBtn').disabled=true;document.getElementById('switchCameraBtn').disabled=false;document.getElementById('switchCameraBtn').title='Beralih ke kamera '+(cameraFacingMode==='environment'?'depan':'belakang');document.getElementById('switchCameraBtn').setAttribute('aria-label',document.getElementById('switchCameraBtn').title)};
   window.startScanner=async()=>{if(!window.Html5Qrcode){document.getElementById('scanStatus').textContent='Pustaka pemindai belum termuat. Periksa koneksi internet atau gunakan kolom ID manual.';notify('Pemindai QR belum tersedia. Gunakan pencarian ID manual.');return}if(scanner){document.getElementById('scanStatus').textContent='Kamera sudah aktif.';return}try{scanner=new Html5Qrcode('qrReader');await scanner.start({facingMode:cameraFacingMode},{fps:10,qrbox:{width:220,height:220}},decoded=>{lookupScannedValue(decoded)},err=>{});document.getElementById('scanStatus').textContent='Kamera '+(cameraFacingMode==='environment'?'belakang':'depan')+' aktif. Arahkan QR ke bingkai.';document.getElementById('startScannerBtn').disabled=true;document.getElementById('stopScannerBtn').disabled=false;document.getElementById('switchCameraBtn').disabled=false;document.getElementById('switchCameraBtn').title='Beralih ke kamera '+(cameraFacingMode==='environment'?'depan':'belakang');document.getElementById('switchCameraBtn').setAttribute('aria-label',document.getElementById('switchCameraBtn').title)}catch(e){scanner=null;document.getElementById('scanStatus').textContent='Tidak dapat membuka kamera '+(cameraFacingMode==='environment'?'belakang':'depan')+'. Izinkan akses kamera dan gunakan HTTPS atau localhost. Anda dapat mencoba ikon putar kamera atau memasukkan ID member manual.';notify('Kamera tidak dapat diakses. Coba ganti kamera atau gunakan ID member manual.');console.error(e)}};
@@ -1331,7 +1333,11 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
 
   function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('File CSV berhasil dibuat.')}
   function renderAll(){data.members.forEach(ensureMemberDefaults);document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();loadPromoToForm();loadHeroContentToForm();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();populateTransactionOptions()}
-  window.payuAdminHydrateFromServer=async function(){
+  async function persistPublicCopyToServer(){
+  const payload={promo:data.promo,heroContent:data.heroContent||readHeroForm(),galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft};
+  await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(payload)}}});
+}
+window.payuAdminHydrateFromServer=async function(){
  const request=window.payuAdminApiRequest;if(typeof request!=='function')throw new Error('Helper API belum siap.');
  const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings'),request('public/banners')]);
  const oldMenus=data.menus.slice();
@@ -1353,7 +1359,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
  document.getElementById('publicInfoHours').value=settingValue('business_hours');
  document.getElementById('publicInfoInstagram').value=settingValue('instagram_url');
  document.getElementById('publicInfoMaps').value=settingValue('google_maps_url');
- if(promoSetting&&promoSetting.setting_value){try{const savedPromo=JSON.parse(promoSetting.setting_value);if(savedPromo&&typeof savedPromo==='object')data.promo=savedPromo;}catch(_){}}
+ if(promoSetting&&promoSetting.setting_value){try{const savedCopy=JSON.parse(promoSetting.setting_value);if(savedCopy&&typeof savedCopy==='object'){data.promo=savedCopy.promo&&typeof savedCopy.promo==='object'?savedCopy.promo:(savedCopy.title?savedCopy:data.promo);if(savedCopy.heroContent)data.heroContent=savedCopy.heroContent;if(Array.isArray(savedCopy.galleryContent)){data.galleryContent=savedCopy.galleryContent;galleryDraft=structuredCloneSafe(savedCopy.galleryContent)}if(Array.isArray(savedCopy.promoCards)){data.promoCards=savedCopy.promoCards;promoCardsDraft=structuredCloneSafe(savedCopy.promoCards)}}}catch(_){}}
  const banners=Array.isArray(results[4].banners)?results[4].banners:[];
  const keyForSlot=id=>id==='hero-main'?'banner_utama':id==='menu-banner'?'banner_menu':id==='promo-poster-1'?'banner_promo':id==='promo-poster-2'?'foto_4':id==='promo-poster-3'?'foto_5':(/^shop-photo-(\\d+)$/.test(id)?'foto_'+(Number(id.match(/(\\d+)$/)?.[1])+5):'');
  data.bannerSlots=data.bannerSlots.map(slot=>{const key=keyForSlot(slot.id),remote=banners.find(b=>b.slot_key===key);return {...slot,image:remote?.image_url||'',fileName:remote?.title||''};});
