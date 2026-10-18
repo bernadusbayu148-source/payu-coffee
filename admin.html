@@ -773,6 +773,7 @@
   'use strict';
   const STORAGE_KEY = 'payuCoffeeAdmin_v1';
   let remoteOperationalMode=false;
+  let remoteTransactionFallbackCache=null;
   const PAGE_INFO = {
     dashboard:['Ringkasan toko','Dashboard','Pantau aktivitas PA.YU Coffee hari ini.'],
     members:['Loyalty program','Data Member','Kelola data pelanggan dan poin loyalitas.'],
@@ -1124,7 +1125,7 @@
     e.preventDefault();const member=data.members.find(m=>m.id===document.getElementById('txMember').value);const items=getTransactionItems();
     if(!member){notify('Pilih member yang benar melalui hasil pencarian atau scan QR.');document.getElementById('txMemberSearch').focus();return}
     if(!items.length||items.length!==document.querySelectorAll('#txItems .tx-item-row').length){notify('Periksa kembali menu dan jumlah yang dimasukkan.');return}
-    if(remoteOperationalMode){const button=document.querySelector('#transactionForm button[type="submit"]');const oldRemote=editingTransactionId?data.transactions.find(x=>String(x.id)===String(editingTransactionId)):null;if(document.getElementById('txCoupon').value){notify('Kupon kasir belum diaktifkan. Pilih “Tidak menggunakan kupon”.');return}if(button)button.disabled=true;try{const body={member_id:Number(member.backendId||member.id),items:items.map(item=>({menu_id:Number(item.menuId),quantity:item.qty})),notes:[document.getElementById('txPayment').value?'Pembayaran: '+document.getElementById('txPayment').value:'',document.getElementById('txNotes').value.trim()].filter(Boolean).join('\\n')};if(oldRemote)body.id=Number(oldRemote.backendId||oldRemote.id);const result=await window.payuAdminApiRequest('staff/transactions/save',{method:'POST',body});await window.payuAdminHydrateFromServer();closeModal('transactionModal');editingTransactionId=null;notify((oldRemote?'Transaksi diperbarui':'Transaksi tersimpan')+' di database. Total '+money(Number(result.transaction?.total_amount||result.total_amount||0))+'.')}catch(err){notify('Transaksi gagal disimpan: '+err.message)}finally{if(button)button.disabled=false}return}const subtotal=items.reduce((sum,item)=>sum+item.subtotal,0);const couponId=document.getElementById('txCoupon').value||'';const discount=calcCouponDiscount(member,couponId,subtotal);if(couponId&&discount<=0){notify('Kupon tidak tersedia atau minimum belanja belum terpenuhi.');return}
+    if(remoteOperationalMode){const button=document.querySelector('#transactionForm button[type="submit"]');const oldRemote=editingTransactionId?data.transactions.find(x=>String(x.id)===String(editingTransactionId)):null;if(document.getElementById('txCoupon').value){notify('Kupon kasir belum diaktifkan. Pilih “Tidak menggunakan kupon”.');return}if(button)button.disabled=true;try{const body={member_id:Number(member.backendId||member.id),items:items.map(item=>({menu_id:Number(item.menuId),quantity:item.qty})),notes:[document.getElementById('txPayment').value?'Pembayaran: '+document.getElementById('txPayment').value:'',document.getElementById('txNotes').value.trim()].filter(Boolean).join('\\n')};if(oldRemote)body.id=Number(oldRemote.backendId||oldRemote.id);const result=await window.payuAdminApiRequest('staff/transactions/save',{method:'POST',body});remoteTransactionFallbackCache=null;await window.payuAdminHydrateFromServer();closeModal('transactionModal');editingTransactionId=null;notify((oldRemote?'Transaksi diperbarui':'Transaksi tersimpan')+' di database. Total '+money(Number(result.transaction?.total_amount||result.total_amount||0))+'.')}catch(err){notify('Transaksi gagal disimpan: '+err.message)}finally{if(button)button.disabled=false}return}const subtotal=items.reduce((sum,item)=>sum+item.subtotal,0);const couponId=document.getElementById('txCoupon').value||'';const discount=calcCouponDiscount(member,couponId,subtotal);if(couponId&&discount<=0){notify('Kupon tidak tersedia atau minimum belanja belum terpenuhi.');return}
     const total=Math.max(0,subtotal-discount);const pts=Math.floor(total/Math.max(1,Number(data.pointRate)||10000));const totalQty=items.reduce((sum,item)=>sum+item.qty,0);const menuName=items.map(item=>`${item.menuName} × ${item.qty}`).join(', ');const old=editingTransactionId?data.transactions.find(t=>t.id===editingTransactionId):null;
     if(old){const oldMember=data.members.find(m=>m.id===old.memberId);if(oldMember)oldMember.points=Math.max(0,(Number(oldMember.points)||0)-(Number(old.points)||0));releaseTransactionCoupon(old);}
     const tpl=couponId?couponTemplate(member,couponId):null;const t={...(old||{}),id:old?old.id:makeId('TRX'),memberId:member.id,memberName:member.name,menuId:items[0].menuId,menuName,items,qty:totalQty,subtotal,discount,total,points:pts,couponId:couponId||null,couponTitle:tpl?tpl.label:null,payment:document.getElementById('txPayment').value,notes:document.getElementById('txNotes').value.trim(),date:old?.date||todayISO(),createdAt:old?.createdAt||dateTime(),updatedAt:old?dateTime():null};
@@ -1132,7 +1133,7 @@
     member.points=(Number(member.points)||0)+pts;if(couponId)markCouponUsed(member,couponId,t.id);saveData();closeModal('transactionModal');renderAll();if(document.getElementById('profileModal').classList.contains('open')){const profileId=data.members.find(m=>m.id===member.id)?.id;if(profileId)openMemberProfile(profileId)}notify(`${old?'Transaksi diperbarui':'Transaksi tersimpan'}. ${member.name} mendapat ${pts} poin.`);editingTransactionId=null;
   });
   window.editTransaction=id=>{const t=data.transactions.find(x=>x.id===id);if(!t)return;window.openTransactionModal();editingTransactionId=id;document.getElementById('txModalTitle').textContent='Edit transaksi';document.getElementById('txMemberSearch').disabled=true;setTransactionMember(t.memberId);document.getElementById('txItems').innerHTML='';const oldItems=Array.isArray(t.items)&&t.items.length?t.items:[{menuId:t.menuId,qty:t.qty||1}];oldItems.forEach(i=>addTransactionItem(i.menuId, i.qty||1));document.getElementById('txPayment').value=t.payment||'Tunai';document.getElementById('txNotes').value=t.notes||'';refreshCouponOptions();document.getElementById('txCoupon').value=t.couponId||'';updateTxPreview();document.getElementById('transactionModal').classList.add('open')};
-  window.deleteTransaction=async (id,profileMemberId=null)=>{const remoteT=data.transactions.find(x=>String(x.id)===String(id));if(!remoteT)return;if(remoteOperationalMode){if(!confirm(`Batalkan transaksi ${remoteT.transactionCode||remoteT.id}? Poin akan dikoreksi server.`))return;try{await window.payuAdminApiRequest('staff/transactions/void',{method:'POST',body:{id:Number(remoteT.backendId||remoteT.id)}});await window.payuAdminHydrateFromServer();notify('Transaksi dibatalkan di database dan poin dikoreksi.')}catch(err){notify('Transaksi gagal dibatalkan: '+err.message)}return;}const t=data.transactions.find(x=>x.id===id);if(!t)return;if(!confirm(`Hapus transaksi ${t.id}? Poin yang berasal dari transaksi ini akan dikoreksi dan kupon akan dikembalikan jika digunakan.`))return;const m=data.members.find(x=>x.id===t.memberId);if(m)m.points=Math.max(0,(Number(m.points)||0)-(Number(t.points)||0));releaseTransactionCoupon(t);data.transactions=data.transactions.filter(x=>x.id!==id);saveData();renderAll();if(profileMemberId&&document.getElementById('profileModal').classList.contains('open'))openMemberProfile(profileMemberId);notify('Transaksi dihapus, poin dan kupon sudah disesuaikan.')};
+  window.deleteTransaction=async (id,profileMemberId=null)=>{const remoteT=data.transactions.find(x=>String(x.id)===String(id));if(!remoteT)return;if(remoteOperationalMode){if(!confirm(`Batalkan transaksi ${remoteT.transactionCode||remoteT.id}? Poin akan dikoreksi server.`))return;try{await window.payuAdminApiRequest('staff/transactions/void',{method:'POST',body:{id:Number(remoteT.backendId||remoteT.id)}});remoteTransactionFallbackCache=null;await window.payuAdminHydrateFromServer();notify('Transaksi dibatalkan di database dan poin dikoreksi.')}catch(err){notify('Transaksi gagal dibatalkan: '+err.message)}return;}const t=data.transactions.find(x=>x.id===id);if(!t)return;if(!confirm(`Hapus transaksi ${t.id}? Poin yang berasal dari transaksi ini akan dikoreksi dan kupon akan dikembalikan jika digunakan.`))return;const m=data.members.find(x=>x.id===t.memberId);if(m)m.points=Math.max(0,(Number(m.points)||0)-(Number(t.points)||0));releaseTransactionCoupon(t);data.transactions=data.transactions.filter(x=>x.id!==id);saveData();renderAll();if(profileMemberId&&document.getElementById('profileModal').classList.contains('open'))openMemberProfile(profileMemberId);notify('Transaksi dihapus, poin dan kupon sudah disesuaikan.')};
   window.exportTransactions=()=>downloadCSV('payu-transactions.csv',[['ID Transaksi','Waktu','ID Member','Nama Member','Daftar Menu','Total Jumlah Item','Total Belanja','Poin','Pembayaran','Catatan'],...data.transactions.map(t=>[t.id,t.createdAt,t.memberId,t.memberName,Array.isArray(t.items)?t.items.map(i=>`${i.menuName} x ${i.qty} (${i.subtotal})`).join(' | '):(t.menuName||''),t.qty||1,t.total,t.points,t.payment,t.notes||''])]);
 
   document.getElementById('publicInfoForm').addEventListener('submit',async e=>{
@@ -1343,11 +1344,42 @@ window.payuAdminHydrateFromServer=async function(){
  const oldMenus=data.menus.slice();
  data.members=(Array.isArray(results[0].members)?results[0].members:[]).map(m=>({id:String(m.member_id),backendId:Number(m.member_id),memberCode:String(m.member_code||''),name:String(m.display_name||''),phone:String(m.phone||''),email:String(m.email||''),points:Number(m.points_balance||0),level:String(m.level||'Bronze'),createdAt:String(m.created_at||''),isActive:Boolean(m.is_active),coupons:[]}));
  data.menus=(Array.isArray(results[1].menus)?results[1].menus:[]).map(m=>{const old=oldMenus.find(x=>String(x.name).toLowerCase()===String(m.name).toLowerCase());return {id:String(m.id),backendId:Number(m.id),name:String(m.name||''),category:String(m.category||'Coffee'),price:Number(m.price||0),emoji:old?.emoji||'☕',description:old?.description||'',isActive:Boolean(m.is_active)};});
- data.transactions=(Array.isArray(results[2].transactions)?results[2].transactions:[]).map(tx=>{
+ const mapRemoteTransaction=(tx, fallbackMember=null)=>{
   const noteText=String(tx.notes||''),payMatch=noteText.match(/^Pembayaran: (Tunai|QRIS|Debit|Transfer)(?:\r?\n|$)/),notes=payMatch?noteText.replace(/^Pembayaran: (?:Tunai|QRIS|Debit|Transfer)(?:\r?\n)?/,''):noteText;
-  const items=(Array.isArray(tx.items)?tx.items:[]).map(i=>({menuId:i.menu_id===null?'':String(i.menu_id),menuName:String(i.name||''),price:Number(i.unit_price||0),qty:Number(i.quantity||1),subtotal:Number(i.line_total||0)}));
-  return {id:String(tx.id),backendId:Number(tx.id),transactionCode:String(tx.transaction_code||''),memberId:String(tx.member_id),memberName:String(tx.member_name||''),items,menuId:items[0]?.menuId||'',menuName:items.map(i=>i.menuName+' × '+i.qty).join(', '),qty:items.reduce((s,i)=>s+i.qty,0),subtotal:Number(tx.subtotal||0),discount:Number(tx.discount_amount||0),total:Number(tx.total_amount||0),points:Number(tx.points_earned||0),couponId:tx.coupon_id?String(tx.coupon_id):'',couponTitle:'',payment:payMatch?payMatch[1]:'Tunai',notes,createdAt:String(tx.created_at||''),date:String(tx.created_at||'').slice(0,10)};
- });
+  const items=(Array.isArray(tx.items)?tx.items:[]).map(i=>({menuId:i.menu_id==null?'':String(i.menu_id),menuName:String(i.name||i.menu_name_snapshot||''),price:Number(i.unit_price||0),qty:Number(i.quantity||1),subtotal:Number(i.line_total||0)}));
+  const memberId=tx.member_id!=null?String(tx.member_id):String(fallbackMember?.backendId||fallbackMember?.id||'');
+  const memberName=String(tx.member_name||fallbackMember?.name||'Member');
+  return {id:String(tx.id),backendId:Number(tx.id),transactionCode:String(tx.transaction_code||''),memberId,memberName,items,menuId:items[0]?.menuId||'',menuName:items.map(i=>i.menuName+' × '+i.qty).join(', '),qty:items.reduce((sum,item)=>sum+item.qty,0),subtotal:Number(tx.subtotal||0),discount:Number(tx.discount_amount||tx.discount||0),total:Number(tx.total_amount||tx.total||0),points:Number(tx.points_earned||tx.points||0),couponId:tx.coupon_id?String(tx.coupon_id):'',couponTitle:'',payment:payMatch?payMatch[1]:'Tunai',notes,createdAt:String(tx.created_at||''),date:String(tx.created_at||'').slice(0,10)};
+ };
+ const remoteTxRows=Array.isArray(results[2].transactions)?results[2].transactions:[];
+ if(remoteTxRows.length){
+  data.transactions=remoteTxRows.map(tx=>mapRemoteTransaction(tx));
+  remoteTransactionFallbackCache=null;
+ }else{
+  if(!Array.isArray(remoteTransactionFallbackCache)){
+   const fallbackRows=[];
+   const rawMembers=Array.isArray(results[0].members)?results[0].members:[];
+   const fallbackBatchSize=5;
+   for(let offset=0;offset<rawMembers.length;offset+=fallbackBatchSize){
+    const batch=rawMembers.slice(offset,offset+fallbackBatchSize);
+    const settled=await Promise.all(batch.map(async rawMember=>{
+     const id=Number(rawMember.member_id||rawMember.id||0);
+     if(!id)return null;
+     try{
+      const detail=await request('staff/members?id='+id);
+      const profile=detail.profile||{};
+      const member={id:String(profile.member_id||id),backendId:Number(profile.member_id||id),memberCode:String(profile.member_code||rawMember.member_code||''),name:String(profile.display_name||rawMember.display_name||'Member')};
+      return (Array.isArray(detail.transactions)?detail.transactions:[]).map(tx=>mapRemoteTransaction(tx,member));
+     }catch(err){console.warn('[PA.YU] Riwayat member tidak dapat dimuat:',id,err.message);return null;}
+    }));
+    settled.filter(Array.isArray).forEach(rows=>fallbackRows.push(...rows));
+   }
+   const deduped=new Map();
+   fallbackRows.forEach(tx=>deduped.set(String(tx.backendId||tx.id),tx));
+   remoteTransactionFallbackCache=[...deduped.values()].sort((left,right)=>String(right.createdAt||'').localeCompare(String(left.createdAt||'')));
+  }
+  data.transactions=remoteTransactionFallbackCache.map(tx=>({...tx,items:(tx.items||[]).map(item=>({...item}))}));
+ }
  const settings=Array.isArray(results[3].settings)?results[3].settings:[],pointSetting=settings.find(x=>x.setting_key==='point_rupiah_per_point'),promoSetting=settings.find(x=>x.setting_key==='public_opening_message');
  const readRemoteSettingField=key=>String(settings.find(x=>x.setting_key===key)?.setting_value||'');
  document.getElementById('publicInfoAddress').value=readRemoteSettingField('business_address');
