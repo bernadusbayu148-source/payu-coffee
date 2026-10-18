@@ -670,7 +670,7 @@
 
     <section class="view" id="view-roles">
       <div class="section-heading"><div><h2>Pengaturan Role</h2><p>Kelola akun Master, Owner, Admin, dan tim kasir PA.YU.</p></div></div>
-      <div class="role-help"><strong>Pengelolaan akun demo.</strong> Perubahan username, password, dan status disimpan di browser ini. Untuk penggunaan nyata, autentikasi harus dipindahkan ke backend PHP/MySQL Rumahweb. Akun Master utama tidak dapat dihapus agar akses pengelolaan tetap tersedia.</div>
+      <div class="role-help"><strong>Akun staf tersimpan di server PA.YU.</strong> Perubahan username, password, role, dan status dikirim ke database Rumahweb. Password tidak pernah ditampilkan. Akun yang diberi password awal wajib menggantinya saat login pertama.</div>
       <div class="role-summary">
         <article class="mini-stat"><span>Total akun role</span><strong id="roleCount">0</strong></article>
         <article class="mini-stat"><span>Akun aktif</span><strong id="roleActiveCount">0</strong></article>
@@ -690,10 +690,22 @@
   <div class="field full"><label for="roleAccountName">Nama akun / nama petugas *</label><input id="roleAccountName" required maxlength="80" placeholder="Contoh: Kasir Pagi" /></div>
   <div class="field"><label for="roleAccountType">Jenis role *</label><select id="roleAccountType" required><option value="master">Master</option><option value="owner">Owner</option><option value="admin">Admin</option><option value="kasir_satu">Kasir satu</option><option value="kasir_dua">Kasir dua</option></select></div>
   <div class="field"><label for="roleAccountUsername">Username *</label><input id="roleAccountUsername" required maxlength="40" autocapitalize="none" autocomplete="off" placeholder="Username login" /></div>
-  <div class="field full"><label for="roleAccountPassword">Password <span id="rolePasswordRequiredNote">*</span></label><input id="roleAccountPassword" type="password" minlength="8" autocomplete="new-password" placeholder="Minimal 8 karakter" /><p class="role-modal-note" id="rolePasswordHelp">Password disimpan untuk demo pada browser ini. Gunakan backend aman sebelum rilis publik.</p></div>
+  <div class="field full"><label for="roleAccountPassword">Password <span id="rolePasswordRequiredNote">*</span></label><input id="roleAccountPassword" type="password" minlength="10" autocomplete="new-password" placeholder="Minimal 10 karakter" /><p class="role-modal-note" id="rolePasswordHelp">Password disimpan dengan hash di server. Password baru minimal 10 karakter dan wajib diganti saat login pertama.</p></div>
   <div class="field full"><label style="display:flex;align-items:center;gap:9px;font-weight:650"><input id="roleAccountActive" type="checkbox" checked style="width:auto;min-height:auto" /> Akun aktif dan dapat login</label></div>
   <div class="field full"><div class="modal-footer"><button type="button" class="btn secondary" onclick="closeModal('roleAccountModal')">Batal</button><button type="submit" class="btn">Simpan akun</button></div></div>
 </form></div></div>
+
+<div class="modal-backdrop" id="forcedPasswordModal" role="dialog" aria-modal="true" aria-labelledby="forcedPasswordTitle">
+  <div class="modal">
+    <div class="modal-head"><div><h3 id="forcedPasswordTitle">Buat password baru</h3><p>Akun ini menggunakan password awal. Buat password baru sebelum melanjutkan.</p></div></div>
+    <form id="forcedPasswordForm" class="form-grid">
+      <div class="field full"><label for="forcedNewPassword">Password baru *</label><input id="forcedNewPassword" type="password" minlength="10" maxlength="200" autocomplete="new-password" required placeholder="Minimal 10 karakter" /></div>
+      <div class="field full"><label for="forcedConfirmPassword">Konfirmasi password baru *</label><input id="forcedConfirmPassword" type="password" minlength="10" maxlength="200" autocomplete="new-password" required placeholder="Ulangi password baru" /></div>
+      <div class="field full"><p class="role-modal-note">Gunakan password unik. Jangan gunakan password database atau password layanan lain.</p><div id="forcedPasswordError" class="admin-login-error" role="alert"></div></div>
+      <div class="field full"><div class="modal-footer"><button id="forcedPasswordSubmit" type="submit" class="btn">Simpan password baru</button></div></div>
+    </form>
+  </div>
+</div>
 
 <!-- Modal member -->
 <div class="modal-backdrop" id="memberModal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle"><div class="modal"><div class="modal-head"><div><h3 id="memberModalTitle">Tambah member</h3><p>Isi informasi pelanggan untuk membuat kartu member.</p></div><button class="close-btn" onclick="closeModal('memberModal')" aria-label="Tutup">×</button></div><form id="memberForm" class="form-grid"><input type="hidden" id="memberEditId" />
@@ -1304,47 +1316,23 @@
     });
   }
 
-  const ROLE_STORAGE_KEY = 'payu_admin_role_accounts_v1';
   const roleNames = { master:'Master', owner:'Owner', admin:'Admin', kasir_satu:'Kasir satu', kasir_dua:'Kasir dua' };
+  const uiToBackendRole = { master:'master', owner:'owner', admin:'admin', kasir_satu:'cashier1', kasir_dua:'cashier2' };
+  const backendToUiRole = { master:'master', owner:'owner', admin:'admin', cashier1:'kasir_satu', cashier2:'kasir_dua' };
   const gate = document.getElementById('adminLoginGate');
   const app = document.querySelector('.app');
   const form = document.getElementById('adminGateForm');
   const roleSelect = document.getElementById('gateRole');
   const error = document.getElementById('adminGateError');
   const navRoles = document.getElementById('rolesNavBtn');
+  const forcedPasswordModal = document.getElementById('forcedPasswordModal');
   const query = new URLSearchParams(window.location.search);
   const requestedRole = query.get('role');
   if (requestedRole && roleNames[requestedRole]) roleSelect.value = requestedRole;
 
-  const seedAccounts = [
-    {id:'role-master-primary',name:'Akun Master',role:'master',username:'',password:'',active:false,protectedAccount:true,createdAt:Date.now()},
-    {id:'role-owner-primary',name:'Akun Owner',role:'owner',username:'',password:'',active:false,protectedAccount:false,createdAt:Date.now()},
-    {id:'role-admin-primary',name:'Akun Admin',role:'admin',username:'admin',password:'',active:false,protectedAccount:false,createdAt:Date.now()},
-    {id:'role-kasir-one-primary',name:'Akun Kasir Satu',role:'kasir_satu',username:'kasir1',password:'',active:false,protectedAccount:false,createdAt:Date.now()},
-    {id:'role-kasir-two-primary',name:'Akun Kasir Dua',role:'kasir_dua',username:'kasir2',password:'',active:false,protectedAccount:false,createdAt:Date.now()}
-  ];
-  function safeClone(value){return JSON.parse(JSON.stringify(value))}
-  function loadAccounts(){
-    try {
-      const raw=localStorage.getItem(ROLE_STORAGE_KEY);
-      if(raw){
-        const parsed=JSON.parse(raw);
-        if(Array.isArray(parsed) && parsed.length){
-          // Keep a protected Master recovery account present even if old demo data is incomplete.
-          if(!parsed.some(a=>a.id==='role-master-primary')) parsed.unshift(safeClone(seedAccounts[0]));
-          return parsed.map(a=>({...a, role:roleNames[a.role]?a.role:'admin', username:String(a.username||''), password:String(a.password||''), active:Boolean(a.active)}));
-        }
-      }
-    } catch(e){ console.warn('Data role tidak dapat dibaca:',e); }
-    const initial=safeClone(seedAccounts); saveAccounts(initial); return initial;
-  }
-  let accounts=loadAccounts();
-  let currentSession=null;
-  let activeEditId=null;
-  function saveAccounts(next=accounts){
-    try{localStorage.setItem(ROLE_STORAGE_KEY,JSON.stringify(next));return true}
-    catch(e){console.error(e);notifySafe('Akun role gagal disimpan. Periksa penyimpanan browser.');return false}
-  }
+  let roleAccounts = [];
+  let currentSession = null;
+  let activeEditId = null;
   function notifySafe(message){const el=document.getElementById('toast');if(el){el.textContent=message;el.classList.add('show');window.setTimeout(()=>el.classList.remove('show'),3200)}else console.info(message)}
   function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   function initials(value){return String(value||'PA').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()}
@@ -1364,11 +1352,23 @@
     const roleChip=document.getElementById('adminSessionRole');
     if(roleChip)roleChip.textContent=roleLabel;
     const avatar=document.querySelector('.top-actions .avatar');
-    if(avatar){avatar.textContent=initials(session.accountName||roleLabel);avatar.title=`${session.accountName||roleLabel} · ${roleLabel}`}
-    // Account-role management still writes to browser storage only; hide it until server-side CRUD is connected.
-    window.payuAdminCanManageRoles=false;
-    if(navRoles)navRoles.hidden=true;
-    if(document.getElementById('view-roles')?.classList.contains('active')) window.navigate('dashboard');
+    if(avatar){avatar.textContent=initials(session.accountName||roleLabel);avatar.title=`${session.accountName||roleLabel} · ${roleLabel}`;}
+
+    const forced=Boolean(session.mustChangePassword);
+    window.payuAdminCanManageRoles=canManageRoles(role)&&!forced;
+    if(navRoles)navRoles.hidden=!window.payuAdminCanManageRoles;
+    if(!window.payuAdminCanManageRoles && document.getElementById('view-roles')?.classList.contains('active')) window.navigate('dashboard');
+
+    if(forced){
+      if(forcedPasswordModal)forcedPasswordModal.classList.add('open');
+      document.getElementById('forcedNewPassword').value='';
+      document.getElementById('forcedConfirmPassword').value='';
+      document.getElementById('forcedPasswordError').textContent='';
+      document.getElementById('forcedNewPassword').focus({preventScroll:true});
+      return;
+    }
+    if(forcedPasswordModal)forcedPasswordModal.classList.remove('open');
+    if(window.payuAdminCanManageRoles) loadRoleAccounts().catch(e=>notifySafe('Gagal memuat akun role: '+e.message));
   }
   function showLogin(message=''){
     currentSession=null;
@@ -1377,100 +1377,150 @@
     app.classList.remove('admin-authenticated');
     app.style.display='none';
     gate.style.display='grid';
+    if(forcedPasswordModal)forcedPasswordModal.classList.remove('open');
     error.textContent=message;
     resetVisiblePasswords(gate);
     const user=document.getElementById('gateUsername');
     if(user)user.focus({preventScroll:true});
   }
-  function uniqueUsername(username, exceptId=null){
-    return !accounts.some(a=>a.id!==exceptId&&a.username.toLowerCase()===username.toLowerCase());
-  }
-  function makeId(){return 'role-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}
   function countLabel(role){return roleNames[role]||role}
+  function roleAccountById(id){return roleAccounts.find(a=>String(a.id)===String(id))||null}
+
+  async function loadRoleAccounts(){
+    if(!window.payuAdminCanManageRoles || !currentSession?.backendAuthenticated) return;
+    const response=await callApi('staff/roles',{method:'GET',headers:{'Accept':'application/json'}});
+    const payload=await readApiJson(response);
+    roleAccounts=(Array.isArray(payload.roles)?payload.roles:[]).map(a=>({
+      id:Number(a.id),
+      name:String(a.display_name||a.username||''),
+      username:String(a.username||''),
+      role:backendToUiRole[a.role]||a.role,
+      backendRole:a.role,
+      active:Boolean(Number(a.is_active)),
+      mustChangePassword:Boolean(Number(a.must_change_password)),
+      lastLoginAt:a.last_login_at||null,
+      createdAt:a.created_at||null
+    }));
+    renderRoleAccounts();
+  }
+
   function renderRoleAccounts(){
     const tbody=document.getElementById('roleAccountsBody');
     if(!tbody)return;
     const roleCount=document.getElementById('roleCount');
     const activeCount=document.getElementById('roleActiveCount');
     const inactiveCount=document.getElementById('roleInactiveCount');
-    if(roleCount)roleCount.textContent=accounts.length;
-    if(activeCount)activeCount.textContent=accounts.filter(a=>a.active&&a.password).length;
-    if(inactiveCount)inactiveCount.textContent=accounts.filter(a=>!a.active||!a.password).length;
-    if(!accounts.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty">Belum ada akun role.</div></td></tr>';return}
-    tbody.innerHTML=accounts.map(a=>{
-      const active=Boolean(a.active&&a.password);
-      const isCurrent=Boolean(currentSession&&currentSession.accountId===a.id);
-      const isProtected=Boolean(a.protectedAccount);
+    if(roleCount)roleCount.textContent=roleAccounts.length;
+    if(activeCount)activeCount.textContent=roleAccounts.filter(a=>a.active).length;
+    if(inactiveCount)inactiveCount.textContent=roleAccounts.filter(a=>!a.active).length;
+    if(!roleAccounts.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty">Belum ada akun staf di server.</div></td></tr>';return}
+    tbody.innerHTML=roleAccounts.map(a=>{
+      const isCurrent=Boolean(currentSession&&String(currentSession.accountId)===String(a.id));
+      const statusLabel=!a.active?'Nonaktif':(a.mustChangePassword?'Aktif · wajib ganti password':'Aktif');
+      const statusClass=a.active?'':'off';
+      const lastLogin=a.lastLoginAt?'<div class="role-account-user">Login terakhir: '+esc(a.lastLoginAt)+'</div>':'<div class="role-account-user">Belum pernah login</div>';
       return `<tr>
-        <td><div class="role-account-name">${esc(a.name||countLabel(a.role))}${isCurrent?' <span class="pill">Akun aktif</span>':''}</div><div class="role-account-user">${isProtected?'Akun Master utama':''}</div></td>
+        <td><div class="role-account-name">${esc(a.name||countLabel(a.role))}${isCurrent?' <span class="pill">Sesi aktif</span>':''}</div>${lastLogin}</td>
         <td><span class="pill">${esc(countLabel(a.role))}</span></td>
         <td><strong>${esc(a.username)}</strong><div class="role-account-user">Password: ••••••••</div></td>
-        <td><span class="role-status ${active?'':'off'}">${active?'Aktif':'Nonaktif'}</span></td>
-        <td><div class="role-actions"><button class="btn secondary small" type="button" onclick="window.editRoleAccount('${esc(a.id)}')">Edit</button>${isProtected?'<button class="btn secondary small" type="button" disabled title="Akun Master utama tidak dapat dihapus">Dilindungi</button>':`<button class="btn danger small" type="button" onclick="window.deleteRoleAccount('${esc(a.id)}')">Hapus</button>`}</div></td>
+        <td><span class="role-status ${statusClass}">${statusLabel}</span></td>
+        <td><div class="role-actions">
+          ${isCurrent?'<button class="btn secondary small" type="button" disabled title="Akun yang sedang digunakan tidak dapat diedit dari menu ini">Sesi aktif</button>':`<button class="btn secondary small" type="button" onclick="window.editRoleAccount('${esc(a.id)}')">Edit</button>`}
+          ${isCurrent?'<button class="btn secondary small" type="button" disabled>Akun aktif</button>':(a.active?`<button class="btn danger small" type="button" onclick="window.deleteRoleAccount('${esc(a.id)}')">Nonaktifkan</button>`:'<button class="btn secondary small" type="button" disabled>Sudah nonaktif</button>')}
+        </div></td>
       </tr>`;
     }).join('');
   }
   window.renderRoleAccounts=renderRoleAccounts;
+
+  function configureRoleOptions(selectedRole='admin'){
+    const ownerOnly=['admin','kasir_satu','kasir_dua'];
+    const allowed=currentSession?.backendRole==='owner'?ownerOnly:Object.keys(roleNames);
+    const select=document.getElementById('roleAccountType');
+    select.innerHTML=allowed.map(r=>`<option value="${r}">${roleNames[r]}</option>`).join('');
+    select.value=allowed.includes(selectedRole)?selectedRole:allowed[0];
+  }
+
   function openRoleAccountModal(id=null){
     if(!window.payuAdminCanManageRoles){notifySafe('Menu Role hanya tersedia untuk Master dan Owner.');return}
+    const account=id?roleAccountById(id):null;
+    if(id&&!account){notifySafe('Data akun tidak ditemukan. Muat ulang daftar Role.');return}
+    if(account&&String(account.id)===String(currentSession?.accountId)){
+      notifySafe('Akun yang sedang digunakan tidak dapat diedit melalui menu Role.');
+      return;
+    }
     activeEditId=id;
-    const account=id?accounts.find(a=>a.id===id):null;
     document.getElementById('roleAccountForm').reset();
     document.getElementById('roleAccountId').value=id||'';
     document.getElementById('roleAccountModalTitle').textContent=account?'Edit akun role':'Tambah akun role';
     document.getElementById('roleAccountName').value=account?.name||'';
-    document.getElementById('roleAccountType').value=account?.role||'admin';
+    configureRoleOptions(account?.role||'admin');
     document.getElementById('roleAccountUsername').value=account?.username||'';
     document.getElementById('roleAccountPassword').value='';
     resetVisiblePasswords(document.getElementById('roleAccountModal'));
     document.getElementById('roleAccountPassword').required=!account;
-    document.getElementById('rolePasswordRequiredNote').textContent=account?'(kosongkan jika tidak diganti)':'*';
-    document.getElementById('rolePasswordHelp').textContent=account?'Isi hanya jika ingin mengubah password. Password lama tidak ditampilkan. Minimal 8 karakter jika diubah.':'Buat password minimal 8 karakter. Password akun demo disimpan di browser ini.';
+    document.getElementById('rolePasswordRequiredNote').textContent=account?'(opsional; isi hanya jika reset password)':'*';
+    document.getElementById('rolePasswordHelp').textContent=account
+      ?'Biarkan kosong untuk mempertahankan password. Jika diisi, password baru minimal 10 karakter dan wajib diganti oleh pengguna saat login berikutnya.'
+      :'Password minimal 10 karakter. Akun baru wajib mengganti password saat login pertama.';
     document.getElementById('roleAccountActive').checked=account?Boolean(account.active):true;
     document.getElementById('roleAccountModal').classList.add('open');
   }
   window.openRoleAccountModal=openRoleAccountModal;
   window.editRoleAccount=id=>openRoleAccountModal(id);
-  window.deleteRoleAccount=id=>{
+
+  window.deleteRoleAccount=async id=>{
     if(!window.payuAdminCanManageRoles){notifySafe('Hanya Master dan Owner yang dapat mengelola role.');return}
-    const account=accounts.find(a=>a.id===id);if(!account)return;
-    if(account.protectedAccount||account.id==='role-master-primary'){notifySafe('Akun Master utama tidak dapat dihapus.');return}
-    if(currentSession&&currentSession.accountId===id){notifySafe('Anda tidak dapat menghapus akun yang sedang digunakan.');return}
-    if(!confirm(`Hapus akun ${account.name||account.username} (${countLabel(account.role)})? Akun ini tidak bisa digunakan untuk login lagi.`))return;
-    accounts=accounts.filter(a=>a.id!==id);
-    if(saveAccounts()){
-      renderRoleAccounts();updateGateRoles();notifySafe('Akun role berhasil dihapus.');
-    }
+    const account=roleAccountById(id);if(!account)return;
+    if(String(account.id)===String(currentSession?.accountId)){notifySafe('Akun yang sedang digunakan tidak dapat dinonaktifkan.');return}
+    if(!confirm(`Nonaktifkan akun ${account.name||account.username} (${countLabel(account.role)})? Akun tidak dapat login lagi, tetapi riwayatnya tetap disimpan.`))return;
+    try{
+      const response=await callApi('staff/roles/delete',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-Token':currentSession.csrfToken,'Accept':'application/json'},
+        body:JSON.stringify({id:Number(account.id)})
+      });
+      const result=await readApiJson(response);
+      await loadRoleAccounts();
+      notifySafe(result.message||'Akun berhasil dinonaktifkan.');
+    }catch(e){notifySafe(e.message||'Gagal menonaktifkan akun.');}
   };
-  document.getElementById('roleAccountForm').addEventListener('submit',event=>{
+
+  document.getElementById('roleAccountForm').addEventListener('submit',async event=>{
     event.preventDefault();
     if(!window.payuAdminCanManageRoles){notifySafe('Hanya Master dan Owner yang dapat mengelola role.');return}
-    const id=document.getElementById('roleAccountId').value||null;
+    const id=document.getElementById('roleAccountId').value.trim();
     const name=document.getElementById('roleAccountName').value.trim();
     const role=document.getElementById('roleAccountType').value;
     const username=document.getElementById('roleAccountUsername').value.trim();
     const password=document.getElementById('roleAccountPassword').value;
     const active=document.getElementById('roleAccountActive').checked;
-    const existing=id?accounts.find(a=>a.id===id):null;
+    const saveButton=document.querySelector('#roleAccountForm button[type="submit"]');
+    const existing=id?roleAccountById(id):null;
+
     if(!name||!username){notifySafe('Nama akun dan username wajib diisi.');return}
-    if(!roleNames[role]){notifySafe('Pilih jenis role yang tersedia.');return}
-    if(!uniqueUsername(username,id)){notifySafe('Username sudah digunakan akun lain. Gunakan username yang berbeda.');return}
-    if(!existing&&!password){notifySafe('Password wajib diisi untuk akun baru.');return}
-    if(password && password.length<8){notifySafe('Password minimal 8 karakter.');return}
-    if(active && !(password||existing?.password)){notifySafe('Akun tidak bisa diaktifkan sebelum memiliki password.');return}
-    if(existing){
-      existing.name=name;existing.role=role;existing.username=username;
-      if(password)existing.password=password;
-      existing.active=active;
-      existing.updatedAt=Date.now();
-    }else{
-      accounts.push({id:makeId(),name,role,username,password,active,protectedAccount:false,createdAt:Date.now()});
-    }
-    if(saveAccounts()){
-      closeModal('roleAccountModal');renderRoleAccounts();updateGateRoles();
-      // Update the login selection to include account types that now have credentials.
-      notifySafe(existing?'Akun role berhasil diperbarui.':'Akun role baru berhasil ditambahkan.');
-    }
+    if(!uiToBackendRole[role]){notifySafe('Pilih jenis role yang tersedia.');return}
+    if(!/^[a-zA-Z0-9._-]{3,40}$/.test(username)){notifySafe('Username harus 3–40 karakter dan hanya boleh berisi huruf, angka, titik, garis bawah, atau tanda hubung.');return}
+    if(!id && password.length<10){notifySafe('Password awal minimal 10 karakter.');return}
+    if(password && password.length<10){notifySafe('Password minimal 10 karakter.');return}
+    if(id&&!existing){notifySafe('Data akun tidak ditemukan. Muat ulang daftar Role.');return}
+
+    if(saveButton){saveButton.disabled=true;saveButton.textContent='Menyimpan…'}
+    const body={username,display_name:name,role:uiToBackendRole[role],is_active:active?1:0,password};
+    if(id)body.id=Number(id);
+    try{
+      const response=await callApi('staff/roles/save',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-Token':currentSession.csrfToken,'Accept':'application/json'},
+        body:JSON.stringify(body)
+      });
+      const result=await readApiJson(response);
+      closeModal('roleAccountModal');
+      document.getElementById('roleAccountPassword').value='';
+      await loadRoleAccounts();
+      notifySafe(result.message||'Akun role berhasil disimpan.');
+    }catch(e){notifySafe(e.message||'Gagal menyimpan akun role.');}
+    finally{if(saveButton){saveButton.disabled=false;saveButton.textContent='Simpan akun'}}
   });
 
   // Always require fresh login each time admin.html is loaded.
@@ -1504,6 +1554,41 @@
     }
     return payload;
   }
+
+  document.getElementById('forcedPasswordForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const nextPassword=document.getElementById('forcedNewPassword').value;
+    const confirmPassword=document.getElementById('forcedConfirmPassword').value;
+    const errorBox=document.getElementById('forcedPasswordError');
+    const button=document.getElementById('forcedPasswordSubmit');
+    errorBox.textContent='';
+    if(nextPassword.length<10){errorBox.textContent='Password baru minimal 10 karakter.';return}
+    if(nextPassword!==confirmPassword){errorBox.textContent='Konfirmasi password belum sama.';return}
+    if(!currentSession?.csrfToken){errorBox.textContent='Sesi tidak tersedia. Keluar dan masuk kembali.';return}
+    button.disabled=true;
+    button.textContent='Menyimpan…';
+    try{
+      const response=await callApi('auth/change-password',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-Token':currentSession.csrfToken,'Accept':'application/json'},
+        body:JSON.stringify({current_password:'',new_password:nextPassword,password_confirmation:confirmPassword})
+      });
+      const result=await readApiJson(response);
+      currentSession.csrfToken=result.csrf_token||currentSession.csrfToken;
+      currentSession.mustChangePassword=false;
+      try{sessionStorage.setItem(SESSION_KEY,JSON.stringify(currentSession))}catch(_){}
+      document.getElementById('forcedNewPassword').value='';
+      document.getElementById('forcedConfirmPassword').value='';
+      forcedPasswordModal.classList.remove('open');
+      notifySafe(result.message||'Password berhasil diperbarui.');
+      showDashboard(currentSession);
+    }catch(e){
+      errorBox.textContent=e.message||'Password tidak berhasil diperbarui. Coba kembali.';
+    }finally{
+      button.disabled=false;
+      button.textContent='Simpan password baru';
+    }
+  });
 
   async function serverLogout(csrfToken) {
     if (!csrfToken) return;
@@ -1574,11 +1659,6 @@
         throw new Error('Login berhasil, tetapi akun ini bukan role staf yang didukung untuk dashboard.');
       }
 
-      if (user.must_change_password) {
-        await serverLogout(loginPayload.csrf_token);
-        throw new Error('Akun ini wajib mengganti password sementara terlebih dahulu. Hubungi Master untuk menyelesaikan pengaturan akun.');
-      }
-
       const session = {
         authenticated: true,
         backendAuthenticated: true,
@@ -1589,6 +1669,7 @@
         accountId: String(user.id),
         userId: user.id,
         csrfToken: loginPayload.csrf_token,
+        mustChangePassword: Boolean(user.must_change_password),
         createdAt: Date.now()
       };
 
