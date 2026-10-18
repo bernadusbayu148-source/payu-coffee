@@ -465,6 +465,44 @@
     @media(max-width:760px){.gallery-copy-grid{grid-template-columns:1fr}.gallery-copy-preview{aspect-ratio:1.5 / 1;min-height:200px}.promo-preview{min-height:280px}}
   </style>
 
+
+  <style id="payu-hero-promo-copy-editor-styles">
+    .hero-copy-manager,.promo-card-content-manager{margin-top:20px}
+    .hero-editor-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+    .hero-copy-preview{position:relative;isolation:isolate;display:flex;align-items:center;min-height:330px;padding:24px;overflow:hidden;border-radius:18px;color:#fffaf3;background:radial-gradient(circle at 78% 15%,#c58c68,#8f4433 48%,#4b3028 100%);box-shadow:0 16px 34px #4b302812}
+    .hero-copy-preview-image{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;object-position:center}
+    .hero-copy-preview-image[hidden]{display:none}
+    .hero-copy-preview-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(35,20,15,.73),rgba(35,20,15,.3) 65%,rgba(35,20,15,.08))}
+    .hero-copy-preview-copy{position:relative;z-index:1;width:88%;min-width:0}
+    .hero-copy-preview-copy small{display:block;color:#edc2a8;font-size:9px;font-weight:850;letter-spacing:.14em;text-transform:uppercase}
+    .hero-copy-preview-copy h3{margin:12px 0;font:500 clamp(25px,3.2vw,40px)/.99 Georgia,serif;letter-spacing:-.045em;color:#fffaf3;overflow-wrap:anywhere}
+    .hero-copy-preview-copy h3 em{font-style:normal;color:#edb394}
+    .hero-copy-preview-copy p{margin:0;color:#f3e4d8;font-size:11px;line-height:1.55;max-width:340px;white-space:pre-line;overflow-wrap:anywhere}
+    .hero-copy-preview-tag{position:absolute;right:13px;bottom:13px;max-width:calc(100% - 26px);padding:7px 9px;border:1px solid #ffffff46;border-radius:99px;background:#311d1666;color:#fffaf3;font-size:9px;backdrop-filter:blur(10px);display:flex;gap:7px;align-items:center;overflow-wrap:anywhere}
+    .hero-copy-preview-tag:first-letter{color:#edb394}
+    .hero-editor-layout #heroContentForm{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .hero-editor-layout #heroContentForm .field.full{grid-column:1/-1}
+    .promo-card-copy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .promo-card-copy-editor{min-width:0;border:1px solid #e4d7c9;border-radius:16px;background:#fffdf9;overflow:hidden}
+    .promo-card-copy-preview{position:relative;isolation:isolate;overflow:hidden;aspect-ratio:4/5;display:flex;flex-direction:column;justify-content:space-between;padding:16px 14px 13px;background:linear-gradient(150deg,#4b3028,#8f4433 57%,#bb7451);color:#fffaf3}
+    .promo-card-copy-preview-bg{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover}
+    .promo-card-copy-preview-bg[hidden]{display:none}
+    .promo-card-copy-preview-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(41,25,20,.42),rgba(41,25,20,.12) 28%,rgba(41,25,20,.28) 59%,rgba(41,25,20,.74))}
+    .promo-card-copy-preview .pcp-eyebrow,.promo-card-copy-preview .pcp-footer{font-size:8px;font-weight:850;letter-spacing:.1em;line-height:1.35;overflow-wrap:anywhere}
+    .promo-card-copy-preview .pcp-overline{font-size:8px;color:#f2cfab;letter-spacing:.12em;font-weight:850;line-height:1.4;overflow-wrap:anywhere}
+    .promo-card-copy-preview .pcp-center{position:relative;z-index:1;display:grid;gap:7px;padding:4px 0}
+    .promo-card-copy-preview h3{margin:0;font:800 clamp(25px,2.2vw,34px)/.95 Arial,sans-serif;letter-spacing:-.06em;overflow-wrap:anywhere;color:#fffaf3}
+    .promo-card-copy-preview h3 em{font-style:normal;color:#f2c99f}
+    .promo-card-copy-preview .pcp-description{font-size:10px;line-height:1.45;white-space:pre-line;color:#fae9dc;overflow-wrap:anywhere}
+    .promo-card-copy-preview .pcp-footer{border-top:1px solid #ffffff70;padding-top:9px;display:flex;justify-content:space-between;gap:8px}
+    .promo-card-copy-label{padding:10px 12px;background:#a62823;color:#fffaf3;font-size:12px;font-weight:850;letter-spacing:.01em}
+    .promo-card-copy-fields{display:grid;gap:10px;padding:13px}
+    .promo-card-copy-fields label{display:block;font-size:10px;font-weight:750;color:#54483e;margin-bottom:5px}
+    .promo-card-copy-fields input,.promo-card-copy-fields textarea{font-size:13px;min-width:0;background:#fffefa;border-color:#e3d8cc}
+    .promo-card-copy-fields textarea{min-height:56px;resize:vertical;white-space:pre-wrap}
+    @media(max-width:1050px){.promo-card-copy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.hero-editor-layout{grid-template-columns:minmax(0,1fr)}.hero-copy-preview{min-height:300px}.hero-editor-layout #heroContentForm{grid-template-columns:minmax(0,1fr)}.hero-editor-layout #heroContentForm .field.full{grid-column:auto}.promo-card-copy-grid{grid-template-columns:minmax(0,1fr)}.promo-card-copy-preview{max-height:460px}}
+  </style>
 </head>
 <body>
 <div id="adminLoginGate" class="admin-login-gate">
@@ -579,6 +617,27 @@
 
     <section class="view" id="view-promo">
       <div class="section-heading"><div><h2>Kelola Promo & Banner</h2><p>Atur teks promosi dan upload gambar untuk setiap area website PA.YU.</p></div><button class="btn secondary" onclick="resetPromo()">Pulihkan teks promo</button></div>
+      <section class="panel hero-copy-manager">
+        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Banner Utama</h2><p class="panel-subtitle">Atur tulisan di atas background Beranda. Pratinjau mengikuti gambar Banner Utama yang diunggah di bawah.</p></div></div>
+        <div class="hero-editor-layout">
+          <div class="hero-copy-preview" id="heroContentPreview">
+            <img id="heroContentPreviewImage" class="hero-copy-preview-image" alt="" hidden>
+            <div class="hero-copy-preview-shade"></div>
+            <div class="hero-copy-preview-copy"><small id="heroPreviewKicker">Coffee • Friends • Good days</small><h3><span id="heroPreviewHeadlineTop">Tempat pulang</span><br><span id="heroPreviewHeadlineBottomPrefix">untuk</span> <em id="heroPreviewHeadlineAccent">cerita.</em></h3><p id="heroPreviewDescription">pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.</p></div>
+            <div class="hero-copy-preview-tag">✳ <span id="heroPreviewTagline">A little pause, a lot of stories.</span></div>
+          </div>
+          <form id="heroContentForm" class="form-grid">
+            <div class="field full"><label for="heroKickerInput">Tulisan kecil di atas judul</label><input id="heroKickerInput" maxlength="80" /></div>
+            <div class="field full"><label for="heroTitleTopInput">Judul baris pertama</label><input id="heroTitleTopInput" maxlength="60" /></div>
+            <div class="field"><label for="heroBottomPrefixInput">Awal judul baris kedua</label><input id="heroBottomPrefixInput" maxlength="32" /></div>
+            <div class="field"><label for="heroAccentInput">Kata beraksen</label><input id="heroAccentInput" maxlength="40" /></div>
+            <div class="field full"><label for="heroDescriptionInput">Deskripsi banner</label><textarea id="heroDescriptionInput" rows="3" maxlength="260"></textarea></div>
+            <div class="field full"><label for="heroTaglineInput">Tulisan kecil di sudut banner</label><input id="heroTaglineInput" maxlength="100" /></div>
+            <div class="field full"><button class="btn" type="submit">Simpan teks Beranda</button><p class="form-note">Pratinjau berubah saat diketik. Simpan agar teks dibaca oleh index.html pada browser yang sama.</p></div>
+          </form>
+        </div>
+      </section>
+
       <div class="promo-layout"><div class="panel"><div class="panel-head"><div><h2 class="panel-title">Informasi promosi</h2><p class="panel-subtitle">Perubahan teks langsung terlihat pada preview.</p></div></div><form id="promoForm" class="form-grid">
         <div class="field full"><label for="promoTag">Label promo</label><input id="promoTag" maxlength="40" value="SPECIAL OFFER" /></div>
         <div class="field full"><label for="promoTitle">Judul promo</label><input id="promoTitle" maxlength="80" value="Your daily cup of joy." required /></div>
@@ -593,6 +652,12 @@
         <div class="banner-manager-head"><div><h2 class="panel-title">Teks Foto Galeri</h2><p class="panel-subtitle">Lihat pratinjau setiap foto dan ubah tulisan yang tampil di atas foto pada website utama.</p></div></div>
         <div class="gallery-copy-grid" id="galleryCopyGrid"></div>
         <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn" type="button" onclick="saveGalleryContent()">Simpan teks galeri</button><span class="form-note">Pratinjau berubah langsung saat diketik. Klik Simpan agar teks tersimpan di browser ini dan dibaca oleh index.html.</span></div>
+      </section>
+
+      <section class="panel promo-card-content-manager">
+        <div class="banner-manager-head"><div><h2 class="panel-title">Teks di Atas Poster Promo</h2><p class="panel-subtitle">Atur tulisan overlay pada tiap foto, pratinjau, dan judul yang muncul di bawah foto.</p></div></div>
+        <div id="promoCardGrid" class="promo-card-copy-grid"></div>
+        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn" type="button" onclick="savePromoCardContent()">Simpan teks poster</button><span class="form-note">Popup pada website menampilkan gambar latar saja tanpa tulisan overlay. Unggah foto latar tanpa teks tertanam agar tampil bersih saat dibuka.</span></div>
       </section>
 
       <section class="panel banner-manager">
@@ -717,6 +782,11 @@
       {slotId:'shop-photo-1',eyebrow:'01 / Our space',title:'Tempat untuk\nberlama-lama.'},
       {slotId:'shop-photo-2',eyebrow:'02 / Slow down',title:'Take a\ncoffee break.'},
       {slotId:'shop-photo-3',eyebrow:'03 / Our people',title:'Meet your\nkind of people.'}
+    ],heroContent:{kicker:'Coffee • Friends • Good days',headlineTop:'Tempat pulang',headlineBottomPrefix:'untuk',headlineAccent:'cerita.',description:'pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.',tagline:'A little pause, a lot of stories.'},
+    promoCards:[
+      {id:'promo-poster-1',eyebrow:'PA.YU COFFEE · 01',overline:'A LITTLE TREAT',headline:'Ngopi lebih',accent:'hemat.',description:'Waktu istimewa,\nsecangkir cerita.',footer:'PROMO SPESIAL',brand:'PA.YU',label:'Promo spesial'},
+      {id:'promo-poster-2',eyebrow:'PA.YU COFFEE · 02',overline:'MADE FOR YOUR PAUSE',headline:'Menu',accent:'pilihan.',description:'Teman terbaik untuk\nhari yang berjalan.',footer:'SIP · SLOW · SMILE',brand:'PA.YU',label:'Menu pilihan'},
+      {id:'promo-poster-3',eyebrow:'PA.YU COFFEE · 03',overline:'COFFEE · FRIENDS · GOOD DAYS',headline:'Lebih dari',accent:'sekadar kopi.',description:'Tempat bertemu,\nberbagi, dan bercerita.',footer:'SEE YOU AROUND',brand:'PA.YU',label:'Cerita komunitas'}
     ],promo:{tag:'SPECIAL OFFER',title:'Your daily cup of joy.',description:'Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.',code:'PAYUFRIEND',discount:'SPECIAL PRICE'}
   };
   function mergeBannerSlots(savedSlots){
@@ -740,12 +810,17 @@
     const bySlot=new Map(saved.map(x=>[x.slotId,x]));
     return seed.galleryContent.map(base=>({...base,...(bySlot.get(base.slotId)||{}),slotId:base.slotId}));
   }
+  function mergePromoCards(savedCards){
+    const saved=Array.isArray(savedCards)?savedCards.filter(x=>x&&typeof x==='object'&&x.id):[];
+    const byId=new Map(saved.map(x=>[x.id,x]));
+    return seed.promoCards.map(base=>({...base,...(byId.get(base.id)||{}),id:base.id}));
+  }
   function loadData(){
-    try { const raw=localStorage.getItem(STORAGE_KEY); if(raw){const d=JSON.parse(raw);return {members:Array.isArray(d.members)?d.members:structuredCloneSafe(seed.members),menus:Array.isArray(d.menus)?d.menus:structuredCloneSafe(seed.menus),transactions:Array.isArray(d.transactions)?d.transactions:[],pointRate:Number(d.pointRate)>0?Number(d.pointRate):10000,promo:{...seed.promo,...(d.promo||{})},bannerSlots:mergeBannerSlots(d.bannerSlots),galleryContent:mergeGalleryContent(d.galleryContent)};}} catch(e){console.warn('Data lokal tidak dapat dibaca:',e)}
+    try { const raw=localStorage.getItem(STORAGE_KEY); if(raw){const d=JSON.parse(raw);return {members:Array.isArray(d.members)?d.members:structuredCloneSafe(seed.members),menus:Array.isArray(d.menus)?d.menus:structuredCloneSafe(seed.menus),transactions:Array.isArray(d.transactions)?d.transactions:[],pointRate:Number(d.pointRate)>0?Number(d.pointRate):10000,promo:{...seed.promo,...(d.promo||{})},heroContent:{...seed.heroContent,...(d.heroContent||{})},promoCards:mergePromoCards(d.promoCards),bannerSlots:mergeBannerSlots(d.bannerSlots),galleryContent:mergeGalleryContent(d.galleryContent)};}} catch(e){console.warn('Data lokal tidak dapat dibaca:',e)}
     return structuredCloneSafe(seed);
   }
   function structuredCloneSafe(o){return JSON.parse(JSON.stringify(o))}
-  let data = loadData(); let galleryDraft=structuredCloneSafe(data.galleryContent||seed.galleryContent); let scanner = null; let toastTimer = null; let scannerPurpose = 'members'; let editingTransactionId = null;
+  let data = loadData(); let galleryDraft=structuredCloneSafe(data.galleryContent||seed.galleryContent); let promoCardsDraft=structuredCloneSafe(data.promoCards||seed.promoCards); let scanner = null; let toastTimer = null; let scannerPurpose = 'members'; let editingTransactionId = null;
   data.pointRate = Number(data.pointRate)>0 ? Number(data.pointRate) : 10000;
   data.members.forEach(ensureMemberDefaults);
   function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true}catch(e){notify('Data gagal disimpan. Periksa ruang penyimpanan browser.');console.error(e);return false}}
@@ -1032,6 +1107,80 @@
   document.getElementById('menuForm').addEventListener('submit',e=>{e.preventDefault();const id=document.getElementById('menuEditId').value;const item={name:document.getElementById('menuName').value.trim(),category:document.getElementById('menuCategory').value,price:Number(document.getElementById('menuPrice').value),emoji:document.getElementById('menuEmoji').value,description:document.getElementById('menuDescription').value.trim()};if(item.price<0||!Number.isFinite(item.price)){notify('Harga menu tidak valid.');return}if(id){const old=data.menus.find(m=>m.id===id);if(old)Object.assign(old,item);notify('Menu berhasil diperbarui.')}else{data.menus.push({...item,id:makeId('MENU')});notify('Menu berhasil ditambahkan.')}saveData();closeModal('menuModal');renderAll()});
   window.deleteMenu=id=>{const m=data.menus.find(x=>x.id===id);if(!m)return;if(!confirm(`Hapus menu ${m.name}?`))return;data.menus=data.menus.filter(x=>x.id!==id);saveData();renderAll();notify('Menu berhasil dihapus.')};
 
+  function readHeroForm(){
+    return {
+      kicker:document.getElementById('heroKickerInput').value.trim(),
+      headlineTop:document.getElementById('heroTitleTopInput').value.trim(),
+      headlineBottomPrefix:document.getElementById('heroBottomPrefixInput').value.trim(),
+      headlineAccent:document.getElementById('heroAccentInput').value.trim(),
+      description:document.getElementById('heroDescriptionInput').value.trim(),
+      tagline:document.getElementById('heroTaglineInput').value.trim()
+    };
+  }
+  function updateHeroContentPreview(){
+    const content=readHeroForm();
+    document.getElementById('heroPreviewKicker').textContent=content.kicker;
+    document.getElementById('heroPreviewHeadlineTop').textContent=content.headlineTop;
+    document.getElementById('heroPreviewHeadlineBottomPrefix').textContent=content.headlineBottomPrefix;
+    document.getElementById('heroPreviewHeadlineAccent').textContent=content.headlineAccent;
+    document.getElementById('heroPreviewDescription').textContent=content.description;
+    document.getElementById('heroPreviewTagline').textContent=content.tagline;
+    const image=document.getElementById('heroContentPreviewImage');
+    const slot=data.bannerSlots.find(item=>item.id==='hero-main');
+    if(slot&&slot.image){image.src=slot.image;image.hidden=false}else{image.removeAttribute('src');image.hidden=true}
+  }
+  function loadHeroContentToForm(){
+    const content={...seed.heroContent,...(data.heroContent||{})};
+    document.getElementById('heroKickerInput').value=content.kicker;
+    document.getElementById('heroTitleTopInput').value=content.headlineTop;
+    document.getElementById('heroBottomPrefixInput').value=content.headlineBottomPrefix;
+    document.getElementById('heroAccentInput').value=content.headlineAccent;
+    document.getElementById('heroDescriptionInput').value=content.description;
+    document.getElementById('heroTaglineInput').value=content.tagline;
+    updateHeroContentPreview();
+  }
+  ['heroKickerInput','heroTitleTopInput','heroBottomPrefixInput','heroAccentInput','heroDescriptionInput','heroTaglineInput'].forEach(id=>document.getElementById(id).addEventListener('input',updateHeroContentPreview));
+  document.getElementById('heroContentForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    data.heroContent=readHeroForm();
+    if(saveData())notify('Teks Banner Utama berhasil disimpan.');
+  });
+
+  function renderPromoCardEditors(){
+    const grid=document.getElementById('promoCardGrid');
+    if(!grid)return;
+    if(!Array.isArray(promoCardsDraft))promoCardsDraft=structuredCloneSafe(seed.promoCards);
+    grid.innerHTML=seed.promoCards.map(base=>{
+      const content=promoCardsDraft.find(item=>item.id===base.id)||base;
+      const slot=data.bannerSlots.find(item=>item.id===base.id);
+      const image=slot&&slot.image?`<img class="promo-card-copy-preview-bg" src="${esc(slot.image)}" alt="" />`:'';
+      const fields=[
+        ['eyebrow','Tulisan kecil paling atas',60],['overline','Label kecil di atas judul',60],['headline','Judul baris pertama',60],['accent','Judul baris kedua / aksen',60],['description','Deskripsi di atas foto',120],['footer','Tulisan footer kiri',40],['brand','Tulisan footer kanan',24],['label','Judul di bawah foto',60]
+      ];
+      return `<article class="promo-card-copy-editor" data-promo-card-editor="${esc(base.id)}">
+        <div class="promo-card-copy-preview">
+          ${image}<div class="promo-card-copy-preview-shade"></div>
+          <small class="pcp-eyebrow" data-promo-preview-field="eyebrow">${esc(content.eyebrow||'')}</small>
+          <div class="pcp-center"><small class="pcp-overline" data-promo-preview-field="overline">${esc(content.overline||'')}</small><h3><span data-promo-preview-field="headline">${esc(content.headline||'')}</span><br><em data-promo-preview-field="accent">${esc(content.accent||'')}</em></h3><p class="pcp-description" data-promo-preview-field="description">${esc(content.description||'')}</p></div>
+          <div class="pcp-footer"><span data-promo-preview-field="footer">${esc(content.footer||'')}</span><span data-promo-preview-field="brand">${esc(content.brand||'')}</span></div>
+        </div>
+        <div class="promo-card-copy-label" data-promo-preview-field="label">${esc(content.label||'')}</div>
+        <div class="promo-card-copy-fields">${fields.map(([field,label,max])=>`<div><label for="pc-${base.id}-${field}">${label}</label>${field==='description'?`<textarea id="pc-${base.id}-${field}" data-promo-card-input="${field}" maxlength="${max}" rows="2">${esc(content[field]||'')}</textarea>`:`<input id="pc-${base.id}-${field}" data-promo-card-input="${field}" maxlength="${max}" value="${esc(content[field]||'')}" />`}</div>`).join('')}</div>
+      </article>`;
+    }).join('');
+    grid.querySelectorAll('[data-promo-card-input]').forEach(input=>input.addEventListener('input',()=>{
+      const card=input.closest('[data-promo-card-editor]');if(!card)return;
+      const id=card.getAttribute('data-promo-card-editor');const field=input.getAttribute('data-promo-card-input');
+      let content=promoCardsDraft.find(item=>item.id===id);if(!content){content={id};promoCardsDraft.push(content)}
+      content[field]=input.value;
+      const target=card.querySelector(`[data-promo-preview-field="${field}"]`);if(target)target.textContent=input.value;
+    }));
+  }
+  window.savePromoCardContent=()=>{
+    data.promoCards=structuredCloneSafe(promoCardsDraft);
+    if(saveData())notify('Teks di atas poster dan judul di bawah poster berhasil disimpan.');
+  };
+
   function renderGalleryEditors(){
     const grid=document.getElementById('galleryCopyGrid');
     if(!grid)return;
@@ -1102,14 +1251,14 @@
       const compressed=canvas.toDataURL('image/jpeg',0.74);
       slot.image=compressed;slot.fileName=file.name;slot.updatedAt=new Date().toISOString();
       if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}
-      renderBannerSlots();renderGalleryEditors();notify(`Gambar “${slot.name}” berhasil disimpan di browser ini.`);
+      renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify(`Gambar “${slot.name}” berhasil disimpan di browser ini.`);
     }catch(err){console.error(err);notify('Gambar gagal diproses. Coba gunakan file JPG, PNG, atau WebP yang lain.');}
   }
-  window.clearBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;if(!confirm(`Hapus gambar pada ${slot.name}?`))return;const oldImage=slot.image,oldName=slot.fileName;slot.image='';slot.fileName='';delete slot.updatedAt;if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}renderBannerSlots();renderGalleryEditors();notify(`Gambar ${slot.name} dihapus dari penyimpanan browser.`)};
+  window.clearBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;if(!confirm(`Hapus gambar pada ${slot.name}?`))return;const oldImage=slot.image,oldName=slot.fileName;slot.image='';slot.fileName='';delete slot.updatedAt;if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify(`Gambar ${slot.name} dihapus dari penyimpanan browser.`)};
   window.downloadBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image){notify('Slot belum memiliki gambar.');return}const a=document.createElement('a');a.href=slot.image;const base=(slot.name||'banner').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'banner';a.download=`payu-${base}.jpg`;document.body.appendChild(a);a.click();a.remove();};
   window.addBannerSlot=()=>{const name=prompt('Nama slot banner baru (contoh: Banner Foto 5):');if(!name||!name.trim())return;const clean=name.trim();if(data.bannerSlots.some(s=>s.name.toLowerCase()===clean.toLowerCase())){notify('Nama slot tersebut sudah ada.');return}const id='custom-'+makeId('BANNER').toLowerCase();data.bannerSlots.push({id,name:clean,description:'Slot banner tambahan untuk website',recommended:'sesuaikan desain website',image:'',fileName:''});if(saveData()){renderBannerSlots();notify(`Slot “${clean}” berhasil ditambahkan.`)}};
   window.removeBannerSlot=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;if(seed.bannerSlots.some(s=>s.id===id)){notify('Slot bawaan tidak dapat dihapus. Hapus gambar saja jika tidak dipakai.');return}if(!confirm(`Hapus slot “${slot.name}” beserta gambar tersimpannya?`))return;data.bannerSlots=data.bannerSlots.filter(s=>s.id!==id);if(saveData()){renderBannerSlots();notify('Slot banner dihapus.')}};
-  window.exportBannerConfig=()=>{const payload={brand:'PA.YU Coffee',exportedAt:new Date().toISOString(),note:'Slot hero-main mengubah background Beranda; shop-photo-1 sampai shop-photo-3 mengubah foto Galeri; promo-poster-1 sampai promo-poster-3 mengubah poster Promo. File ini juga menyertakan teks promosi dan caption foto Galeri. Saat ini gambar dan teks disimpan di localStorage browser yang sama; penyimpanan online diperlukan agar semua pengunjung melihat perubahan.',bannerSlots:data.bannerSlots,promo:data.promo,galleryContent:data.galleryContent};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='payu-banner-config.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Konfigurasi banner diekspor sebagai JSON.');};
+  window.exportBannerConfig=()=>{const payload={brand:'PA.YU Coffee',exportedAt:new Date().toISOString(),note:'Slot hero-main mengubah background dan heroContent mengubah teks Beranda; shop-photo-1 sampai shop-photo-3 mengubah foto Galeri; promo-poster-1 sampai promo-poster-3 mengubah latar kartu dan promoCards mengubah overlay serta label tiap poster. Saat ini data disimpan di localStorage browser yang sama; penyimpanan online diperlukan agar semua pengunjung melihat perubahan.',bannerSlots:data.bannerSlots,heroContent:data.heroContent,promoCards:data.promoCards,promo:data.promo,galleryContent:data.galleryContent};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='payu-banner-config.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Konfigurasi banner diekspor sebagai JSON.');};
 
   function loadPromoToForm(){const p=data.promo;document.getElementById('promoTag').value=p.tag;document.getElementById('promoTitle').value=p.title;document.getElementById('promoDescription').value=p.description;document.getElementById('promoCode').value=p.code;document.getElementById('promoDiscount').value=p.discount;updatePromoPreview()}
   function updatePromoPreview(){const tag=document.getElementById('promoTag').value.trim();const title=document.getElementById('promoTitle').value.trim();const description=document.getElementById('promoDescription').value.trim();const code=document.getElementById('promoCode').value.trim();const discount=document.getElementById('promoDiscount').value.trim();document.getElementById('previewTag').textContent=tag;document.getElementById('previewTag').hidden=!tag;document.getElementById('previewTitle').textContent=title||'PA.YU Coffee';document.getElementById('previewDescription').textContent=description;document.getElementById('previewCode').textContent=code;document.getElementById('previewCode').hidden=!code;document.getElementById('previewDiscount').textContent=discount;document.getElementById('previewDiscount').hidden=!discount}
@@ -1124,7 +1273,7 @@
   window.lookupScannedValue=value=>{const v=String(value||'').trim();if(!v){document.getElementById('scanStatus').textContent='Masukkan ID member terlebih dahulu.';return}const member=data.members.find(m=>m.id.toLowerCase()===v.toLowerCase()||m.phone===v||m.name.toLowerCase()===v.toLowerCase());if(member){document.getElementById('scanStatus').textContent=`Member ditemukan: ${member.name} · ${member.id} · ${number(member.points)} poin.`;document.getElementById('scanManualInput').value=member.id;notify(`Member ditemukan: ${member.name}`);if(scannerPurpose==='transaction'){stopScanner().then(()=>{closeModal('scannerModal');setTransactionMember(member.id);document.getElementById('transactionModal').classList.add('open')});return}stopScanner();if(!document.getElementById('view-members').classList.contains('active'))navigate('members');document.getElementById('memberSearch').value=member.id;renderMembers();openMemberProfile(member.id)}else{document.getElementById('scanStatus').textContent='Member tidak ditemukan. Periksa isi QR atau tambahkan member baru.';notify('ID QR tidak cocok dengan data member.')}};
 
   function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('File CSV berhasil dibuat.')}
-  function renderAll(){data.members.forEach(ensureMemberDefaults);document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();loadPromoToForm();renderBannerSlots();renderGalleryEditors();populateTransactionOptions()}
+  function renderAll(){data.members.forEach(ensureMemberDefaults);document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();loadPromoToForm();loadHeroContentToForm();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();populateTransactionOptions()}
   // Inisialisasi data awal dan seluruh tampilan.
   renderAll();
 })();
