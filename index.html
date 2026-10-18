@@ -415,7 +415,7 @@ berbagi, dan bercerita.</span></span><span class="poster-bottom"><span data-prom
     </div>
   </div>
 </div></section>
-<section class="section" id="visit"><div class="wrap"><div class="section-head"><div><div class="kicker">Come by anytime</div><h2>Alamat rumah<br>pa.yu.</h2></div><p>Catat alamat kami dan mampir saat kamu butuh kopi atau teman bercerita.</p></div><div class="visit-grid"><div class="visit-card"><div class="visit-item"><div class="visit-icon">⌖</div><div><h3>Alamat</h3><p id="publicBusinessAddress">[Alamat PA.YU akan ditampilkan di sini]</p></div></div><div class="visit-item"><div class="visit-icon">◷</div><div><h3>Jam operasional</h3><p id="publicBusinessHours">[Jam operasional PA.YU akan ditampilkan di sini]</p></div></div><div class="visit-item"><div class="visit-icon">◎</div><div><h3>Instagram</h3><p id="publicInstagramText">[Instagram PA.YU akan ditampilkan di sini]</p></div></div><a class="primary" id="publicGoogleMapsLink" href="#" target="_blank" rel="noopener">Buka Google Maps ↗</a></div><div class="map-card"><div><strong>See you at pa.yu.</strong><p id="publicMapNote">Lokasi dan peta akan ditampilkan setelah alamat resmi ditambahkan.</p><a class="primary" href="#visit" onclick="return false">Alamat segera hadir</a></div></div></div></div></section>
+<section class="section" id="visit"><div class="wrap"><div class="section-head"><div><div class="kicker">Come by anytime</div><h2>Alamat rumah<br>pa.yu.</h2></div><p>Catat alamat kami dan mampir saat kamu butuh kopi atau teman bercerita.</p></div><div class="visit-grid"><div class="visit-card"><div class="visit-item"><div class="visit-icon">⌖</div><div><h3>Alamat</h3><p id="publicBusinessAddress">[Alamat PA.YU akan ditampilkan di sini]</p></div></div><div class="visit-item"><div class="visit-icon">◷</div><div><h3>Jam operasional</h3><p id="publicBusinessHours">[Jam operasional PA.YU akan ditampilkan di sini]</p></div></div><div class="visit-item"><div class="visit-icon">◎</div><div><h3>Instagram</h3><p><a id="publicInstagramLink" href="#" target="_blank" rel="noopener">Instagram PA.YU</a></p></div></div><a class="primary" id="publicGoogleMapsLink" href="#" target="_blank" rel="noopener">Buka Google Maps ↗</a></div><div class="map-card"><div><strong>See you at pa.yu.</strong><p id="publicMapNote">Lokasi dan peta akan ditampilkan setelah alamat resmi ditambahkan.</p><a class="primary" href="#visit" onclick="return false">Alamat segera hadir</a></div></div></div></div></section>
 </main>
 <footer><div class="wrap footer-row"><div><div class="footer-brand">pa.yu</div><div>Coffee, community, and a place to pause.</div></div><div>© <span id="year"></span> pa.yu. Dibuat untuk kerabat.</div><a href="#" onclick="openLogin();return false">Member Area ↗</a></div></footer>
 <nav class="mobile-dock" aria-label="Navigasi mobile">
@@ -539,13 +539,44 @@ async function loadPublicSiteSettingsAndBanners(){
   setText('publicBusinessAddress',settings.business_address);setText('publicBusinessHours',settings.business_hours);setText('publicInstagramText',settings.instagram_url);
   setText('publicMapNote',settings.business_address?'Lokasi PA.YU: '+settings.business_address:'Lokasi dan peta akan ditampilkan setelah alamat resmi ditambahkan.');
   const maps=document.getElementById('publicGoogleMapsLink');if(maps&&settings.google_maps_url){maps.href=settings.google_maps_url;maps.setAttribute('aria-label','Buka lokasi PA.YU di Google Maps');}
-  if(settings.public_opening_message){try{const promo=JSON.parse(settings.public_opening_message);if(promo&&typeof promo==='object'){
-    const textMap={publicPromoTag:promo.tag,publicPromoDiscount:promo.discount,publicPromoTitle:promo.title,publicPromoDescription:promo.description,publicPromoCode:promo.code};
-    Object.entries(textMap).forEach(([id,value])=>{const el=document.getElementById(id);if(el&&typeof value==='string')el.textContent=value;});
-    const codeWrap=document.getElementById('publicPromoCodeWrap');if(codeWrap)codeWrap.hidden=!String(promo.code||'').trim();
-    const tag=document.getElementById('publicPromoTag');if(tag)tag.hidden=!String(promo.tag||'').trim();
-    const discount=document.getElementById('publicPromoDiscount');if(discount)discount.hidden=!String(promo.discount||'').trim();
-  }}catch(_){}}
+  const safeUrl=value=>{try{const u=new URL(String(value||''),window.location.href);return u.protocol==='https:'||u.protocol==='http:'?u.href:''}catch(_){return ''}};
+  const instagramValue=String(settings.instagram_url||'').trim();
+  const instagramLink=document.getElementById('publicInstagramLink');
+  if(instagramLink&&instagramValue){const target=safeUrl(instagramValue)||safeUrl('https://instagram.com/'+instagramValue.replace(/^@/,''));if(target){instagramLink.href=target;instagramLink.textContent=instagramValue;}}
+  const mapUrl=safeUrl(settings.google_maps_url);
+  const mapsLink=document.getElementById('publicGoogleMapsLink');if(mapsLink&&mapUrl){mapsLink.href=mapUrl;mapsLink.setAttribute('aria-label','Buka lokasi PA.YU di Google Maps');}
+  if(settings.public_opening_message){try{
+    const copy=JSON.parse(settings.public_opening_message);
+    if(copy&&typeof copy==='object'){
+      const promo=copy.promo&&typeof copy.promo==='object'?copy.promo:(copy.title?copy:null);
+      if(promo){
+        const textMap={publicPromoTag:promo.tag,publicPromoDiscount:promo.discount,publicPromoTitle:promo.title,publicPromoDescription:promo.description,publicPromoCode:promo.code};
+        Object.entries(textMap).forEach(([id,value])=>{const el=document.getElementById(id);if(el&&typeof value==='string')el.textContent=value;});
+        const codeWrap=document.getElementById('publicPromoCodeWrap');if(codeWrap)codeWrap.hidden=!String(promo.code||'').trim();
+        const tag=document.getElementById('publicPromoTag');if(tag)tag.hidden=!String(promo.tag||'').trim();
+        const discount=document.getElementById('publicPromoDiscount');if(discount)discount.hidden=!String(promo.discount||'').trim();
+      }
+      if(copy.heroContent&&typeof copy.heroContent==='object'){
+        const hero=copy.heroContent;
+        const heroTextMap={heroKickerText:hero.kicker,heroHeadlineTop:hero.headlineTop,heroHeadlineBottomPrefix:hero.headlineBottomPrefix,heroHeadlineAccent:hero.headlineAccent,heroDescriptionText:hero.description,heroTaglineText:hero.tagline};
+        Object.entries(heroTextMap).forEach(([id,value])=>{const el=document.getElementById(id);if(el&&typeof value==='string')el.textContent=value;});
+      }
+      if(Array.isArray(copy.promoCards)){
+        const slotIds=['promo-poster-1','promo-poster-2','promo-poster-3'];
+        promoSlides.forEach((slide,index)=>{const card=copy.promoCards.find(item=>item&&item.id===slotIds[index])||copy.promoCards[index];if(!card)return;
+          slide.querySelectorAll('[data-promo-copy-field]').forEach(el=>{const key=el.getAttribute('data-promo-copy-field');if(typeof card[key]==='string')el.textContent=card[key];});
+          const label=String(card.label||'Poster Promo '+(index+1));slide.dataset.promoTitle=label+' pa.yu';slide.setAttribute('aria-label','Buka poster '+label+' pa.yu');
+        });
+      }
+      if(Array.isArray(copy.galleryContent)){
+        copy.galleryContent.forEach(item=>{if(!item||!item.slotId)return;const card=document.querySelector('[data-gallery-copy="'+CSS.escape(item.slotId)+'"]');if(!card)return;
+          const eyebrow=card.querySelector('[data-gallery-copy-field="eyebrow"]'),title=card.querySelector('[data-gallery-copy-field="title"]');
+          if(eyebrow&&typeof item.eyebrow==='string'){eyebrow.textContent=item.eyebrow;eyebrow.hidden=!item.eyebrow.trim();}
+          if(title&&typeof item.title==='string')title.textContent=item.title;
+        });
+      }
+    }
+  }catch(_){}}
   const banner=key=>banners.find(item=>item&&item.slot_key===key&&item.image_url);
   const apply=(img,key)=>{const item=banner(key);if(img&&item){img.setAttribute('src',item.image_url);img.hidden=false;img.style.display='';}};
   apply(document.querySelector('.hero-banner-bg'),'banner_utama');
