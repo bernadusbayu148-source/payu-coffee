@@ -1369,7 +1369,21 @@ window.payuAdminHydrateFromServer=async function(){
 const localOpenMemberModal=window.openMemberModal;window.openMemberModal=function(){if(remoteOperationalMode){notify('Tambah member dari dashboard sedang disiapkan. Gunakan menu Daftar member di website publik agar tersimpan di server.');return;}return localOpenMemberModal();};
 const localEditMember=window.editMember;window.editMember=function(id){if(remoteOperationalMode){notify('Edit profil member melalui API belum tersedia. Data server tidak diubah.');return;}return localEditMember(id);};
 const localDeleteMember=window.deleteMember;window.deleteMember=function(id){if(remoteOperationalMode){notify('Penonaktifan member melalui API belum tersedia. Data member tetap aman.');return;}return localDeleteMember(id);};
-const localResetMemberPassword=window.resetMemberPassword;window.resetMemberPassword=function(id){if(remoteOperationalMode){notify('Reset password server akan disambungkan berikutnya.');return;}return localResetMemberPassword(id);};
+const localResetMemberPassword=window.resetMemberPassword;
+window.resetMemberPassword=async function(id){
+  if(!remoteOperationalMode)return localResetMemberPassword(id);
+  const member=data.members.find(m=>String(m.id)===String(id));
+  if(!member){notify('Member tidak ditemukan.');return}
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const bytes=crypto.getRandomValues(new Uint8Array(16));
+  const temporaryPassword='PYU-'+Array.from(bytes,b=>chars[b%chars.length]).join('')+'A9!';
+  try{
+    await window.payuAdminApiRequest('staff/members/reset-password',{method:'POST',body:{member_id:Number(member.backendId||member.id),temporary_password:temporaryPassword}});
+    document.getElementById('resetPasswordTitle').textContent='Password sementara member';
+    document.getElementById('resetPasswordContent').innerHTML='<div class="profile-info"><span>Member</span><strong>'+esc(member.name)+' · '+esc(member.memberCode||member.id)+'</strong></div><p style="font-size:12px;line-height:1.7">Berikan password sementara ini kepada member secara pribadi. Saat login berikutnya, member wajib mengganti password.</p><div class="field"><label>Password sementara</label><input readonly value="'+esc(temporaryPassword)+'"></div><p class="form-note">Simpan dengan aman. Password hanya ditampilkan saat ini.</p>';
+    document.getElementById('resetPasswordModal').classList.add('open');
+  }catch(err){notify('Reset password gagal: '+err.message);}
+};
 // Inisialisasi data awal dan seluruh tampilan.
 renderAll(); })();
 </script>
