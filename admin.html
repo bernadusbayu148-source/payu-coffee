@@ -1460,6 +1460,7 @@ window.payuAdminHydrateFromServer=async function(){
   data.transactions=remoteTransactionFallbackCache.map(tx=>({...tx,items:(tx.items||[]).map(item=>({...item}))}));
  }
  const settings=Array.isArray(results[3].settings)?results[3].settings:[],pointSetting=settings.find(x=>x.setting_key==='point_rupiah_per_point'),promoSetting=settings.find(x=>x.setting_key==='public_opening_message');
+ if(results[3].benefit_rules){benefitRules=normalizeBenefitRules(results[3].benefit_rules);data.benefitRules=benefitRules;}
  const readRemoteSettingField=key=>String(settings.find(x=>x.setting_key===key)?.setting_value||'');
  document.getElementById('publicInfoAddress').value=readRemoteSettingField('business_address');
  document.getElementById('publicInfoHours').value=readRemoteSettingField('business_hours');
