@@ -903,7 +903,7 @@
         result.coupons[level]=Array.from({length:5},(_,i)=>{
           const base=BASE_COUPON_TEMPLATES[level][i],c=raw.coupons[level][i]||base;
           const type=c.type==='percent'||c.discount_type==='percent'?'percent':'fixed';
-          const value=Number(c.value??c.discount_value),min=Number(c.min??c.min_spend),maxRaw=c.max??c.max_discount,max=Number(maxRaw);
+          const value=Number(c.value??c.discount_value),min=Number(c.min??c.min_spend),maxRaw=Object.prototype.hasOwnProperty.call(c,'max')?c.max:c.max_discount,max=Number(maxRaw);
           return {type,value:Number.isInteger(value)&&value>=1?Math.min(value,type==='percent'?100:2000000000):base.value,min:Number.isInteger(min)&&min>=0?Math.min(min,2000000000):base.min,max:Number.isInteger(max)&&max>0?Math.min(max,2000000000):(maxRaw===null?null:base.max)};
         });
       }
@@ -1386,6 +1386,13 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   const payload={promo:data.promo,heroContent:data.heroContent||readHeroForm(),galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft,benefitRules:benefitRules};
   await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(payload)}}});
 }
+document.addEventListener('change',event=>{
+ const target=event.target;
+ if(!target||!/^type_(Bronze|Silver|Gold|Platinum)_[0-4]$/.test(String(target.name||'')))return;
+ const match=target.name.match(/^type_(Bronze|Silver|Gold|Platinum)_([0-4])$/);
+ const valueInput=target.form?.elements['value_'+match[1]+'_'+match[2]];
+ if(valueInput)valueInput.max=target.value==='percent'?'100':'2000000000';
+});
 document.addEventListener('submit',async event=>{
  if(event.target?.id!=='benefitRulesForm')return;
  event.preventDefault();
