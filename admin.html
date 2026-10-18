@@ -510,15 +510,15 @@
     <div class="admin-login-brand"><img src="Asset/img/logo.png" alt="Logo PA.YU Coffee" onerror="this.style.display='none'"><div><strong>pa.yu</strong><small>COFFEE · MEMBER & STORE ADMIN</small></div></div>
     <div class="admin-login-overline">AREA TERBATAS</div>
     <h1 id="adminGateTitle">Masuk ke dashboard</h1>
-    <p class="admin-login-intro">Gunakan akun tim PA.YU untuk melanjutkan. Pilihan jabatan di sini menentukan role yang akan digunakan.</p>
+    <p class="admin-login-intro">Masuk menggunakan username dan password staf yang terdaftar di server PA.YU.</p>
     <form id="adminGateForm" class="admin-login-form">
-      <div><label for="gateRole">Jabatan / role</label><select id="gateRole" name="role" required><option value="master">Master</option><option value="owner">Owner</option><option value="admin">Admin</option><option value="kasir_satu">Kasir satu</option><option value="kasir_dua">Kasir dua</option></select></div>
+      <div hidden aria-hidden="true"><label for="gateRole">Jabatan / role</label><select id="gateRole" name="role"><option value="master">Master</option><option value="owner">Owner</option><option value="admin">Admin</option><option value="kasir_satu">Kasir satu</option><option value="kasir_dua">Kasir dua</option></select></div>
       <div><label for="gateUsername">Username</label><input id="gateUsername" name="username" autocomplete="username" autocapitalize="none" required placeholder="Masukkan username"></div>
       <div><label for="gatePassword">Password</label><input id="gatePassword" name="password" type="password" autocomplete="current-password" required placeholder="Masukkan password"></div>
       <button class="admin-login-submit" type="submit">Masuk ke Admin ↗</button>
       <div class="admin-login-error" id="adminGateError" aria-live="polite"></div>
     </form>
-    <p class="admin-login-foot">Untuk kembali ke website utama, buka index.html. Login demo akan diminta kembali setiap kali halaman Admin dibuka atau dimuat ulang.</p>
+    <p class="admin-login-foot">Login diperiksa oleh server PA.YU. Untuk kembali ke website utama, buka index.html.</p>
   </section>
 </div>
 
@@ -1283,7 +1283,7 @@
 <script id="payu-admin-auth-script">
 (() => {
   'use strict';
-  /* DEMO ONLY: browser storage is not secure authentication. Move all credential checks to PHP/MySQL before production. */
+  /* Staff login uses the PA.YU PHP/MySQL API. Browser-stored role accounts are not used for authentication. */
   const SESSION_KEY = 'payu_admin_demo_session_v2';
   function addPasswordVisibilityToggles(root=document){
     const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.5 9.8-6.5S21.8 12 21.8 12 18.3 18.5 12 18.5 2.2 12 2.2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
@@ -1317,8 +1317,8 @@
   if (requestedRole && roleNames[requestedRole]) roleSelect.value = requestedRole;
 
   const seedAccounts = [
-    {id:'role-master-primary',name:'Akun Master',role:'master',username:'master',password:'PAyuMaster2026!',active:true,protectedAccount:true,createdAt:Date.now()},
-    {id:'role-owner-primary',name:'Akun Owner',role:'owner',username:'owner',password:'PAyuOwner2026!',active:true,protectedAccount:false,createdAt:Date.now()},
+    {id:'role-master-primary',name:'Akun Master',role:'master',username:'',password:'',active:false,protectedAccount:true,createdAt:Date.now()},
+    {id:'role-owner-primary',name:'Akun Owner',role:'owner',username:'',password:'',active:false,protectedAccount:false,createdAt:Date.now()},
     {id:'role-admin-primary',name:'Akun Admin',role:'admin',username:'admin',password:'',active:false,protectedAccount:false,createdAt:Date.now()},
     {id:'role-kasir-one-primary',name:'Akun Kasir Satu',role:'kasir_satu',username:'kasir1',password:'',active:false,protectedAccount:false,createdAt:Date.now()},
     {id:'role-kasir-two-primary',name:'Akun Kasir Dua',role:'kasir_dua',username:'kasir2',password:'',active:false,protectedAccount:false,createdAt:Date.now()}
@@ -1365,11 +1365,10 @@
     if(roleChip)roleChip.textContent=roleLabel;
     const avatar=document.querySelector('.top-actions .avatar');
     if(avatar){avatar.textContent=initials(session.accountName||roleLabel);avatar.title=`${session.accountName||roleLabel} · ${roleLabel}`}
-    window.payuAdminCanManageRoles=canManageRoles(role);
-    if(navRoles)navRoles.hidden=!window.payuAdminCanManageRoles;
-    // If an existing view was Role but the current account lacks access, return to Dashboard.
-    if(!window.payuAdminCanManageRoles && document.getElementById('view-roles')?.classList.contains('active')) window.navigate('dashboard');
-    if(window.payuAdminCanManageRoles && typeof window.renderRoleAccounts==='function') window.renderRoleAccounts();
+    // Account-role management still writes to browser storage only; hide it until server-side CRUD is connected.
+    window.payuAdminCanManageRoles=false;
+    if(navRoles)navRoles.hidden=true;
+    if(document.getElementById('view-roles')?.classList.contains('active')) window.navigate('dashboard');
   }
   function showLogin(message=''){
     currentSession=null;
@@ -1478,29 +1477,156 @@
   try{sessionStorage.removeItem(SESSION_KEY)}catch(_){}
   updateGateRoles();
   showLogin();
-  form.addEventListener('submit',event=>{
+  const API_BASE = 'https://api.kopimanupi.space/api.php';
+  const backendRoleToUiRole = {
+    master: 'master',
+    owner: 'owner',
+    admin: 'admin',
+    cashier1: 'kasir_satu',
+    cashier2: 'kasir_dua'
+  };
+
+  async function callApi(route, options = {}) {
+    return fetch(API_BASE + '?route=' + encodeURIComponent(route), {
+      credentials: 'include',
+      cache: 'no-store',
+      ...options
+    });
+  }
+
+  async function readApiJson(response) {
+    const payload = await response.json().catch(() => null);
+    if (!payload || typeof payload !== 'object') {
+      throw new Error('Server PA.YU tidak mengirim jawaban JSON yang valid (HTTP ' + response.status + ').');
+    }
+    if (!response.ok || payload.ok === false) {
+      throw new Error(payload.error || 'Permintaan ke server PA.YU gagal (HTTP ' + response.status + ').');
+    }
+    return payload;
+  }
+
+  async function serverLogout(csrfToken) {
+    if (!csrfToken) return;
+    try {
+      await callApi('auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
+        body: '{}'
+      });
+    } catch (e) {
+      console.warn('[PA.YU] Logout server tidak dapat dikonfirmasi.');
+    }
+  }
+
+  // Always require a fresh sign-in on each page load. Credentials are checked by Rumahweb API.
+  try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+  updateGateRoles();
+  showLogin();
+
+  form.addEventListener('submit', async event => {
     event.preventDefault();
-    const role=roleSelect.value;
-    const username=document.getElementById('gateUsername').value.trim();
-    const password=document.getElementById('gatePassword').value;
-    const matching=accounts.find(a=>a.role===role&&a.username.toLowerCase()===username.toLowerCase());
-    if(!matching){error.textContent='Username tidak ditemukan untuk role yang dipilih.';return}
-    if(!matching.active||!matching.password){error.textContent=`Akun ${countLabel(role)} belum aktif. Minta Master/Owner mengatur password dan mengaktifkan akun pada menu Role.`;return}
-    if(matching.password!==password){error.textContent='Username atau password tidak sesuai.';return}
-    const session={authenticated:true,role:matching.role,username:matching.username,accountName:matching.name,accountId:matching.id,createdAt:Date.now()};
-    try{sessionStorage.setItem(SESSION_KEY,JSON.stringify(session))}catch(_){}
-    const url=new URL(window.location.href);
-    url.searchParams.set('role',matching.role);
-    history.replaceState({},'',url.pathname+url.search+url.hash);
-    document.getElementById('gatePassword').value='';
-    showDashboard(session);
-    if(!canManageRoles(matching.role)&&navRoles)navRoles.hidden=true;
+    error.textContent = '';
+
+    const username = document.getElementById('gateUsername').value.trim();
+    const password = document.getElementById('gatePassword').value;
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    if (!username || !password) {
+      error.textContent = 'Masukkan username dan password.';
+      return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Memeriksa akun…';
+    }
+
+    try {
+      // Get a server-issued CSRF token and establish the PHP session cookie.
+      const csrfResponse = await callApi('auth/csrf', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      const csrfPayload = await readApiJson(csrfResponse);
+      if (!csrfPayload.csrf_token) {
+        throw new Error('Token keamanan belum tersedia. Muat ulang halaman lalu coba kembali.');
+      }
+
+      // Authenticate against the users table, not the browser's demo accounts.
+      const loginResponse = await callApi('auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfPayload.csrf_token,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ identifier: username, password })
+      });
+      const loginPayload = await readApiJson(loginResponse);
+      const user = loginPayload.user;
+      const uiRole = user && backendRoleToUiRole[user.role];
+
+      if (!user || !uiRole) {
+        await serverLogout(loginPayload.csrf_token);
+        throw new Error('Login berhasil, tetapi akun ini bukan role staf yang didukung untuk dashboard.');
+      }
+
+      if (user.must_change_password) {
+        await serverLogout(loginPayload.csrf_token);
+        throw new Error('Akun ini wajib mengganti password sementara terlebih dahulu. Hubungi Master untuk menyelesaikan pengaturan akun.');
+      }
+
+      const session = {
+        authenticated: true,
+        backendAuthenticated: true,
+        role: uiRole,
+        backendRole: user.role,
+        username: user.username || username,
+        accountName: user.display_name || user.username || username,
+        accountId: String(user.id),
+        userId: user.id,
+        csrfToken: loginPayload.csrf_token,
+        createdAt: Date.now()
+      };
+
+      try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (_) {}
+      roleSelect.value = uiRole;
+
+      const url = new URL(window.location.href);
+      url.searchParams.set('role', uiRole);
+      history.replaceState({}, '', url.pathname + url.search + url.hash);
+
+      document.getElementById('gatePassword').value = '';
+      showDashboard(session);
+    } catch (e) {
+      console.error('[PA.YU login]', e);
+      if (e instanceof TypeError) {
+        error.textContent = 'Tidak dapat menghubungi API PA.YU. Periksa koneksi, alamat API, dan izin CORS.';
+      } else {
+        error.textContent = e?.message || 'Login gagal. Silakan coba kembali.';
+      }
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Masuk ke Admin ↗';
+      }
+    }
   });
-  window.payuAdminLogout=()=>{
-    try{sessionStorage.removeItem(SESSION_KEY)}catch(_){}
-    document.getElementById('gatePassword').value='';
-    form.reset();updateGateRoles();
-    const cleanUrl=new URL(window.location.href);cleanUrl.search='';cleanUrl.hash='';history.replaceState({},'',cleanUrl.pathname);
+
+  window.payuAdminLogout = async () => {
+    const csrfToken = currentSession?.csrfToken;
+    await serverLogout(csrfToken);
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+    document.getElementById('gatePassword').value = '';
+    form.reset();
+    updateGateRoles();
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.search = '';
+    cleanUrl.hash = '';
+    history.replaceState({}, '', cleanUrl.pathname);
     showLogin('Anda sudah keluar dari dashboard. Silakan login kembali.');
   };
 })();
