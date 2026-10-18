@@ -1252,7 +1252,13 @@
   async function saveBannerImage(id,file){
     const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;
     if(!file.type||!file.type.startsWith('image/')){notify('Pilih file gambar seperti JPG, PNG, atau WebP.');return}
-    if(file.size>12*1024*1024){notify('Ukuran file maksimal 12 MB sebelum dikompres.');return}
+    if(file.size>12*1024*1024){notify('Ukuran file maksimal 12 MB sebelum dikompres.');return};if(remoteOperationalMode){
+      const slotKeys={'hero-main':'banner_utama','menu-banner':'banner_menu','promo-poster-1':'banner_promo','promo-poster-2':'foto_4','promo-poster-3':'foto_5','shop-photo-1':'foto_6','shop-photo-2':'foto_7','shop-photo-3':'foto_8','shop-photo-4':'foto_9'};
+      const slotKey=slotKeys[id];if(!slotKey){notify('Slot gambar ini belum didukung oleh server.');return}
+      if(file.size>5*1024*1024){notify('Ukuran gambar untuk server maksimal 5 MB.');return}
+      try{const result=await window.payuAdminUploadBanner(slotKey,slot.name,file);slot.image=result.image_url;slot.fileName=file.name;slot.updatedAt=new Date().toISOString();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify('Gambar berhasil diunggah ke server.')}catch(err){notify('Unggah gambar gagal: '+err.message)}
+      return;
+    }
     const oldImage=slot.image||'';const oldName=slot.fileName||'';
     try{
       const objectUrl=URL.createObjectURL(file);
@@ -1270,7 +1276,7 @@
       renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify(`Gambar “${slot.name}” berhasil disimpan di browser ini.`);
     }catch(err){console.error(err);notify('Gambar gagal diproses. Coba gunakan file JPG, PNG, atau WebP yang lain.');}
   }
-  window.clearBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;if(!confirm(`Hapus gambar pada ${slot.name}?`))return;const oldImage=slot.image,oldName=slot.fileName;slot.image='';slot.fileName='';delete slot.updatedAt;if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify(`Gambar ${slot.name} dihapus dari penyimpanan browser.`)};
+  window.clearBannerImage=id=>{if(remoteOperationalMode){notify('Server belum menyediakan penghapusan banner. Unggah gambar pengganti untuk mengganti gambar yang tampil.');return;}const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;if(!confirm(`Hapus gambar pada ${slot.name}?`))return;const oldImage=slot.image,oldName=slot.fileName;slot.image='';slot.fileName='';delete slot.updatedAt;if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify(`Gambar ${slot.name} dihapus dari penyimpanan browser.`)};
   window.downloadBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image){notify('Slot belum memiliki gambar.');return}const a=document.createElement('a');a.href=slot.image;const base=(slot.name||'banner').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'banner';a.download=`payu-${base}.jpg`;document.body.appendChild(a);a.click();a.remove();};
   window.addBannerSlot=()=>{const name=prompt('Nama slot banner baru (contoh: Banner Foto 5):');if(!name||!name.trim())return;const clean=name.trim();if(data.bannerSlots.some(s=>s.name.toLowerCase()===clean.toLowerCase())){notify('Nama slot tersebut sudah ada.');return}const id='custom-'+makeId('BANNER').toLowerCase();data.bannerSlots.push({id,name:clean,description:'Slot banner tambahan untuk website',recommended:'sesuaikan desain website',image:'',fileName:''});if(saveData()){renderBannerSlots();notify(`Slot “${clean}” berhasil ditambahkan.`)}};
   window.removeBannerSlot=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;if(seed.bannerSlots.some(s=>s.id===id)){notify('Slot bawaan tidak dapat dihapus. Hapus gambar saja jika tidak dipakai.');return}if(!confirm(`Hapus slot “${slot.name}” beserta gambar tersimpannya?`))return;data.bannerSlots=data.bannerSlots.filter(s=>s.id!==id);if(saveData()){renderBannerSlots();notify('Slot banner dihapus.')}};
@@ -1279,7 +1285,7 @@
   function loadPromoToForm(){const p=data.promo;document.getElementById('promoTag').value=p.tag;document.getElementById('promoTitle').value=p.title;document.getElementById('promoDescription').value=p.description;document.getElementById('promoCode').value=p.code;document.getElementById('promoDiscount').value=p.discount;updatePromoPreview()}
   function updatePromoPreview(){const tag=document.getElementById('promoTag').value.trim();const title=document.getElementById('promoTitle').value.trim();const description=document.getElementById('promoDescription').value.trim();const code=document.getElementById('promoCode').value.trim();const discount=document.getElementById('promoDiscount').value.trim();document.getElementById('previewTag').textContent=tag;document.getElementById('previewTag').hidden=!tag;document.getElementById('previewTitle').textContent=title||'PA.YU Coffee';document.getElementById('previewDescription').textContent=description;document.getElementById('previewCode').textContent=code;document.getElementById('previewCode').hidden=!code;document.getElementById('previewDiscount').textContent=discount;document.getElementById('previewDiscount').hidden=!discount}
   ['promoTag','promoTitle','promoDescription','promoCode','promoDiscount'].forEach(id=>document.getElementById(id).addEventListener('input',updatePromoPreview));
-  document.getElementById('promoForm').addEventListener('submit',e=>{e.preventDefault();data.promo={tag:document.getElementById('promoTag').value.trim(),title:document.getElementById('promoTitle').value.trim(),description:document.getElementById('promoDescription').value.trim(),code:document.getElementById('promoCode').value.trim(),discount:document.getElementById('promoDiscount').value.trim()};saveData();loadPromoToForm();notify('Konten promo disimpan.')});
+  document.getElementById('promoForm').addEventListener('submit',async e=>{e.preventDefault();data.promo={tag:document.getElementById('promoTag').value.trim(),title:document.getElementById('promoTitle').value.trim(),description:document.getElementById('promoDescription').value.trim(),code:document.getElementById('promoCode').value.trim(),discount:document.getElementById('promoDiscount').value.trim()};if(remoteOperationalMode){try{await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(data.promo)}}});loadPromoToForm();notify('Konten promo disimpan ke database.')}catch(err){notify('Konten promo gagal disimpan: '+err.message)}return}saveData();loadPromoToForm();notify('Konten promo disimpan.')});
   window.resetPromo=()=>{if(!confirm('Pulihkan teks promo ke pengaturan awal?'))return;data.promo={...seed.promo};saveData();loadPromoToForm();notify('Promo default dipulihkan.')};
 
   window.openScanner=(purpose='members')=>{scannerPurpose=purpose;document.getElementById('scannerModal').classList.add('open');const selectedCamera=cameraFacingMode==='environment'?'belakang':'depan';document.getElementById('scanStatus').textContent=purpose==='transaction'?'Pindai QR member untuk mengisi transaksi. Kamera '+selectedCamera+' dipilih.':'Tekan “Mulai kamera” untuk memulai pemindaian. Kamera '+selectedCamera+' dipilih.';document.getElementById('scanManualInput').value='';document.getElementById('startScannerBtn').disabled=false;document.getElementById('stopScannerBtn').disabled=true;document.getElementById('switchCameraBtn').disabled=false;document.getElementById('switchCameraBtn').title='Beralih ke kamera '+(cameraFacingMode==='environment'?'depan':'belakang');document.getElementById('switchCameraBtn').setAttribute('aria-label',document.getElementById('switchCameraBtn').title)};
@@ -1293,7 +1299,7 @@
   function renderAll(){data.members.forEach(ensureMemberDefaults);document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();loadPromoToForm();loadHeroContentToForm();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();populateTransactionOptions()}
   window.payuAdminHydrateFromServer=async function(){
  const request=window.payuAdminApiRequest;if(typeof request!=='function')throw new Error('Helper API belum siap.');
- const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings')]);
+ const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings'),request('public/banners')]);
  const oldMenus=data.menus.slice();
  data.members=(Array.isArray(results[0].members)?results[0].members:[]).map(m=>({id:String(m.member_id),backendId:Number(m.member_id),memberCode:String(m.member_code||''),name:String(m.display_name||''),phone:String(m.phone||''),email:String(m.email||''),points:Number(m.points_balance||0),level:String(m.level||'Bronze'),createdAt:String(m.created_at||''),isActive:Boolean(m.is_active),coupons:[]}));
  data.menus=(Array.isArray(results[1].menus)?results[1].menus:[]).map(m=>{const old=oldMenus.find(x=>String(x.name).toLowerCase()===String(m.name).toLowerCase());return {id:String(m.id),backendId:Number(m.id),name:String(m.name||''),category:String(m.category||'Coffee'),price:Number(m.price||0),emoji:old?.emoji||'☕',description:old?.description||'',isActive:Boolean(m.is_active)};});
@@ -1302,7 +1308,11 @@
   const items=(Array.isArray(tx.items)?tx.items:[]).map(i=>({menuId:i.menu_id===null?'':String(i.menu_id),menuName:String(i.name||''),price:Number(i.unit_price||0),qty:Number(i.quantity||1),subtotal:Number(i.line_total||0)}));
   return {id:String(tx.id),backendId:Number(tx.id),transactionCode:String(tx.transaction_code||''),memberId:String(tx.member_id),memberName:String(tx.member_name||''),items,menuId:items[0]?.menuId||'',menuName:items.map(i=>i.menuName+' × '+i.qty).join(', '),qty:items.reduce((s,i)=>s+i.qty,0),subtotal:Number(tx.subtotal||0),discount:Number(tx.discount_amount||0),total:Number(tx.total_amount||0),points:Number(tx.points_earned||0),couponId:tx.coupon_id?String(tx.coupon_id):'',couponTitle:'',payment:payMatch?payMatch[1]:'Tunai',notes,createdAt:String(tx.created_at||''),date:String(tx.created_at||'').slice(0,10)};
  });
- const settings=Array.isArray(results[3].settings)?results[3].settings:[],pointSetting=settings.find(x=>x.setting_key==='point_rupiah_per_point');
+ const settings=Array.isArray(results[3].settings)?results[3].settings:[],pointSetting=settings.find(x=>x.setting_key==='point_rupiah_per_point'),promoSetting=settings.find(x=>x.setting_key==='public_opening_message');
+ if(promoSetting&&promoSetting.setting_value){try{const savedPromo=JSON.parse(promoSetting.setting_value);if(savedPromo&&typeof savedPromo==='object')data.promo=savedPromo;}catch(_){}}
+ const banners=Array.isArray(results[4].banners)?results[4].banners:[];
+ const keyForSlot=id=>id==='hero-main'?'banner_utama':id==='menu-banner'?'banner_menu':id==='promo-poster-1'?'banner_promo':id==='promo-poster-2'?'foto_4':id==='promo-poster-3'?'foto_5':(/^shop-photo-(\\d+)$/.test(id)?'foto_'+(Number(id.match(/(\\d+)$/)?.[1])+5):'');
+ data.bannerSlots=data.bannerSlots.map(slot=>{const key=keyForSlot(slot.id),remote=banners.find(b=>b.slot_key===key);return {...slot,image:remote?.image_url||'',fileName:remote?.title||''};});
  remoteOperationalMode=true;data.members.forEach(ensureMemberDefaults);if(pointSetting&&Number(pointSetting.setting_value)>=1000)data.pointRate=Number(pointSetting.setting_value);renderAll();
  return {members:data.members.length,menus:data.menus.length,transactions:data.transactions.length};
 };
@@ -1581,6 +1591,19 @@ renderAll(); })();
     if(method!=='GET'){if(!currentSession?.csrfToken)throw new Error('Token keamanan tidak tersedia. Silakan login kembali.');headers['X-CSRF-Token']=currentSession.csrfToken;}
     const response=await callApi(route,init),result=await readApiJson(response);if(result.csrf_token&&currentSession)currentSession.csrfToken=result.csrf_token;return result;
   };
+  window.payuAdminUploadBanner = async function(slotKey, title, file) {
+    if (!currentSession?.csrfToken) throw new Error('Token keamanan tidak tersedia. Silakan login kembali.');
+    const form = new FormData();
+    form.append('slot_key', slotKey);
+    form.append('title', title);
+    form.append('image', file, file.name);
+    const url = new URL(API_BASE); url.searchParams.set('route','staff/banners/upload');
+    const response = await fetch(url.toString(), {method:'POST',credentials:'include',cache:'no-store',headers:{'Accept':'application/json','X-CSRF-Token':currentSession.csrfToken},body:form});
+    const result = await readApiJson(response);
+    if (result.csrf_token && currentSession) currentSession.csrfToken = result.csrf_token;
+    return result;
+  };
+
 
 
   document.getElementById('forcedPasswordForm').addEventListener('submit', async event => {
