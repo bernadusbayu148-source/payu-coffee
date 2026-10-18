@@ -336,6 +336,24 @@ body.promo-viewer-open{overflow:hidden}
 .field select:focus,.field input[type="date"]:focus{border-color:var(--red);box-shadow:0 0 0 3px #a6282318}
 @media(max-width:520px){#registerForm .field{margin:11px 0}#registerForm .field label{font-size:.82rem}}
 
+
+/* PA.YU promo-info surface: display editable promo copy in a cream/terracotta card above the poster carousel. */
+.promo-info-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,.34fr);gap:26px;align-items:stretch;margin:0 0 28px;padding:clamp(22px,3vw,32px);overflow:hidden;border:1px solid #f1d7c5;border-radius:22px;background:linear-gradient(120deg,#fffdf9 0%,#f7f3ec 67%,#eee1d4 100%);color:#4b3028;box-shadow:0 18px 42px #3b211b18}
+.promo-info-card:before{content:"";position:absolute;width:230px;height:230px;right:-85px;top:-120px;border:1px solid #a6282320;border-radius:50%;box-shadow:0 0 0 22px #a6282307,0 0 0 48px #a6282304;pointer-events:none}
+.promo-info-copy{position:relative;z-index:1;min-width:0}
+.promo-info-overline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:13px}
+.promo-info-tag{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#a62823;color:#fffaf3;font-size:.61rem;font-weight:850;letter-spacing:.12em;text-transform:uppercase}
+.promo-info-discount{font-size:.7rem;font-weight:850;letter-spacing:.12em;text-transform:uppercase;color:#a62823}
+.promo-info-copy h3{position:relative;margin:0 0 9px;font-family:Georgia,serif;font-size:clamp(1.55rem,3vw,2.25rem);line-height:1.05;letter-spacing:-.045em;color:#4b3028;overflow-wrap:anywhere}
+.promo-info-copy p{max-width:650px;margin:0;color:#75665b;font-size:.92rem;line-height:1.7;white-space:pre-line}
+.promo-info-code{position:relative;z-index:1;align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:18px 20px;border:1px dashed #cda28e;border-radius:16px;background:#ffffff85;min-width:0}
+.promo-info-code small{font-size:.62rem;font-weight:850;letter-spacing:.14em;color:#8a6a5a}
+.promo-info-code strong{display:block;font-size:clamp(1rem,1.7vw,1.3rem);line-height:1.2;letter-spacing:.045em;color:#a62823;overflow-wrap:anywhere}
+.promo-info-code span{font-size:.7rem;color:#827166;line-height:1.45}
+.promo-info-code[hidden],.promo-info-tag[hidden],.promo-info-discount[hidden]{display:none!important}
+.gallery-card .caption h3{white-space:pre-line;overflow-wrap:anywhere}
+@media(max-width:640px){.promo-info-card{grid-template-columns:minmax(0,1fr);gap:17px;padding:20px;margin-bottom:22px;border-radius:18px}.promo-info-copy h3{font-size:1.65rem}.promo-info-copy p{font-size:.85rem}.promo-info-code{padding:13px 15px}.promo-info-code strong{font-size:1.08rem}}
+
 </style>
 </head>
 <body>
@@ -370,8 +388,16 @@ body.promo-viewer-open{overflow:hidden}
 <div class="leader-row"><div class="rank">7</div><div class="person"><div class="avatar">AP</div><div><div class="person-name">Ayu Putry</div><div class="person-tier">Member</div></div></div><div class="score">418 pts</div></div>
 <div class="leader-row"><div class="rank">8</div><div class="person"><div class="avatar">CE</div><div><div class="person-name">Cecilia</div><div class="person-tier">Member</div></div></div><div class="score">416 pts</div></div>
 </div><div class="leader-foot">Nama dan poin pada halaman ini masih data contoh, bukan data member nyata.</div></div></div></section>
-<section class="section" id="gallery"><div class="wrap"><div class="section-head"><div><div class="kicker">A glimpse of pa.yu</div><h2>Ruang kecil,<br>cerita besar.</h2></div><p>Temukan suasana, sudut favorit, dan momen yang membuat pa.yu terasa berbeda.</p></div><div class="gallery-grid"><article class="gallery-card"><img class="gallery-admin-bg" data-gallery-slot="shop-photo-1" alt="" aria-hidden="true" hidden><div class="caption"><small>01 / Our space</small><h3>Tempat untuk<br>berlama-lama.</h3></div></article><article class="gallery-card"><img class="gallery-admin-bg" data-gallery-slot="shop-photo-2" alt="" aria-hidden="true" hidden><div class="caption"><small>02 / Slow down</small><h3>Take a<br>coffee break.</h3></div></article><article class="gallery-card"><img class="gallery-admin-bg" data-gallery-slot="shop-photo-3" alt="" aria-hidden="true" hidden><div class="caption"><small>03 / Our people</small><h3>Meet your<br>kind of people.</h3></div></article></div><p id="galleryAdminNote" style="font-size:.8rem;color:var(--muted);margin-top:12px">Foto galeri dapat diperbarui melalui Admin → Promo → Banner Website.</p></div></section>
-<section class="promo-section section" id="promo"><div class="wrap"><div class="section-head"><div><div class="kicker">Good things ahead</div><h2>Promo & kabar<br>kerabat.</h2></div><p>Geser untuk melihat poster promo dan menu terbaru pa.yu. Ketuk poster untuk melihatnya lebih besar.</p></div>
+<section class="section" id="gallery"><div class="wrap"><div class="section-head"><div><div class="kicker">A glimpse of pa.yu</div><h2>Ruang kecil,<br>cerita besar.</h2></div><p>Temukan suasana, sudut favorit, dan momen yang membuat pa.yu terasa berbeda.</p></div><div class="gallery-grid"><article class="gallery-card" data-gallery-copy="shop-photo-1"><img class="gallery-admin-bg" data-gallery-slot="shop-photo-1" alt="" aria-hidden="true" hidden><div class="caption"><small data-gallery-copy-field="eyebrow">01 / Our space</small><h3 data-gallery-copy-field="title">Tempat untuk<br>berlama-lama.</h3></div></article><article class="gallery-card" data-gallery-copy="shop-photo-2"><img class="gallery-admin-bg" data-gallery-slot="shop-photo-2" alt="" aria-hidden="true" hidden><div class="caption"><small data-gallery-copy-field="eyebrow">02 / Slow down</small><h3 data-gallery-copy-field="title">Take a<br>coffee break.</h3></div></article><article class="gallery-card" data-gallery-copy="shop-photo-3"><img class="gallery-admin-bg" data-gallery-slot="shop-photo-3" alt="" aria-hidden="true" hidden><div class="caption"><small data-gallery-copy-field="eyebrow">03 / Our people</small><h3 data-gallery-copy-field="title">Meet your<br>kind of people.</h3></div></article></div><p id="galleryAdminNote" style="font-size:.8rem;color:var(--muted);margin-top:12px">Foto galeri dapat diperbarui melalui Admin → Promo → Banner Website.</p></div></section>
+<section class="promo-section section" id="promo"><div class="wrap"><div class="section-head"><div><div class="kicker">Good things ahead</div><h2>Promo & kabar<br>kerabat.</h2></div><p>Temukan penawaran terbaru dan cerita dari pa.yu. Geser poster untuk melihat pilihan promo.</p></div>
+  <article class="promo-info-card" id="publicPromoInfo" aria-label="Informasi promosi PA.YU">
+    <div class="promo-info-copy">
+      <div class="promo-info-overline"><span class="promo-info-tag" id="publicPromoTag">SPECIAL OFFER</span><span class="promo-info-discount" id="publicPromoDiscount">SPECIAL PRICE</span></div>
+      <h3 id="publicPromoTitle">Your daily cup of joy.</h3>
+      <p id="publicPromoDescription">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</p>
+    </div>
+    <div class="promo-info-code" id="publicPromoCodeWrap"><small>KODE PROMO</small><strong id="publicPromoCode">PAYUFRIEND</strong><span>Tunjukkan kode saat transaksi</span></div>
+  </article>
   <div class="promo-carousel" aria-label="Galeri poster promo pa.yu">
     <div class="promo-track" id="promoTrack" tabindex="0" aria-label="Geser horizontal untuk melihat poster">
       <button type="button" class="promo-poster" data-promo-index="0" data-promo-title="Promo spesial pa.yu" aria-label="Buka poster Promo spesial pa.yu" onclick="openPromoViewer(0)"><span class="poster-frame"><span class="poster-art poster-art-one"><span class="poster-eyebrow">PA.YU COFFEE · 01</span><span class="poster-deco poster-deco-one" aria-hidden="true">✳</span><span class="poster-copy"><span class="poster-small">A LITTLE TREAT</span><strong>Ngopi lebih<br><em>hemat.</em></strong><span class="poster-description">Waktu istimewa,<br>secangkir cerita.</span></span><span class="poster-bottom">PROMO SPESIAL <span>PA.YU</span></span><img src="poster-promo-1.jpg" alt="Poster promo spesial pa.yu" loading="lazy" onerror="this.style.display='none'"></span></span><span class="promo-poster-meta"><strong>Promo spesial</strong></span></button>
@@ -486,12 +512,45 @@ const promoTrack=document.getElementById('promoTrack');
 const promoSlides=[...document.querySelectorAll('.promo-poster')];
 const ADMIN_DATA_STORAGE_KEY='payuCoffeeAdmin_v1';
 const PROMO_SLOT_IDS=['promo-poster-1','promo-poster-2','promo-poster-3'];
-function readAdminBannerSlots(){
+function readAdminData(){
   try{
     const raw=localStorage.getItem(ADMIN_DATA_STORAGE_KEY);
     const stored=raw?JSON.parse(raw):null;
-    return stored&&Array.isArray(stored.bannerSlots)?stored.bannerSlots:[];
-  }catch(error){console.warn('Data banner Admin belum dapat dibaca dari browser ini.',error);return []}
+    return stored&&typeof stored==='object'?stored:{};
+  }catch(error){console.warn('Data Admin belum dapat dibaca dari browser ini.',error);return {}}
+}
+function readAdminBannerSlots(){
+  const stored=readAdminData();
+  return Array.isArray(stored.bannerSlots)?stored.bannerSlots:[];
+}
+function syncPromoAndGalleryContentFromAdmin(){
+  const stored=readAdminData();
+  const promo=stored.promo;
+  if(promo&&typeof promo==='object'){
+    const textMap={publicPromoTag:promo.tag,publicPromoDiscount:promo.discount,publicPromoTitle:promo.title,publicPromoDescription:promo.description,publicPromoCode:promo.code};
+    Object.entries(textMap).forEach(([id,value])=>{
+      const el=document.getElementById(id);
+      if(el&&typeof value==='string')el.textContent=value;
+    });
+    const codeWrap=document.getElementById('publicPromoCodeWrap');
+    if(codeWrap)codeWrap.hidden=!String(promo.code||'').trim();
+    const tag=document.getElementById('publicPromoTag');if(tag)tag.hidden=!String(promo.tag||'').trim();
+    const discount=document.getElementById('publicPromoDiscount');if(discount)discount.hidden=!String(promo.discount||'').trim();
+  }
+  if(Array.isArray(stored.galleryContent)){
+    stored.galleryContent.forEach(item=>{
+      if(!item||!item.slotId)return;
+      const card=document.querySelector(`[data-gallery-copy="${item.slotId}"]`);
+      if(!card)return;
+      const eyebrow=card.querySelector('[data-gallery-copy-field="eyebrow"]');
+      const title=card.querySelector('[data-gallery-copy-field="title"]');
+      if(eyebrow&&typeof item.eyebrow==='string'){
+        eyebrow.textContent=item.eyebrow;
+        eyebrow.hidden=!item.eyebrow.trim();
+      }
+      if(title&&typeof item.title==='string')title.textContent=item.title;
+    });
+  }
 }
 function getAdminBannerImage(slots,id){
   const slot=slots.find(item=>item&&item.id===id);
@@ -546,10 +605,12 @@ function syncPromoPostersFromAdmin(){
 }
 syncHeroAndGalleryFromAdmin();
 syncPromoPostersFromAdmin();
+syncPromoAndGalleryContentFromAdmin();
 window.addEventListener('storage',event=>{
   if(event.key===ADMIN_DATA_STORAGE_KEY||event.key===null){
     syncHeroAndGalleryFromAdmin();
     syncPromoPostersFromAdmin();
+    syncPromoAndGalleryContentFromAdmin();
     if(document.getElementById('promoViewer')?.classList.contains('open'))showPromoSlide(activePromoIndex);
   }
 });
