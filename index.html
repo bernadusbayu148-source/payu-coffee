@@ -24,6 +24,12 @@ footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);font-s
 @media(max-width:400px){.wrap{width:calc(100% - 26px)}.brand{font-size:1.25rem}.brand img{width:38px;height:38px}.login-btn{font-size:.8rem;padding:10px 12px}.hero h1{font-size:clamp(2.9rem,13vw,4rem)}.gallery-grid{grid-template-columns:1fr}.gallery-card:first-child{grid-column:auto}.podium{gap:5px}.podium-card{padding-left:4px;padding-right:4px}.podium-name{font-size:.72rem}.podium-score{font-size:.83rem}.podium-card.first .podium-score{font-size:.92rem}.podium-ribbon{letter-spacing:0}.dock-link{font-size:.58rem}.mobile-dock{left:8px;right:8px}.leaderboard{padding-left:10px;padding-right:10px}.person-name{max-width:130px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
 
+/* Discreet staff entry: available for the team without competing with member actions. */
+.staff-access-row{display:flex;justify-content:flex-end;margin-top:6px;padding-top:2px}
+.staff-access-link{display:inline-flex;align-items:center;gap:6px;padding:5px 2px;border:0;background:transparent;color:#a69b8f;font-size:.66rem;font-weight:650;letter-spacing:.025em;cursor:pointer;opacity:.72;transition:color .18s,opacity .18s}
+.staff-access-link svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}
+.staff-access-link:hover,.staff-access-link:focus-visible{color:#6d3528;opacity:1}
+.staff-access-link:focus-visible{outline:1px solid #c9a697;outline-offset:3px;border-radius:4px}
 /* Refinement pass: understated leaderboard, clearer CTA spacing, and premium member modal. */
 .leader-grid{gap:42px}
 .leader-intro{padding-right:12px}
@@ -387,16 +393,6 @@ body.promo-viewer-open{overflow:hidden}
 <div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle" aria-hidden="true"><div class="panel"><button class="close" onclick="closeLogin()" aria-label="Tutup dialog">×</button>
 <div class="auth-brand-row"><img src="pa-yu-logo.png" alt="" class="auth-brand-logo"><div class="auth-brand-wordmark"><strong>pa.yu</strong><span>COFFEE · COMMUNITY</span></div><span class="auth-brand-tag">MEMBER SPACE</span></div>
 <div class="auth-heading"><div class="kicker" id="authKicker"><span class="auth-heading-dot"></span> WELCOME, KERABAT</div><h2 id="loginTitle">Member pa.yu</h2><p id="authIntro">Masuk untuk melihat profil, poin, peringkat, dan benefit membership kamu.</p></div>
-<div class="auth-access-switch" role="group" aria-label="Pilih jenis akses">
-  <button type="button" id="memberAccessBtn" class="auth-access-option active" onclick="switchAccess('member')" aria-pressed="true">
-    <span class="auth-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.8-3.5 3.1-5.3 7-5.3s6.2 1.8 7 5.3"></path></svg></span>
-    <span class="auth-access-copy"><strong>Member</strong><small>Profil, poin & benefit</small></span>
-  </button>
-  <button type="button" id="adminAccessBtn" class="auth-access-option" onclick="switchAccess('admin')" aria-pressed="false">
-    <span class="auth-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"></path><path d="m9 12 2 2 4-4"></path></svg></span>
-    <span class="auth-access-copy"><strong>Akses Admin</strong><small>Masuk untuk tim PA.YU</small></span>
-  </button>
-</div>
 <div id="memberAccessView">
   <div class="auth-tabs" role="tablist" aria-label="Pilih login atau daftar"><button class="auth-tab active" id="loginTab" role="tab" aria-selected="true" onclick="switchAuth('login')">Masuk</button><button class="auth-tab" id="registerTab" role="tab" aria-selected="false" onclick="switchAuth('register')">Daftar member</button></div>
   <form id="loginForm" class="auth-view"><div class="field"><label for="loginId">Email atau ID member</label><input id="loginId" name="loginId" autocomplete="username" required placeholder="Email / ID member"></div><div class="field"><label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button class="primary" type="submit">Masuk ke akun ↗</button><div class="message" id="loginMessage" aria-live="polite"></div></form>
@@ -411,12 +407,7 @@ body.promo-viewer-open{overflow:hidden}
     <button class="primary" type="submit">Buat akun member ↗</button><div class="message" id="registerMessage" aria-live="polite"></div>
   </form>
   <p class="note auth-note">Saat ini login dan pendaftaran member masih berupa prototype. Akun dan data member belum tersimpan di server.</p>
-</div>
-<div id="adminAccessView" class="auth-access-view" hidden>
-  <div class="admin-login-heading"><span class="admin-login-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"></path></svg></span><div><h3>Area kerja pa.yu</h3><p>Pilih jabatan. Verifikasi username dan password akan dilakukan di halaman Admin.</p></div></div>
-  <form id="adminLoginForm"><div class="field"><label for="adminRole">Jabatan / role</label><select id="adminRole" name="role" required><option value="master" selected>Master</option><option value="owner">Owner</option><option value="admin">Admin</option><option value="kasir_satu">Kasir satu</option><option value="kasir_dua">Kasir dua</option></select></div><button class="primary" type="submit">Lanjut ke login Admin ↗</button><div class="message" id="adminMessage" aria-live="polite"></div></form>
-  <button type="button" class="back-to-member" onclick="switchAccess('member')">← Kembali ke akses member</button>
-  <p class="note auth-note access-note">Anda akan diminta memasukkan username dan password di halaman Admin. Login demo saat ini hanya tersedia untuk role Master; role lain perlu dikonfigurasi.</p>
+  <div class="staff-access-row"><button type="button" class="staff-access-link" onclick="goToAdminLogin()" aria-label="Akses staf PA.YU"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"></path><path d="M9 12h6"></path></svg><span>Akses staf</span></button></div>
 </div>
 </div></div>
 
@@ -454,29 +445,11 @@ function resetVisiblePasswords(root=document){
 }
 const loginForm=document.getElementById('loginForm');
 const registerForm=document.getElementById('registerForm');
-const adminLoginForm=document.getElementById('adminLoginForm');
 function openLogin(mode='login'){
   resetVisiblePasswords(modal);
-  modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');switchAccess('member');switchAuth(mode);
+  modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');switchAuth(mode);
 }
 function closeLogin(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open')}
-function switchAccess(access){
-  const isAdmin=access==='admin';
-  document.getElementById('memberAccessView').hidden=isAdmin;
-  document.getElementById('adminAccessView').hidden=!isAdmin;
-  document.getElementById('memberAccessBtn').classList.toggle('active',!isAdmin);
-  document.getElementById('adminAccessBtn').classList.toggle('active',isAdmin);
-  document.getElementById('memberAccessBtn').setAttribute('aria-pressed',String(!isAdmin));
-  document.getElementById('adminAccessBtn').setAttribute('aria-pressed',String(isAdmin));
-  if(isAdmin){
-    document.getElementById('authKicker').innerHTML='<span class="auth-heading-dot"></span> TEAM ACCESS';
-    document.getElementById('loginTitle').textContent='Login admin pa.yu';
-    document.getElementById('authIntro').textContent='Akses khusus untuk tim operasional dan pengelola PA.YU.';
-    document.getElementById('adminMessage').textContent='';
-  }else{
-    switchAuth('login');
-  }
-}
 function switchAuth(mode){
   const registering=mode==='register';
   loginForm.hidden=registering;registerForm.hidden=!registering;
@@ -493,17 +466,13 @@ modal.addEventListener('click',e=>{if(e.target===modal)closeLogin()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLogin()});
 loginForm.addEventListener('submit',e=>{e.preventDefault();document.getElementById('loginMessage').textContent='Demo saja: login member belum terhubung ke sistem akun PA.YU.'});
 registerForm.addEventListener('submit',e=>{e.preventDefault();const password=document.getElementById('registerPassword').value;const confirm=document.getElementById('confirmPassword').value;if(password!==confirm){document.getElementById('registerMessage').textContent='Konfirmasi password belum sama.';return}document.getElementById('registerMessage').textContent='Demo saja: pendaftaran belum terhubung ke database PA.YU.'});
-adminLoginForm.addEventListener('submit',e=>{
-  e.preventDefault();
-  const role=document.getElementById('adminRole').value;
-  if(!role){document.getElementById('adminMessage').textContent='Pilih jabatan terlebih dahulu.';return;}
-  // Hapus sesi demo lama agar pilihan Akses Admin selalu meminta login ulang.
+function goToAdminLogin(){
+  // Hapus sesi demo lama agar halaman Admin selalu meminta login.
   try { sessionStorage.removeItem('payu_admin_demo_session_v1'); } catch (_) {}
   const target = new URL('admin.html', window.location.href);
-  target.searchParams.set('role', role);
   target.searchParams.set('login', 'required');
   window.location.assign(target.href);
-});
+}
 document.getElementById('year').textContent=new Date().getFullYear();
 const dockLinks=[...document.querySelectorAll('.dock-link')];
 function setActiveNav(id){dockLinks.forEach(link=>link.classList.toggle('active',link.getAttribute('href')==='#'+id));document.querySelectorAll('.navlinks a').forEach(link=>link.classList.toggle('active',link.getAttribute('href')==='#'+id))}
