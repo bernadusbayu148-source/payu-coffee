@@ -618,8 +618,8 @@
     </section>
 
     <section class="view" id="view-benefits">
-      <div class="section-heading"><div><h2>Aturan Benefit & Kupon</h2><p>Atur poin minimum untuk setiap level dan syarat lima kupon pada masing-masing level.</p></div></div>
-      <div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Ambang poin level</h2><p class="panel-subtitle">Bronze adalah level awal; Silver, Gold, dan Platinum harus meningkat bertahap.</p></div></div><div id="benefitRulesEditor"></div></div>
+      <div class="section-heading"><div><h2>Aturan Benefit & Kupon</h2><p>Atur lima level member, ambang poin, serta syarat dan bentuk benefit untuk lima kupon pada setiap level.</p></div></div>
+      <div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Ambang poin level</h2><p class="panel-subtitle">Bronze adalah level awal; Silver, Gold, Platinum, dan Diamond harus meningkat bertahap.</p></div></div><div id="benefitRulesEditor"></div></div>
       <p class="form-note" style="margin:0 0 18px">Perubahan aturan baru berlaku untuk level dan validasi kupon server setelah pembaruan API benefit dipasang.</p>
     </section>
 
@@ -885,48 +885,86 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-backdrop.open').forEach(m=>{if(m.id==='scannerModal')closeScanner();else m.classList.remove('open')})}});
   document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
 
-  const BASE_LEVEL_THRESHOLDS={Bronze:0,Silver:100,Gold:300,Platinum:600};
+  const BENEFIT_LEVELS=['Bronze','Silver','Gold','Platinum','Diamond'];
+  const BENEFIT_UNLOCK_POINTS=[50,100,150,200,250];
+  const BASE_LEVEL_THRESHOLDS={Bronze:0,Silver:100,Gold:300,Platinum:600,Diamond:900};
   const BASE_COUPON_TEMPLATES={
     Bronze:[{type:'fixed',value:3000,min:20000,max:3000},{type:'percent',value:5,min:25000,max:5000},{type:'fixed',value:5000,min:35000,max:5000},{type:'percent',value:7,min:45000,max:8000},{type:'fixed',value:10000,min:65000,max:10000}],
     Silver:[{type:'fixed',value:5000,min:20000,max:5000},{type:'percent',value:7,min:25000,max:8000},{type:'fixed',value:8000,min:35000,max:8000},{type:'percent',value:10,min:45000,max:12000},{type:'fixed',value:15000,min:65000,max:15000}],
     Gold:[{type:'fixed',value:7000,min:20000,max:7000},{type:'percent',value:10,min:25000,max:12000},{type:'fixed',value:10000,min:35000,max:10000},{type:'percent',value:12,min:45000,max:18000},{type:'fixed',value:20000,min:65000,max:20000}],
-    Platinum:[{type:'fixed',value:10000,min:20000,max:10000},{type:'percent',value:12,min:25000,max:15000},{type:'fixed',value:15000,min:35000,max:15000},{type:'percent',value:15,min:45000,max:25000},{type:'fixed',value:25000,min:65000,max:25000}]
+    Platinum:[{type:'fixed',value:10000,min:20000,max:10000},{type:'percent',value:12,min:25000,max:15000},{type:'fixed',value:15000,min:35000,max:15000},{type:'percent',value:15,min:45000,max:25000},{type:'fixed',value:25000,min:65000,max:25000}],
+    Diamond:[{type:'fixed',value:15000,min:20000,max:15000},{type:'percent',value:15,min:25000,max:20000},{type:'fixed',value:20000,min:35000,max:20000},{type:'percent',value:18,min:45000,max:30000},{type:'fixed',value:30000,min:65000,max:30000}]
   };
+  for(const level of BENEFIT_LEVELS){
+    BASE_COUPON_TEMPLATES[level]=BASE_COUPON_TEMPLATES[level].map((coupon,i)=>({...coupon,rewardMenuId:'',customReward:'',unlockPoints:BENEFIT_UNLOCK_POINTS[i],expiresInDays:0,priority:i+1}));
+  }
   function normalizeBenefitRules(raw){
     const result={thresholds:{...BASE_LEVEL_THRESHOLDS},coupons:JSON.parse(JSON.stringify(BASE_COUPON_TEMPLATES))};
     if(!raw||typeof raw!=='object')return result;
     const incoming=raw.thresholds&&typeof raw.thresholds==='object'?raw.thresholds:(raw.levelThresholds&&typeof raw.levelThresholds==='object'?raw.levelThresholds:null);
-    if(incoming)for(const level of ['Silver','Gold','Platinum']){const n=Number(incoming[level]);if(Number.isInteger(n)&&n>=1&&n<=10000000)result.thresholds[level]=n;}
+    if(incoming)for(const level of BENEFIT_LEVELS.slice(1)){const n=Number(incoming[level]);if(Number.isInteger(n)&&n>=1&&n<=10000000)result.thresholds[level]=n;}
     if(raw.coupons&&typeof raw.coupons==='object'){
-      for(const level of ['Bronze','Silver','Gold','Platinum']){
+      for(const level of BENEFIT_LEVELS){
         if(!Array.isArray(raw.coupons[level]))continue;
         result.coupons[level]=Array.from({length:5},(_,i)=>{
           const base=BASE_COUPON_TEMPLATES[level][i],c=raw.coupons[level][i]||base;
-          const type=c.type==='percent'||c.discount_type==='percent'?'percent':'fixed';
-          const value=Number(c.value??c.discount_value),min=Number(c.min??c.min_spend),maxRaw=Object.prototype.hasOwnProperty.call(c,'max')?c.max:c.max_discount,max=Number(maxRaw);
-          return {type,value:Number.isInteger(value)&&value>=1?Math.min(value,type==='percent'?100:2000000000):base.value,min:Number.isInteger(min)&&min>=0?Math.min(min,2000000000):base.min,max:Number.isInteger(max)&&max>0?Math.min(max,2000000000):(maxRaw===null?null:base.max)};
+          const candidate=String(c.type||c.reward_type||c.discount_type||'fixed').toLowerCase();
+          const type=['fixed','percent','free_product','custom'].includes(candidate)?candidate:(candidate==='percentage'?'percent':'fixed');
+          const value=Number(c.value??c.discount_value??base.value),min=Number(c.min??c.min_spend??base.min);
+          const maxRaw=Object.prototype.hasOwnProperty.call(c,'max')?c.max:c.max_discount;
+          const max=Number(maxRaw);
+          const unlock=Number(c.unlockPoints??c.unlock_points??c.min_points);
+          const expiry=Number(c.expiresInDays??c.expires_in_days);
+          const priority=Number(c.priority??c.sort_order??(i+1));
+          const rewardMenuId=String(c.rewardMenuId??c.reward_menu_id??'');
+          const customReward=String(c.customReward??c.reward_description??c.reward_name??'').trim().slice(0,180);
+          return {
+            type,
+            value:Number.isInteger(value)&&value>=0?Math.min(value,type==='percent'?100:2000000000):base.value,
+            min:Number.isInteger(min)&&min>=0?Math.min(min,2000000000):base.min,
+            max:Number.isInteger(max)&&max>0?Math.min(max,2000000000):(maxRaw===null?null:base.max),
+            rewardMenuId,
+            customReward,
+            unlockPoints:Number.isInteger(unlock)&&unlock>=0&&unlock<=10000000?unlock:base.unlockPoints,
+            expiresInDays:Number.isInteger(expiry)&&expiry>=0&&expiry<=3650?expiry:base.expiresInDays,
+            priority:Number.isInteger(priority)&&priority>=1&&priority<=5?priority:i+1
+          };
         });
       }
     }
     result.thresholds.Bronze=0;
-    if(!(result.thresholds.Silver>0))result.thresholds.Silver=BASE_LEVEL_THRESHOLDS.Silver;
-    if(!(result.thresholds.Gold>result.thresholds.Silver))result.thresholds.Gold=Math.max(BASE_LEVEL_THRESHOLDS.Gold,result.thresholds.Silver+1);
-    if(!(result.thresholds.Platinum>result.thresholds.Gold))result.thresholds.Platinum=Math.max(BASE_LEVEL_THRESHOLDS.Platinum,result.thresholds.Gold+1);
+    let previous=0;
+    for(const level of BENEFIT_LEVELS.slice(1)){
+      if(!(result.thresholds[level]>previous))result.thresholds[level]=Math.max(BASE_LEVEL_THRESHOLDS[level],previous+1);
+      previous=result.thresholds[level];
+    }
     return result;
   }
   benefitRules=normalizeBenefitRules(typeof data!=='undefined'?data.benefitRules:null);
   function memberLevel(points){
     const p=Number(points)||0,t=benefitRules.thresholds;
-    if(p>=t.Platinum)return 'Platinum';if(p>=t.Gold)return 'Gold';if(p>=t.Silver)return 'Silver';return 'Bronze';
+    for(let i=BENEFIT_LEVELS.length-1;i>=1;i--){const level=BENEFIT_LEVELS[i];if(p>=t[level])return level;}
+    return 'Bronze';
   }
   function couponTemplates(level){
     const templates=benefitRules.coupons[level]||BASE_COUPON_TEMPLATES.Bronze;
-    return templates.map((t,i)=>({...t,label:'Kupon '+(i+1)+' · '+(t.type==='percent'?'Diskon '+t.value+'%':'Potongan '+money(t.value)),min:Number(t.min)||0,max:t.max==null?null:Number(t.max)}));
+    return templates.map((t,i)=>{
+      const menu=data.menus.find(m=>String(m.id)===String(t.rewardMenuId));
+      const label=t.type==='percent'?'Diskon '+t.value+'%':t.type==='free_product'?'Gratis '+(menu?.name||'produk pilihan'):t.type==='custom'?(t.customReward||'Benefit khusus'):'Potongan '+money(t.value);
+      return {...t,label:'Kupon '+(i+1)+' · '+label,min:Number(t.min)||0,max:t.max==null?null:Number(t.max)};
+    });
   }
   function renderBenefitRulesForm(){
     const host=document.getElementById('benefitRulesEditor');if(!host)return;
-    const levels=['Bronze','Silver','Gold','Platinum'];
-    host.innerHTML='<form id="benefitRulesForm"><div class="form-grid" style="margin-bottom:16px">'+levels.filter(level=>level!=='Bronze').map(level=>'<div class="field"><label for="benefitThreshold_'+level+'">Minimum poin level '+level+'</label><input id="benefitThreshold_'+level+'" name="threshold_'+level+'" type="number" min="1" max="10000000" step="1" value="'+Number(benefitRules.thresholds[level])+'" required /><small style="color:var(--muted)">Bronze otomatis mulai dari 0 poin.</small></div>').join('')+'</div><div style="display:grid;gap:14px">'+levels.map(level=>'<section class="panel" style="box-shadow:none;background:#fffefa;border:1px solid var(--line)"><div class="panel-head"><div><h3 class="panel-title">'+level+'</h3><p class="panel-subtitle">'+(level==='Bronze'?'Level awal untuk semua member.':'Mulai '+number(benefitRules.thresholds[level])+' poin.')+'</p></div></div><div class="table-wrap"><table><thead><tr><th>Kupon</th><th>Jenis diskon</th><th>Nilai diskon</th><th>Min. transaksi (Rp)</th><th>Maks. diskon (Rp)</th></tr></thead><tbody>'+couponTemplates(level).map((c,i)=>'<tr><td><strong>Kupon '+(i+1)+'</strong></td><td><select name="type_'+level+'_'+i+'" aria-label="Jenis diskon '+level+' kupon '+(i+1)+'"><option value="fixed" '+(c.type==='fixed'?'selected':'')+'>Nominal (Rp)</option><option value="percent" '+(c.type==='percent'?'selected':'')+'>Persentase (%)</option></select></td><td><input name="value_'+level+'_'+i+'" type="number" min="1" max="'+(c.type==='percent'?100:2000000000)+'" step="1" value="'+Number(c.value)+'" required aria-label="Nilai diskon '+level+' kupon '+(i+1)+'" /></td><td><input name="min_'+level+'_'+i+'" type="number" min="0" max="2000000000" step="1000" value="'+Number(c.min)+'" required aria-label="Minimum transaksi '+level+' kupon '+(i+1)+'" /></td><td><input name="max_'+level+'_'+i+'" type="number" min="0" max="2000000000" step="1000" value="'+Number(c.max??0)+'" required aria-label="Maksimum diskon '+level+' kupon '+(i+1)+'" /></td></tr>').join('')+'</tbody></table></div></section>').join('')+'</div><div class="form-grid" style="margin-top:16px"><button class="btn" type="submit">Simpan aturan benefit</button><p class="form-note">Nilai maksimum 0 berarti tanpa batas tambahan untuk kupon persentase.</p></div></form>';
+    const thresholdFields=BENEFIT_LEVELS.slice(1).map(level=>'<div class="field"><label for="benefitThreshold_'+level+'">Minimum poin level '+level+'</label><input id="benefitThreshold_'+level+'" name="threshold_'+level+'" type="number" min="1" max="10000000" step="1" value="'+Number(benefitRules.thresholds[level])+'" required /><small style="color:var(--muted)">Harus lebih tinggi dari level sebelumnya.</small></div>').join('');
+    const levelSections=BENEFIT_LEVELS.map(level=>{
+      const couponRows=couponTemplates(level).map((c,i)=>{
+        const options=data.menus.filter(m=>m.isActive!==false).map(m=>'<option value="'+esc(m.id)+'" '+(String(c.rewardMenuId)===String(m.id)?'selected':'')+'>'+esc(m.name)+' · '+money(m.price)+'</option>').join('');
+        return '<tr><td><strong>Kupon '+(i+1)+'</strong><small style="display:block;color:var(--muted)">Prioritas '+(i+1)+'</small></td><td><select name="type_'+level+'_'+i+'" aria-label="Jenis benefit '+level+' kupon '+(i+1)+'"><option value="fixed" '+(c.type==='fixed'?'selected':'')+'>Diskon nominal (Rp)</option><option value="percent" '+(c.type==='percent'?'selected':'')+'>Diskon persentase (%)</option><option value="free_product" '+(c.type==='free_product'?'selected':'')+'>Produk gratis</option><option value="custom" '+(c.type==='custom'?'selected':'')+'>Benefit khusus</option></select></td><td><input name="value_'+level+'_'+i+'" type="number" min="0" max="'+(c.type==='percent'?100:2000000000)+'" step="1" value="'+Number(c.value)+'" '+(['free_product','custom'].includes(c.type)?'disabled':'')+' aria-label="Nilai diskon '+level+' kupon '+(i+1)+'" /></td><td><input name="min_'+level+'_'+i+'" type="number" min="0" max="2000000000" step="1000" value="'+Number(c.min)+'" required aria-label="Minimum transaksi '+level+' kupon '+(i+1)+'" /></td><td><input name="max_'+level+'_'+i+'" type="number" min="0" max="2000000000" step="1000" value="'+Number(c.max??0)+'" required aria-label="Maksimum diskon '+level+' kupon '+(i+1)+'" /></td><td><input name="unlock_'+level+'_'+i+'" type="number" min="0" max="10000000" step="1" value="'+Number(c.unlockPoints)+'" required aria-label="Poin pembuka '+level+' kupon '+(i+1)+'" /></td><td><select name="reward_menu_'+level+'_'+i+'" aria-label="Produk hadiah '+level+' kupon '+(i+1)+'"><option value="">Pilih produk hadiah</option>'+options+'</select></td><td><input name="custom_reward_'+level+'_'+i+'" type="text" maxlength="180" value="'+esc(c.customReward)+'" placeholder="Nama benefit / ketentuan" aria-label="Benefit khusus '+level+' kupon '+(i+1)+'" /></td><td><input name="expires_'+level+'_'+i+'" type="number" min="0" max="3650" step="1" value="'+Number(c.expiresInDays)+'" required aria-label="Masa berlaku dalam hari '+level+' kupon '+(i+1)+'" /></td></tr>';
+      }).join('');
+      return '<section class="panel" style="box-shadow:none;background:#fffefa;border:1px solid var(--line)"><div class="panel-head"><div><h3 class="panel-title">'+level+'</h3><p class="panel-subtitle">'+(level==='Bronze'?'Level awal untuk semua member.':'Mulai '+number(benefitRules.thresholds[level])+' poin.')+'</p></div></div><div class="table-wrap"><table><thead><tr><th>Kupon / prioritas</th><th>Jenis benefit</th><th>Nilai diskon</th><th>Min. transaksi (Rp)</th><th>Maks. diskon (Rp)</th><th>Poin pembuka</th><th>Produk hadiah</th><th>Benefit khusus</th><th>Masa berlaku (hari)</th></tr></thead><tbody>'+couponRows+'</tbody></table></div></section>';
+    }).join('');
+    host.innerHTML='<form id="benefitRulesForm"><div class="form-grid" style="margin-bottom:16px">'+thresholdFields+'</div><p class="form-note">Kupon terbuka bertahap sesuai poin pembuka (contoh 50, 100, 150, 200, 250). Masa berlaku 0 berarti tanpa kedaluwarsa. Urutan kupon menentukan prioritas; saat kupon tingkat lebih tinggi dipakai, API server harus menonaktifkan kupon tingkat lebih rendah sesuai aturan.</p><div style="display:grid;gap:14px">'+levelSections+'</div><div class="form-grid" style="margin-top:16px"><button class="btn" type="submit">Simpan aturan benefit</button><p class="form-note">Pilih produk untuk benefit produk gratis; isi benefit khusus untuk hadiah non-diskon.</p></div></form>';
   }
   function ensureMemberDefaults(m){
     if(!m||typeof m!=='object')return;
@@ -941,7 +979,7 @@
   function couponTemplate(member,couponId){
     if(remoteOperationalMode){
       const c=couponFor(member,String(couponId||''));if(!c)return null;
-      return {label:String(c.name||c.coupon_code||'Kupon member'),type:String(c.discount_type||'fixed'),value:Number(c.discount_value||0),min:Number(c.min_spend||0),max:c.max_discount==null?null:Number(c.max_discount)};
+      return {label:String(c.name||c.coupon_code||'Kupon member'),type:String(c.reward_type&&c.reward_type!=='discount'?c.reward_type:(c.discount_type||'fixed')),value:Number(c.discount_value||0),min:Number(c.min_spend||0),max:c.max_discount==null?null:Number(c.max_discount),rewardMenuId:String(c.reward_menu_id||''),customReward:String(c.reward_description||''),unlockPoints:Number(c.unlock_points||0),expiresInDays:Number(c.expires_in_days||0),expiresAt:String(c.expires_at||''),priority:Number(c.priority||c.sort_order||1)};
     }
     const i=Number(String(couponId||'').replace('C',''))-1;return couponTemplates(memberLevel(member?.points))[i]||null;
   }
@@ -961,7 +999,7 @@
         const rows=Array.isArray(detail.coupons)?detail.coupons:[];
         member.coupons=rows.map(c=>{
           const relatedTx=data.transactions.find(t=>String(t.memberId)===String(member.id)&&String(t.couponId||'')===String(c.id));
-          return {id:String(c.id),backendId:Number(c.id),coupon_code:String(c.coupon_code||''),name:String(c.name||'Kupon member'),discount_type:String(c.discount_type||'fixed'),discount_value:Number(c.discount_value||0),min_spend:Number(c.min_spend||0),max_discount:c.max_discount==null?null:Number(c.max_discount),member_level:String(c.member_level||c.issued_level||''),issued_level:String(c.issued_level||''),status:String(c.status||'available'),used:String(c.status||'')==='used',transactionId:relatedTx?String(relatedTx.id):null,usedAt:String(c.used_at||'')};
+          return {id:String(c.id),backendId:Number(c.id),coupon_code:String(c.coupon_code||''),name:String(c.name||'Kupon member'),discount_type:String(c.discount_type||'fixed'),reward_type:String(c.reward_type&&c.reward_type!=='discount'?c.reward_type:(c.discount_type||'fixed')),discount_value:Number(c.discount_value||0),min_spend:Number(c.min_spend||0),max_discount:c.max_discount==null?null:Number(c.max_discount),reward_menu_id:String(c.reward_menu_id||''),reward_description:String(c.reward_description||''),unlock_points:Number(c.unlock_points??c.unlockPoints??0),expires_in_days:Number(c.expires_in_days??c.expiresInDays??0),expires_at:String(c.expires_at||''),priority:Number(c.priority||c.sort_order||1),member_level:String(c.member_level||c.issued_level||''),issued_level:String(c.issued_level||''),status:String(c.status||'available'),used:String(c.status||'')==='used',transactionId:relatedTx?String(relatedTx.id):null,usedAt:String(c.used_at||'')};
         });
         member.couponsLoaded=true;member.couponsLoadError='';
       }catch(error){member.coupons=[];member.couponsLoaded=true;member.couponsLoadError=error.message||'Kupon member tidak dapat dimuat.';}
@@ -979,7 +1017,7 @@
       if(!member.couponsLoaded){select.innerHTML='<option value="">Memuat kupon member…</option>';document.getElementById('txCouponNote').textContent='Mengambil kupon dari server…';await ensureRemoteMemberCoupons(member);}
       const level=memberLevel(member.points);
       const oldTx=editingTransactionId?data.transactions.find(t=>String(t.id)===String(editingTransactionId)):null;
-      const coupons=(Array.isArray(member.coupons)?member.coupons:[]).filter(c=>String(c.member_level||c.issued_level||'')===level || (oldTx&&String(oldTx.couponId||'')===String(c.id)));
+      const coupons=(Array.isArray(member.coupons)?member.coupons:[]).filter(c=>Number(c.unlock_points??c.unlockPoints??0)<=Number(member.points||0) || (oldTx&&String(oldTx.couponId||'')===String(c.id)));
       select.innerHTML='<option value="">Tidak menggunakan kupon</option>'+coupons.map(c=>{
         const tpl=couponTemplate(member,c.id)||{label:c.name||c.coupon_code||'Kupon member',min:Number(c.min_spend||0)};
         const isCurrent=Boolean(c.used&&oldTx&&String(c.transactionId)===String(oldTx.id));
@@ -1431,32 +1469,56 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
 }
 document.addEventListener('change',event=>{
  const target=event.target;
- if(!target||!/^type_(Bronze|Silver|Gold|Platinum)_[0-4]$/.test(String(target.name||'')))return;
- const match=target.name.match(/^type_(Bronze|Silver|Gold|Platinum)_([0-4])$/);
+ if(!target||!/^type_(Bronze|Silver|Gold|Platinum|Diamond)_[0-4]$/.test(String(target.name||'')))return;
+ const match=target.name.match(/^type_(Bronze|Silver|Gold|Platinum|Diamond)_([0-4])$/);
  const valueInput=target.form?.elements['value_'+match[1]+'_'+match[2]];
- if(valueInput)valueInput.max=target.value==='percent'?'100':'2000000000';
+ if(valueInput){
+  const nonDiscount=['free_product','custom'].includes(target.value);
+  valueInput.disabled=nonDiscount;
+  valueInput.min=nonDiscount?'0':'1';
+  valueInput.max=target.value==='percent'?'100':'2000000000';
+  if(nonDiscount)valueInput.value='0';
+  else if(Number(valueInput.value)<=0)valueInput.value=target.value==='percent'?'5':'3000';
+ }
 });
 document.addEventListener('submit',async event=>{
  if(event.target?.id!=='benefitRulesForm')return;
  event.preventDefault();
  const form=event.target;
- const thresholds={Bronze:0,Silver:Number(form.elements['threshold_Silver'].value),Gold:Number(form.elements['threshold_Gold'].value),Platinum:Number(form.elements['threshold_Platinum'].value)};
- if(!Number.isInteger(thresholds.Silver)||!Number.isInteger(thresholds.Gold)||!Number.isInteger(thresholds.Platinum)||thresholds.Silver<1||thresholds.Gold<=thresholds.Silver||thresholds.Platinum<=thresholds.Gold){notify('Urutan level harus naik: Silver < Gold < Platinum, dengan nilai poin positif.');return;}
+ const thresholds={Bronze:0};
+ for(const level of BENEFIT_LEVELS.slice(1))thresholds[level]=Number(form.elements['threshold_'+level].value);
+ let previous=0;
+ for(const level of BENEFIT_LEVELS.slice(1)){
+  if(!Number.isInteger(thresholds[level])||thresholds[level]<=previous||thresholds[level]>10000000){notify('Urutan level harus naik: '+BENEFIT_LEVELS.join(' < ')+', dengan poin positif.');return;}
+  previous=thresholds[level];
+ }
  const coupons={};
- for(const level of ['Bronze','Silver','Gold','Platinum']){
+ for(const level of BENEFIT_LEVELS){
   coupons[level]=[];
+  let previousUnlock=-1;
   for(let i=0;i<5;i++){
    const type=form.elements['type_'+level+'_'+i].value;
-   const value=Number(form.elements['value_'+level+'_'+i].value),min=Number(form.elements['min_'+level+'_'+i].value),max=Number(form.elements['max_'+level+'_'+i].value);
-   if(!Number.isInteger(value)||value<1||(type==='percent'&&value>100)||!Number.isInteger(min)||min<0||!Number.isInteger(max)||max<0){notify('Periksa kembali nilai diskon dan minimum transaksi kupon '+level+' ke-'+(i+1)+'.');return;}
-   coupons[level].push({type,value,min,max:max===0?null:max});
+   const value=Number(form.elements['value_'+level+'_'+i].value||0);
+   const min=Number(form.elements['min_'+level+'_'+i].value);
+   const max=Number(form.elements['max_'+level+'_'+i].value);
+   const unlockPoints=Number(form.elements['unlock_'+level+'_'+i].value);
+   const rewardMenuId=String(form.elements['reward_menu_'+level+'_'+i].value||'');
+   const customReward=String(form.elements['custom_reward_'+level+'_'+i].value||'').trim();
+   const expiresInDays=Number(form.elements['expires_'+level+'_'+i].value);
+   const discountType=type==='percent'||type==='fixed';
+   if(discountType&&(!Number.isInteger(value)||value<1||(type==='percent'&&value>100))){notify('Periksa nilai diskon '+level+' kupon ke-'+(i+1)+'.');return;}
+   if(!Number.isInteger(min)||min<0||!Number.isInteger(max)||max<0||!Number.isInteger(unlockPoints)||unlockPoints<0||unlockPoints>10000000||unlockPoints<previousUnlock||!Number.isInteger(expiresInDays)||expiresInDays<0||expiresInDays>3650){notify('Periksa minimum transaksi, urutan poin pembuka, dan masa berlaku kupon '+level+' ke-'+(i+1)+'.');return;}
+   if(type==='free_product'&&!rewardMenuId){notify('Pilih produk hadiah untuk '+level+' kupon ke-'+(i+1)+'.');return;}
+   if(type==='custom'&&!customReward){notify('Isi nama benefit khusus untuk '+level+' kupon ke-'+(i+1)+'.');return;}
+   previousUnlock=unlockPoints;
+   coupons[level].push({type,value:discountType?value:0,min,max:max===0?null:max,unlockPoints,rewardMenuId,customReward,expiresInDays,priority:i+1});
   }
  }
  benefitRules=normalizeBenefitRules({thresholds,coupons});data.benefitRules=benefitRules;saveData();renderBenefitRulesForm();
  if(remoteOperationalMode){
   const submit=form.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
-  try{const result=await persistPublicCopyToServer();if(result?.benefit_rules_applied!==true)throw new Error('API Rumahweb belum menerapkan aturan benefit. Pasang pembaruan API PA.YU terlebih dahulu.');await window.payuAdminHydrateFromServer();notify('Aturan level dan kupon berhasil disimpan dan diterapkan di server.');}
-  catch(err){notify('Aturan benefit belum diterapkan: '+err.message);}
+  try{const result=await persistPublicCopyToServer();if(result?.benefit_rules_applied!==true)throw new Error('API Rumahweb belum menerapkan aturan benefit. Pembaruan backend diperlukan sebelum aturan baru berlaku di server.');await window.payuAdminHydrateFromServer();notify('Aturan level dan benefit berhasil disimpan dan diterapkan di server.');}
+  catch(err){notify('Aturan benefit belum diterapkan di server: '+err.message);}
   finally{const fresh=document.getElementById('benefitRulesForm')?.querySelector('button[type="submit"]');if(fresh)fresh.disabled=false;}
  }else notify('Aturan benefit disimpan pada browser ini saja. Login ke backend untuk menyimpan ke server.');
 });
