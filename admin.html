@@ -553,8 +553,8 @@
       <div class="welcome"><div class="welcome-copy"><small>Selamat datang kembali</small><h2>Secangkir kopi,<br />pelanggan yang berarti.</h2><p>Kelola aktivitas member dan pantau perkembangan toko PA.YU Coffee melalui satu dashboard.</p></div><button class="btn gold" onclick="openTransactionModal()">＋ Tambah transaksi</button></div>
       <div class="stats">
         <article class="stat"><div class="stat-top">Total member <span class="stat-icon">♙</span></div><div class="stat-value" id="statMembers">0</div><div class="stat-note">Member terdaftar</div></article>
-        <article class="stat"><div class="stat-top">Transaksi hari ini <span class="stat-icon">▤</span></div><div class="stat-value" id="statTransactions">0</div><div class="stat-note">Transaksi tersimpan hari ini</div></article>
-        <article class="stat"><div class="stat-top">Pendapatan hari ini <span class="stat-icon">↗</span></div><div class="stat-value" id="statRevenue">Rp0</div><div class="stat-note">Akumulasi transaksi hari ini</div></article>
+        <article class="stat"><div class="stat-top">Total transaksi <span class="stat-icon">▤</span></div><div class="stat-value" id="statTransactions">0</div><div class="stat-note">Seluruh transaksi yang tercatat</div></article>
+        <article class="stat"><div class="stat-top">Total pendapatan <span class="stat-icon">↗</span></div><div class="stat-value" id="statRevenue">Rp0</div><div class="stat-note">Akumulasi transaksi yang tercatat</div></article>
         <article class="stat"><div class="stat-top">Poin beredar <span class="stat-icon">✦</span></div><div class="stat-value" id="statPoints">0</div><div class="stat-note">Total poin seluruh member</div></article>
       </div>
       <div class="dashboard-grid">
@@ -860,7 +860,7 @@
     return seed.promoCards.map(base=>({...base,...(byId.get(base.id)||{}),id:base.id}));
   }
   function loadData(){
-    try { const raw=localStorage.getItem(STORAGE_KEY); if(raw){const d=JSON.parse(raw);return {members:Array.isArray(d.members)?d.members:structuredCloneSafe(seed.members),menus:Array.isArray(d.menus)?d.menus:structuredCloneSafe(seed.menus),transactions:Array.isArray(d.transactions)?d.transactions:[],pointRate:Number(d.pointRate)>0?Number(d.pointRate):10000,promo:{...seed.promo,...(d.promo||{})},heroContent:{...seed.heroContent,...(d.heroContent||{})},promoCards:mergePromoCards(d.promoCards),bannerSlots:mergeBannerSlots(d.bannerSlots),galleryContent:mergeGalleryContent(d.galleryContent)};}} catch(e){console.warn('Data lokal tidak dapat dibaca:',e)}
+    try { const raw=localStorage.getItem(STORAGE_KEY); if(raw){const d=JSON.parse(raw);return {members:Array.isArray(d.members)?d.members:structuredCloneSafe(seed.members),menus:Array.isArray(d.menus)?d.menus:structuredCloneSafe(seed.menus),transactions:Array.isArray(d.transactions)?d.transactions:[],pointRate:Number(d.pointRate)>0?Number(d.pointRate):10000,benefitRules:d.benefitRules&&typeof d.benefitRules==='object'?d.benefitRules:null,promo:{...seed.promo,...(d.promo||{})},heroContent:{...seed.heroContent,...(d.heroContent||{})},promoCards:mergePromoCards(d.promoCards),bannerSlots:mergeBannerSlots(d.bannerSlots),galleryContent:mergeGalleryContent(d.galleryContent)};}} catch(e){console.warn('Data lokal tidak dapat dibaca:',e)}
     return structuredCloneSafe(seed);
   }
   function structuredCloneSafe(o){return JSON.parse(JSON.stringify(o))}
@@ -1002,8 +1002,8 @@
   function resetTransactionCouponSelection(){const select=document.getElementById('txCoupon');if(select)select.value='';refreshCouponOptions();updateTxPreview()}
 
   function renderDashboard(){
-    const today=todayISO();const todays=data.transactions.filter(t=>transactionDateISO(t)===today);const totalRevenue=todays.reduce((s,t)=>s+(Number(t.total)||0),0);const points=data.members.reduce((s,m)=>s+(Number(m.points)||0),0);
-    document.getElementById('statMembers').textContent=number(data.members.length);document.getElementById('statTransactions').textContent=number(todays.length);document.getElementById('statRevenue').textContent=money(totalRevenue);document.getElementById('statPoints').textContent=number(points);
+    const totalTransactions=data.transactions.length;const totalRevenue=data.transactions.reduce((sum,t)=>sum+(Number(t.total)||0),0);const points=data.members.reduce((sum,m)=>sum+(Number(m.points)||0),0);
+    document.getElementById('statMembers').textContent=number(data.members.length);document.getElementById('statTransactions').textContent=number(totalTransactions);document.getElementById('statRevenue').textContent=money(totalRevenue);document.getElementById('statPoints').textContent=number(points);
     document.getElementById('recentMembers').innerHTML=data.members.length?`<div class="table-wrap"><table><thead><tr><th>Member</th><th>ID member</th><th>Poin</th></tr></thead><tbody>${[...data.members].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,5).map(m=>`<tr><td><div class="member-cell"><span class="mini-avatar">${esc(initials(m.name))}</span><div><strong>${esc(m.name)}</strong><small>${esc(m.phone)}</small></div></div></td><td>${esc(m.id)}</td><td><b>${number(m.points)}</b></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><div class="empty-icon">♙</div>Belum ada member. Tambahkan member pertama.</div>`;
     const recent=[...data.transactions].sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||''))).slice(0,5);
     const recentBox=document.getElementById('dashboardRecentTransactions');
@@ -1455,7 +1455,7 @@ document.addEventListener('submit',async event=>{
  benefitRules=normalizeBenefitRules({thresholds,coupons});data.benefitRules=benefitRules;saveData();renderBenefitRulesForm();
  if(remoteOperationalMode){
   const submit=form.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
-  try{const result=await persistPublicCopyToServer();if(result?.benefit_rules_applied!==true)throw new Error('API Rumahweb belum menerapkan aturan benefit. Pasang pembaruan API PA.YU terlebih dahulu.');await window.payuAdminHydrateFromServer();notify('Aturan level dan kupon berhasil disimpan dan diterapkan di server.');}
+  try{const result=await persistPublicCopyToServer();if(result?.benefit_rules_applied!==true)throw new Error('Aturan dikirim, tetapi API belum mengonfirmasi penerapan ke database kupon. Pasang update API PA.YU sebelum memakai aturan ini untuk transaksi.');await window.payuAdminHydrateFromServer();notify('Aturan level dan kupon berhasil disimpan dan diterapkan di server.');}
   catch(err){notify('Aturan benefit belum diterapkan: '+err.message);}
   finally{const fresh=document.getElementById('benefitRulesForm')?.querySelector('button[type="submit"]');if(fresh)fresh.disabled=false;}
  }else notify('Aturan benefit disimpan pada browser ini saja. Login ke backend untuk menyimpan ke server.');
