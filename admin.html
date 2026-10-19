@@ -618,9 +618,9 @@
     </section>
 
     <section class="view" id="view-benefits">
-      <div class="section-heading"><div><h2>Aturan Benefit & Kupon</h2><p>Atur poin minimum untuk setiap level dan syarat lima kupon pada masing-masing level.</p></div></div>
-      <div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Ambang poin level</h2><p class="panel-subtitle">Bronze adalah level awal; Silver, Gold, dan Platinum harus meningkat bertahap.</p></div></div><div id="benefitRulesEditor"></div></div>
-      <p class="form-note" style="margin:0 0 18px">Perubahan aturan baru berlaku untuk level dan validasi kupon server setelah pembaruan API benefit dipasang.</p>
+      <div class="section-heading"><div><h2>Aturan Benefit & Kupon</h2><p>Kelola lima level membership, ambang total belanja, dan hadiah menu gratisnya.</p></div></div>
+      <div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Lima tingkat benefit</h2><p class="panel-subtitle">Kupon dibuka dari total akumulasi transaksi selesai. Kupon level lebih rendah tetap aktif sampai member menukarkan kupon level lebih tinggi.</p></div></div><div id="benefitRulesEditor"></div></div>
+      <p class="form-note" style="margin:0 0 18px">Setiap benefit berupa menu gratis di struk. Total tagihan menu berbayar tidak dikurangi.</p>
     </section>
 
     <section class="view" id="view-promo">
@@ -877,7 +877,7 @@
     document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));
     const [eye,title,sub]=PAGE_INFO[view];document.getElementById('pageEyebrow').textContent=eye;document.getElementById('pageTitle').textContent=title;document.getElementById('pageSubtitle').textContent=sub;
     if(view==='benefits'&&!['master','owner','admin'].includes(currentSession?.backendRole)){notify('Pengaturan benefit hanya tersedia untuk Master, Owner, dan Admin.');return;}
-    if(view==='members')renderMembers();if(view==='transactions')renderTransactions();if(view==='menu')renderMenu();if(view==='dashboard')renderDashboard();if(view==='benefits')renderBenefitRulesForm();if(view==='roles'&&window.renderRoleAccounts)window.renderRoleAccounts();
+    if(view==='members')renderMembers();if(view==='transactions')renderTransactions();if(view==='menu')renderMenu();if(view==='dashboard'){renderDashboard();renderDashboardStats()}if(view==='benefits')renderBenefitRulesForm();if(view==='roles'&&window.renderRoleAccounts)window.renderRoleAccounts();
     window.scrollTo({top:0,behavior:'smooth'});
   };
   document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.view)));
@@ -885,48 +885,54 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-backdrop.open').forEach(m=>{if(m.id==='scannerModal')closeScanner();else m.classList.remove('open')})}});
   document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
 
-  const BASE_LEVEL_THRESHOLDS={Bronze:0,Silver:100,Gold:300,Platinum:600};
-  const BASE_COUPON_TEMPLATES={
-    Bronze:[{type:'fixed',value:3000,min:20000,max:3000},{type:'percent',value:5,min:25000,max:5000},{type:'fixed',value:5000,min:35000,max:5000},{type:'percent',value:7,min:45000,max:8000},{type:'fixed',value:10000,min:65000,max:10000}],
-    Silver:[{type:'fixed',value:5000,min:20000,max:5000},{type:'percent',value:7,min:25000,max:8000},{type:'fixed',value:8000,min:35000,max:8000},{type:'percent',value:10,min:45000,max:12000},{type:'fixed',value:15000,min:65000,max:15000}],
-    Gold:[{type:'fixed',value:7000,min:20000,max:7000},{type:'percent',value:10,min:25000,max:12000},{type:'fixed',value:10000,min:35000,max:10000},{type:'percent',value:12,min:45000,max:18000},{type:'fixed',value:20000,min:65000,max:20000}],
-    Platinum:[{type:'fixed',value:10000,min:20000,max:10000},{type:'percent',value:12,min:25000,max:15000},{type:'fixed',value:15000,min:35000,max:15000},{type:'percent',value:15,min:45000,max:25000},{type:'fixed',value:25000,min:65000,max:25000}]
-  };
+  const BENEFIT_LEVELS=['Bronze','Silver','Gold','Platinum','Diamond'];
+  const BASE_BENEFIT_RULES={levels:[
+    {level:'Bronze',minSpend:50000,rewardMenuId:'',rewardMenuName:'Es Teh'},
+    {level:'Silver',minSpend:100000,rewardMenuId:'',rewardMenuName:'Kopi Susu'},
+    {level:'Gold',minSpend:150000,rewardMenuId:'',rewardMenuName:''},
+    {level:'Platinum',minSpend:200000,rewardMenuId:'',rewardMenuName:''},
+    {level:'Diamond',minSpend:250000,rewardMenuId:'',rewardMenuName:''}
+  ]};
   function normalizeBenefitRules(raw){
-    const result={thresholds:{...BASE_LEVEL_THRESHOLDS},coupons:JSON.parse(JSON.stringify(BASE_COUPON_TEMPLATES))};
-    if(!raw||typeof raw!=='object')return result;
-    const incoming=raw.thresholds&&typeof raw.thresholds==='object'?raw.thresholds:(raw.levelThresholds&&typeof raw.levelThresholds==='object'?raw.levelThresholds:null);
-    if(incoming)for(const level of ['Silver','Gold','Platinum']){const n=Number(incoming[level]);if(Number.isInteger(n)&&n>=1&&n<=10000000)result.thresholds[level]=n;}
-    if(raw.coupons&&typeof raw.coupons==='object'){
-      for(const level of ['Bronze','Silver','Gold','Platinum']){
-        if(!Array.isArray(raw.coupons[level]))continue;
-        result.coupons[level]=Array.from({length:5},(_,i)=>{
-          const base=BASE_COUPON_TEMPLATES[level][i],c=raw.coupons[level][i]||base;
-          const type=c.type==='percent'||c.discount_type==='percent'?'percent':'fixed';
-          const value=Number(c.value??c.discount_value),min=Number(c.min??c.min_spend),maxRaw=Object.prototype.hasOwnProperty.call(c,'max')?c.max:c.max_discount,max=Number(maxRaw);
-          return {type,value:Number.isInteger(value)&&value>=1?Math.min(value,type==='percent'?100:2000000000):base.value,min:Number.isInteger(min)&&min>=0?Math.min(min,2000000000):base.min,max:Number.isInteger(max)&&max>0?Math.min(max,2000000000):(maxRaw===null?null:base.max)};
-        });
-      }
-    }
-    result.thresholds.Bronze=0;
-    if(!(result.thresholds.Silver>0))result.thresholds.Silver=BASE_LEVEL_THRESHOLDS.Silver;
-    if(!(result.thresholds.Gold>result.thresholds.Silver))result.thresholds.Gold=Math.max(BASE_LEVEL_THRESHOLDS.Gold,result.thresholds.Silver+1);
-    if(!(result.thresholds.Platinum>result.thresholds.Gold))result.thresholds.Platinum=Math.max(BASE_LEVEL_THRESHOLDS.Platinum,result.thresholds.Gold+1);
-    return result;
+    const incoming=Array.isArray(raw?.levels)?raw.levels:(Array.isArray(raw?.tiers)?raw.tiers:[]);
+    const levels=BENEFIT_LEVELS.map((level,index)=>{
+      const row=incoming.find(x=>x&&String(x.level||x.member_level||'')===level)||BASE_BENEFIT_RULES.levels[index];
+      const threshold=Number(row.minSpend??row.min_spend);
+      return {level,minSpend:Number.isInteger(threshold)&&threshold>=1000?Math.min(threshold,2000000000):BASE_BENEFIT_RULES.levels[index].minSpend,
+        rewardMenuId:row.rewardMenuId!=null?String(row.rewardMenuId):(row.reward_menu_id!=null?String(row.reward_menu_id):''),
+        rewardMenuName:String(row.rewardMenuName||row.reward_menu_name||row.name||BASE_BENEFIT_RULES.levels[index].rewardMenuName||''),
+        templateId:row.templateId||row.template_id||null};
+    });
+    let previous=0;levels.forEach(row=>{if(row.minSpend<=previous)row.minSpend=previous+50000;previous=row.minSpend;});
+    return {levels};
   }
   benefitRules=normalizeBenefitRules(typeof data!=='undefined'?data.benefitRules:null);
-  function memberLevel(points){
-    const p=Number(points)||0,t=benefitRules.thresholds;
-    if(p>=t.Platinum)return 'Platinum';if(p>=t.Gold)return 'Gold';if(p>=t.Silver)return 'Silver';return 'Bronze';
+  function memberSpend(member){
+    if(member&&member.totalSpend!==undefined&&member.totalSpend!==null&&Number.isFinite(Number(member.totalSpend)))return Math.max(0,Number(member.totalSpend));
+    const id=String(member?.id??member?.backendId??'');
+    return data.transactions.filter(tx=>String(tx.memberId??'')===id).reduce((sum,tx)=>sum+Math.max(0,Number(tx.total)||0),0);
+  }
+  function memberLevel(spendOrMember){
+    const spend=spendOrMember&&typeof spendOrMember==='object'?memberSpend(spendOrMember):Math.max(0,Number(spendOrMember)||0);
+    let level='Bronze';for(const rule of benefitRules.levels){if(spend>=Number(rule.minSpend||0))level=rule.level;}return level;
+  }
+  function benefitRuleForLevel(level){return benefitRules.levels.find(row=>row.level===level)||benefitRules.levels[0];}
+  function benefitRuleForCoupon(coupon){
+    if(!coupon)return null;
+    const level=String(coupon.member_level||coupon.issued_level||''),rule=benefitRuleForLevel(level);
+    const rewardName=String(coupon.reward_menu_name||coupon.name||rule.rewardMenuName||'Menu gratis');
+    return {level:rule.level,type:'free_item',value:0,min:Number(coupon.min_spend??rule.minSpend)||rule.minSpend,max:null,
+      rewardMenuId:String(coupon.reward_menu_id??rule.rewardMenuId??''),rewardName,
+      label:'Kupon '+(BENEFIT_LEVELS.indexOf(level)+1)+' · Gratis '+rewardName};
   }
   function couponTemplates(level){
-    const templates=benefitRules.coupons[level]||BASE_COUPON_TEMPLATES.Bronze;
-    return templates.map((t,i)=>({...t,label:'Kupon '+(i+1)+' · '+(t.type==='percent'?'Diskon '+t.value+'%':'Potongan '+money(t.value)),min:Number(t.min)||0,max:t.max==null?null:Number(t.max)}));
+    const rule=benefitRuleForLevel(level),menu=data.menus.find(m=>String(m.id)===String(rule.rewardMenuId)),rewardName=menu?.name||rule.rewardMenuName||'pilih menu gratis';
+    return [{level:rule.level,type:'free_item',value:0,min:Number(rule.minSpend)||0,max:null,rewardMenuId:rule.rewardMenuId,rewardName,label:'Kupon '+(BENEFIT_LEVELS.indexOf(rule.level)+1)+' · Gratis '+rewardName}];
   }
   function renderBenefitRulesForm(){
     const host=document.getElementById('benefitRulesEditor');if(!host)return;
-    const levels=['Bronze','Silver','Gold','Platinum'];
-    host.innerHTML='<form id="benefitRulesForm"><div class="form-grid" style="margin-bottom:16px">'+levels.filter(level=>level!=='Bronze').map(level=>'<div class="field"><label for="benefitThreshold_'+level+'">Minimum poin level '+level+'</label><input id="benefitThreshold_'+level+'" name="threshold_'+level+'" type="number" min="1" max="10000000" step="1" value="'+Number(benefitRules.thresholds[level])+'" required /><small style="color:var(--muted)">Bronze otomatis mulai dari 0 poin.</small></div>').join('')+'</div><div style="display:grid;gap:14px">'+levels.map(level=>'<section class="panel" style="box-shadow:none;background:#fffefa;border:1px solid var(--line)"><div class="panel-head"><div><h3 class="panel-title">'+level+'</h3><p class="panel-subtitle">'+(level==='Bronze'?'Level awal untuk semua member.':'Mulai '+number(benefitRules.thresholds[level])+' poin.')+'</p></div></div><div class="table-wrap"><table><thead><tr><th>Kupon</th><th>Jenis diskon</th><th>Nilai diskon</th><th>Min. transaksi (Rp)</th><th>Maks. diskon (Rp)</th></tr></thead><tbody>'+couponTemplates(level).map((c,i)=>'<tr><td><strong>Kupon '+(i+1)+'</strong></td><td><select name="type_'+level+'_'+i+'" aria-label="Jenis diskon '+level+' kupon '+(i+1)+'"><option value="fixed" '+(c.type==='fixed'?'selected':'')+'>Nominal (Rp)</option><option value="percent" '+(c.type==='percent'?'selected':'')+'>Persentase (%)</option></select></td><td><input name="value_'+level+'_'+i+'" type="number" min="1" max="'+(c.type==='percent'?100:2000000000)+'" step="1" value="'+Number(c.value)+'" required aria-label="Nilai diskon '+level+' kupon '+(i+1)+'" /></td><td><input name="min_'+level+'_'+i+'" type="number" min="0" max="2000000000" step="1000" value="'+Number(c.min)+'" required aria-label="Minimum transaksi '+level+' kupon '+(i+1)+'" /></td><td><input name="max_'+level+'_'+i+'" type="number" min="0" max="2000000000" step="1000" value="'+Number(c.max??0)+'" required aria-label="Maksimum diskon '+level+' kupon '+(i+1)+'" /></td></tr>').join('')+'</tbody></table></div></section>').join('')+'</div><div class="form-grid" style="margin-top:16px"><button class="btn" type="submit">Simpan aturan benefit</button><p class="form-note">Nilai maksimum 0 berarti tanpa batas tambahan untuk kupon persentase.</p></div></form>';
+    const menuOptions=selected=>'<option value="">Pilih menu gratis…</option>'+data.menus.filter(menu=>menu.isActive!==false).map(menu=>'<option value="'+esc(menu.id)+'" '+(String(selected||'')===String(menu.id)?'selected':'')+'>'+esc(menu.name)+' · '+money(menu.price)+'</option>').join('');
+    host.innerHTML='<form id="benefitRulesForm"><p class="form-note" style="margin:0 0 14px">Ambang dihitung dari akumulasi transaksi selesai yang dibayar member, bukan poin dan bukan hanya satu struk. Setiap level membuka satu kupon menu gratis tanpa mengurangi total tagihan.</p><div style="display:grid;gap:12px">'+benefitRules.levels.map((rule,index)=>'<section class="panel" style="box-shadow:none;background:#fffefa;border:1px solid var(--line)"><div class="panel-head"><div><h3 class="panel-title">Level '+(index+1)+' · '+esc(rule.level)+'</h3><p class="panel-subtitle">Kupon '+(index+1)+' terbuka setelah total belanja mencapai syarat ini.</p></div><span class="level-badge">'+esc(rule.level)+'</span></div><div class="form-grid"><div class="field"><label for="benefitThreshold_'+rule.level+'">Minimum akumulasi belanja (Rp)</label><input id="benefitThreshold_'+rule.level+'" name="threshold_'+rule.level+'" type="number" min="1000" max="2000000000" step="1000" value="'+Number(rule.minSpend)+'" required /></div><div class="field"><label for="benefitReward_'+rule.level+'">Benefit / menu gratis</label><select id="benefitReward_'+rule.level+'" name="reward_'+rule.level+'" required>'+menuOptions(rule.rewardMenuId)+'</select></div></div></section>').join('')+'</div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px"><button class="btn" type="submit">Simpan aturan lima level</button><span class="form-note">Contoh awal: Rp50.000 membuka Es Teh, Rp100.000 membuka Kopi Susu. Pilih menu yang sudah terdaftar di Menu & Harga.</span></div></form>';
   }
   function ensureMemberDefaults(m){
     if(!m||typeof m!=='object')return;
@@ -941,13 +947,17 @@
   function couponTemplate(member,couponId){
     if(remoteOperationalMode){
       const c=couponFor(member,String(couponId||''));if(!c)return null;
-      return {label:String(c.name||c.coupon_code||'Kupon member'),type:String(c.discount_type||'fixed'),value:Number(c.discount_value||0),min:Number(c.min_spend||0),max:c.max_discount==null?null:Number(c.max_discount)};
+      return benefitRuleForCoupon(c)||{label:String(c.name||c.coupon_code||'Kupon member'),type:'free_item',value:0,min:Number(c.min_spend||0),max:null,rewardName:String(c.reward_menu_name||c.name||'Menu gratis')};
     }
-    const i=Number(String(couponId||'').replace('C',''))-1;return couponTemplates(memberLevel(member?.points))[i]||null;
+    const index=Number(String(couponId||'').replace('C',''))-1,rule=benefitRules.levels[index];
+    if(!rule)return null;
+    const menu=data.menus.find(m=>String(m.id)===String(rule.rewardMenuId));
+    return {level:rule.level,type:'free_item',value:0,min:Number(rule.minSpend)||0,max:null,rewardMenuId:rule.rewardMenuId,rewardName:menu?.name||rule.rewardMenuName||'menu pilihan',label:'Kupon '+(index+1)+' · Gratis '+(menu?.name||rule.rewardMenuName||'menu pilihan')};
   }
   function calcCouponDiscount(member,couponId,subtotal){
-    if(!member||!couponId)return 0;const c=couponFor(member,couponId);const tpl=couponTemplate(member,couponId);if(!c||!tpl)return 0;
-    if(c.used && c.transactionId!==editingTransactionId)return 0;
+    if(!member||!couponId)return 0;const c=couponFor(member,couponId),tpl=couponTemplate(member,couponId);
+    if(!c||!tpl||tpl.type==='free_item')return 0;
+    if((c.used||c.status==='used'||c.status==='expired')&&String(c.id)!==String(editingTransactionId))return 0;
     if(Number(subtotal)<tpl.min)return 0;
     return Math.min(Number(subtotal)||0,tpl.type==='percent'?Math.min(Number(subtotal)*tpl.value/100,tpl.max||Infinity):tpl.value);
   }
@@ -961,7 +971,7 @@
         const rows=Array.isArray(detail.coupons)?detail.coupons:[];
         member.coupons=rows.map(c=>{
           const relatedTx=data.transactions.find(t=>String(t.memberId)===String(member.id)&&String(t.couponId||'')===String(c.id));
-          return {id:String(c.id),backendId:Number(c.id),coupon_code:String(c.coupon_code||''),name:String(c.name||'Kupon member'),discount_type:String(c.discount_type||'fixed'),discount_value:Number(c.discount_value||0),min_spend:Number(c.min_spend||0),max_discount:c.max_discount==null?null:Number(c.max_discount),member_level:String(c.member_level||c.issued_level||''),issued_level:String(c.issued_level||''),status:String(c.status||'available'),used:String(c.status||'')==='used',transactionId:relatedTx?String(relatedTx.id):null,usedAt:String(c.used_at||'')};
+          return {id:String(c.id),backendId:Number(c.id),coupon_code:String(c.coupon_code||''),name:String(c.name||'Kupon member'),discount_type:String(c.discount_type||'free_item'),discount_value:Number(c.discount_value||0),min_spend:Number(c.min_spend||0),max_discount:c.max_discount==null?null:Number(c.max_discount),member_level:String(c.member_level||c.issued_level||''),issued_level:String(c.issued_level||''),reward_menu_id:c.reward_menu_id==null?'':String(c.reward_menu_id),reward_menu_name:String(c.reward_menu_name||''),status:String(c.status||'available'),used:String(c.status||'')==='used',transactionId:relatedTx?String(relatedTx.id):null,usedAt:String(c.used_at||'')};
         });
         member.couponsLoaded=true;member.couponsLoadError='';
       }catch(error){member.coupons=[];member.couponsLoaded=true;member.couponsLoadError=error.message||'Kupon member tidak dapat dimuat.';}
@@ -971,33 +981,23 @@
   }
   async function refreshCouponOptions(){
     const select=document.getElementById('txCoupon');if(!select)return;
-    const member=data.members.find(m=>String(m.id)===String(document.getElementById('txMember').value));
-    const previous=select.value;
-    const subtotal=[...document.querySelectorAll('#txItems .tx-item-row')].reduce((sum,row)=>{const m=data.menus.find(x=>x.id===row.querySelector('.tx-item-menu')?.value);return sum+(Number(m?.price)||0)*Math.max(1,Number(row.querySelector('.tx-item-qty')?.value)||1)},0);
-    if(!member){select.innerHTML='<option value="">Tidak menggunakan kupon</option>';document.getElementById('txCouponNote').textContent='Pilih member untuk melihat kupon yang tersedia.';return;}
-    if(remoteOperationalMode){
-      if(!member.couponsLoaded){select.innerHTML='<option value="">Memuat kupon member…</option>';document.getElementById('txCouponNote').textContent='Mengambil kupon dari server…';await ensureRemoteMemberCoupons(member);}
-      const level=memberLevel(member.points);
-      const oldTx=editingTransactionId?data.transactions.find(t=>String(t.id)===String(editingTransactionId)):null;
-      const coupons=(Array.isArray(member.coupons)?member.coupons:[]).filter(c=>String(c.member_level||c.issued_level||'')===level || (oldTx&&String(oldTx.couponId||'')===String(c.id)));
-      select.innerHTML='<option value="">Tidak menggunakan kupon</option>'+coupons.map(c=>{
-        const tpl=couponTemplate(member,c.id)||{label:c.name||c.coupon_code||'Kupon member',min:Number(c.min_spend||0)};
-        const isCurrent=Boolean(c.used&&oldTx&&String(c.transactionId)===String(oldTx.id));
-        const used=c.status==='used'||c.used;
-        const disabled=(used&&!isCurrent)||subtotal<Number(tpl.min||0);
-        const status=used&&!isCurrent?'— sudah dipakai':(subtotal<Number(tpl.min||0)?'— min. '+money(tpl.min):'');
-        return '<option value="'+esc(c.id)+'" '+(disabled?'disabled':'')+'>'+esc(tpl.label)+' · Min. '+money(tpl.min)+status+'</option>';
-      }).join('');
-      const preferred=oldTx&&oldTx.couponId?String(oldTx.couponId):previous;
-      if(preferred&&[...select.options].some(o=>o.value===preferred&&!o.disabled))select.value=preferred;else select.value='';
-      document.getElementById('txCouponNote').textContent=member.couponsLoadError?'Kupon tidak dapat dimuat: '+member.couponsLoadError:(coupons.length?'Level '+level+'. Kupon divalidasi kembali oleh server saat transaksi disimpan.':'Belum ada kupon tersedia untuk level '+level+'.');
-      return;
-    }
-    const level=memberLevel(member.points);select.innerHTML='<option value="">Tidak menggunakan kupon</option>'+member.coupons.map(c=>{const tpl=couponTemplate(member,c.id);const isCurrent=c.used&&c.transactionId===editingTransactionId;const eligible=subtotal>=tpl.min;const disabled=(c.used&&!isCurrent)||(!eligible);const status=c.used&&!isCurrent?'— sudah dipakai':(!eligible?'— min. '+money(tpl.min):'');return '<option value="'+c.id+'" '+(disabled?'disabled':'')+'>'+esc(tpl.label)+status+'</option>'}).join('');
-    if(previous&&[...select.options].some(o=>o.value===previous&&!o.disabled))select.value=previous;else select.value='';
-    document.getElementById('txCouponNote').textContent='Level '+level+'. Setiap kupon hanya dapat digunakan satu kali; syarat minimum belanja mengikuti level saat transaksi.';
+    const member=data.members.find(m=>String(m.id)===String(document.getElementById('txMember').value)),previous=select.value;
+    if(!member){select.innerHTML='<option value="">Tidak menggunakan kupon</option>';const note=document.getElementById('txCouponNote');if(note)note.textContent='Pilih member untuk melihat kupon yang tersedia.';return;}
+    if(remoteOperationalMode&&!member.couponsLoaded){select.innerHTML='<option value="">Memuat kupon member…</option>';document.getElementById('txCouponNote').textContent='Mengambil kupon dari server…';await ensureRemoteMemberCoupons(member);}
+    const spend=memberSpend(member),oldTx=editingTransactionId?data.transactions.find(t=>String(t.id)===String(editingTransactionId)):null;
+    const coupons=(Array.isArray(member.coupons)?member.coupons:[]).filter(c=>remoteOperationalMode?(c.status==='available'||(oldTx&&String(oldTx.couponId||'')===String(c.id))):(couponTemplate(member,c.id)&&spend>=Number(couponTemplate(member,c.id).min||0)));
+    select.innerHTML='<option value="">Tidak menggunakan kupon</option>'+coupons.map(c=>{
+      const tpl=couponTemplate(member,c.id)||{label:c.name||c.coupon_code||'Kupon member',min:Number(c.min_spend||0),rewardName:c.reward_menu_name||c.name||'Menu gratis',type:'free_item'};
+      const isCurrent=Boolean(oldTx&&String(oldTx.couponId||'')===String(c.id)),status=String(c.status||'available'),used=Boolean(c.used)||status==='used',expired=status==='expired';
+      const disabled=remoteOperationalMode?(status!=='available'&&!isCurrent):(used||expired),statusText=used&&!isCurrent?' — sudah digunakan':expired?' — kedaluwarsa':'';
+      return '<option value="'+esc(c.id)+'" '+(disabled?'disabled':'')+'>'+esc(tpl.label||('Gratis '+tpl.rewardName))+' · Dibuka pada '+money(tpl.min)+statusText+'</option>';
+    }).join('');
+    const preferred=oldTx&&oldTx.couponId?String(oldTx.couponId):previous;
+    if(preferred&&[...select.options].some(o=>o.value===preferred&&!o.disabled))select.value=preferred;else select.value='';
+    const note=document.getElementById('txCouponNote');
+    if(note){if(remoteOperationalMode&&member.couponsLoadError)note.textContent='Kupon tidak dapat dimuat: '+member.couponsLoadError;else if(coupons.length)note.textContent='Total belanja member '+money(spend)+'. Benefit memberi menu gratis tanpa mengurangi tagihan. Jika kupon level lebih tinggi ditukar, kupon level di bawah yang masih aktif otomatis kedaluwarsa.';else note.textContent='Total belanja member '+money(spend)+'. Belum ada kupon aktif yang terbuka untuk member ini.';}
   }
-  function markCouponUsed(member,couponId,transactionId){const c=couponFor(member,couponId);if(c){c.used=true;c.transactionId=transactionId;c.usedAt=dateTime()}}
+    function markCouponUsed(member,couponId,transactionId){const c=couponFor(member,couponId);if(!c)return;c.used=true;c.status='used';c.transactionId=transactionId;c.usedAt=dateTime();const tpl=couponTemplate(member,couponId),rank=BENEFIT_LEVELS.indexOf(tpl?.level||'')+1;if(rank>1)(member.coupons||[]).forEach(other=>{const ot=couponTemplate(member,other.id),orank=BENEFIT_LEVELS.indexOf(ot?.level||'')+1;if(other.id!==c.id&&orank>0&&orank<rank&&!other.used){other.status='expired';other.used=true;other.expiredAt=dateTime();}})}
   function releaseTransactionCoupon(t){if(!t?.couponId)return;const m=data.members.find(x=>x.id===t.memberId);const c=couponFor(m,t.couponId);if(c&&(!c.transactionId||c.transactionId===t.id)){c.used=false;c.transactionId=null;c.usedAt=null}}
   function resetTransactionCouponSelection(){const select=document.getElementById('txCoupon');if(select)select.value='';refreshCouponOptions();updateTxPreview()}
 
@@ -1164,7 +1164,7 @@
   function renderMembers(){
     const q=(document.getElementById('memberSearch').value||'').toLowerCase().trim();const list=data.members.filter(m=>[m.name,m.phone,m.id,m.memberCode,m.email].some(v=>String(v||'').toLowerCase().includes(q)));
     document.getElementById('memberCount').textContent=number(data.members.length);document.getElementById('memberPoints').textContent=number(data.members.reduce((s,m)=>s+(+m.points||0),0));document.getElementById('memberToday').textContent=number(data.members.filter(m=>m.createdAt===todayISO()).length);
-    document.getElementById('membersTable').innerHTML=list.length?`<div class="table-wrap"><table><thead><tr><th>Member</th><th>ID Member</th><th>Poin / Level</th><th>Bergabung</th><th>Aksi</th></tr></thead><tbody>${list.map(m=>`<tr><td><div class="member-cell"><span class="mini-avatar">${esc(initials(m.name))}</span><div><strong>${esc(m.name)}</strong><small>${esc(m.phone)}${m.email?' · '+esc(m.email):''}</small>${m.mustChangePassword?'<small style="color:var(--red);font-weight:700">Wajib buat password baru</small>':''}</div></div></td><td>${esc(m.memberCode||m.id)}</td><td><b>${number(m.points)}</b> poin<br><span class="level-badge">${memberLevel(m.points)}</span></td><td>${esc(m.createdAt||'-')}</td><td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn secondary small" onclick="openMemberProfile('${esc(m.id)}')">Cek profil</button><button class="btn secondary small" onclick="editMember('${esc(m.id)}')">Edit</button><button class="btn secondary small" onclick="resetMemberPassword('${esc(m.id)}')">Reset password</button><button class="btn danger small" onclick="deleteMember('${esc(m.id)}')">Hapus</button></div></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><div class="empty-icon">⌕</div>Tidak ada member yang cocok dengan pencarian.</div>`;
+    document.getElementById('membersTable').innerHTML=list.length?`<div class="table-wrap"><table><thead><tr><th>Member</th><th>ID Member</th><th>Poin / Level</th><th>Bergabung</th><th>Aksi</th></tr></thead><tbody>${list.map(m=>`<tr><td><div class="member-cell"><span class="mini-avatar">${esc(initials(m.name))}</span><div><strong>${esc(m.name)}</strong><small>${esc(m.phone)}${m.email?' · '+esc(m.email):''}</small>${m.mustChangePassword?'<small style="color:var(--red);font-weight:700">Wajib buat password baru</small>':''}</div></div></td><td>${esc(m.memberCode||m.id)}</td><td><b>${number(m.points)}</b> poin<br><span class="level-badge">${memberLevel(m)}</span></td><td>${esc(m.createdAt||'-')}</td><td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn secondary small" onclick="openMemberProfile('${esc(m.id)}')">Cek profil</button><button class="btn secondary small" onclick="editMember('${esc(m.id)}')">Edit</button><button class="btn secondary small" onclick="resetMemberPassword('${esc(m.id)}')">Reset password</button><button class="btn danger small" onclick="deleteMember('${esc(m.id)}')">Hapus</button></div></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><div class="empty-icon">⌕</div>Tidak ada member yang cocok dengan pencarian.</div>`;
   }
   document.getElementById('memberSearch').addEventListener('input',renderMembers);
   window.openMemberModal=()=>{document.getElementById('memberForm').reset();document.getElementById('memberEditId').value='';document.getElementById('memberModalTitle').textContent='Tambah member';document.getElementById('memberModal').classList.add('open');setTimeout(()=>document.getElementById('memberName').focus(),100)};
@@ -1172,9 +1172,9 @@
   document.getElementById('memberForm').addEventListener('submit',e=>{e.preventDefault();if(remoteOperationalMode){notify('Tambah member dari dashboard belum tersedia; gunakan Daftar member di website publik.');return;}const editId=document.getElementById('memberEditId').value;const name=document.getElementById('memberName').value.trim();const phone=document.getElementById('memberPhone').value.trim();const email=document.getElementById('memberEmail').value.trim();if(data.members.some(m=>m.phone===phone&&m.id!==editId)){notify('Nomor HP tersebut sudah terdaftar.');return}if(editId){const m=data.members.find(m=>m.id===editId);if(m)Object.assign(m,{name,phone,email,notes:document.getElementById('memberNotes').value.trim()});notify('Data member berhasil diperbarui.')}else{const newMember={id:makeId('PYU'),name,phone,email,notes:document.getElementById('memberNotes').value.trim(),points:0,createdAt:todayISO()};ensureMemberDefaults(newMember);data.members.unshift(newMember);notify('Member berhasil ditambahkan.')}saveData();closeModal('memberModal');renderAll()});
   window.deleteMember=id=>{const m=data.members.find(x=>x.id===id);if(!m)return;if(!confirm(`Hapus member ${m.name}? Riwayat transaksi tetap tersimpan.`))return;data.members=data.members.filter(x=>x.id!==id);saveData();renderAll();notify('Member berhasil dihapus.')};
   window.showMemberQR=id=>{const m=data.members.find(x=>x.id===id);if(!m)return;document.getElementById('scanManualInput').value=m.id;openScanner();document.getElementById('scanStatus').textContent=`ID member: ${m.id} · ${m.name}. QR dapat berisi teks ID tersebut.`};
-  window.openMemberProfile=id=>{
-    const m=data.members.find(x=>x.id===id);if(!m)return;ensureMemberDefaults(m);const level=memberLevel(m.points);const history=[...data.transactions].filter(t=>t.memberId===id).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
-    const coupons=m.coupons.map((c,i)=>{const tpl=couponTemplate(m,c.id);return `<div class="coupon-card ${c.used?'used':''}"><strong>${esc(tpl.label)}</strong><small>Minimal belanja ${money(tpl.min)}${tpl.type==='percent'?` · Maksimal potongan ${money(tpl.max)}`:''}</small><small>${esc(level)} member · Sekali pakai</small><span class="coupon-status">${c.used?'Sudah digunakan':'Tersedia'}</span></div>`}).join('');
+  window.openMemberProfile=async id=>{
+    const m=data.members.find(x=>x.id===id);if(!m)return;ensureMemberDefaults(m);if(remoteOperationalMode)await ensureRemoteMemberCoupons(m);const level=memberLevel(m);const history=[...data.transactions].filter(t=>t.memberId===id).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+    const coupons=m.coupons.map((c,i)=>{const tpl=couponTemplate(m,c.id)||{label:c.name||'Kupon member',min:Number(c.min_spend||0),type:'free_item',rewardName:c.reward_menu_name||c.name||'menu gratis'};const status=String(c.status||(c.used?'used':'available'));const statusText=status==='used'?'Sudah digunakan':status==='expired'?'Kedaluwarsa karena kupon level lebih tinggi dipakai':'Tersedia';return `<div class="coupon-card ${status!=='available'?'used':''}"><strong>${esc(tpl.label)}</strong><small>Benefit menu gratis: ${esc(tpl.rewardName||c.reward_menu_name||c.name||'menu pilihan')}</small><small>Terbuka pada total belanja ${money(tpl.min)} · Level ${esc(tpl.level||c.issued_level||level)}</small><span class="coupon-status">${statusText}</span></div>`}).join('');
     const trRows=history.length?`<div class="table-wrap"><table><thead><tr><th>Waktu / ID</th><th>Menu</th><th>Total</th><th>Poin</th><th>Aksi</th></tr></thead><tbody>${history.map(t=>`<tr><td><strong>${esc(t.id)}</strong><small style="display:block;color:var(--muted);margin-top:4px">${esc(t.createdAt||'')}</small></td><td>${Array.isArray(t.items)&&t.items.length?t.items.map(i=>`${esc(i.menuName)} × ${number(i.qty)}`).join('<br>'):esc(t.menuName||'Menu')}${t.couponTitle?`<small style="display:block;color:var(--green);margin-top:4px">Kupon: ${esc(t.couponTitle)}</small>`:''}</td><td><b>${money(t.total)}</b></td><td>${number(t.points)} poin</td><td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn secondary small" onclick="profileEditTransaction('${esc(t.id)}')">Edit</button><button class="btn danger small" onclick="deleteTransaction('${esc(t.id)}','${esc(m.id)}')">Hapus</button></div></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty" style="padding:20px">Belum ada riwayat transaksi untuk member ini.</div>';
     document.getElementById('profileModalTitle').textContent='Profil member · '+m.name;
     document.getElementById('profileContent').innerHTML=`<div class="profile-header"><div class="profile-avatar">${esc(initials(m.name))}</div><div style="min-width:0;flex:1"><h4>${esc(m.name)}</h4><p>${esc(m.id)} · Bergabung ${esc(m.createdAt||'-')}</p><p style="margin-top:5px"><span class="level-badge">Level ${level}</span> <b style="margin-left:7px">${number(m.points)} poin</b></p></div><button class="btn secondary small" onclick="editMember('${esc(m.id)}')">Edit data</button></div>
@@ -1198,7 +1198,7 @@
   window.openTransactionModal=()=>{if(!data.members.length){notify('Tambahkan member terlebih dahulu sebelum membuat transaksi.');openMemberModal();return}if(!data.menus.length){notify('Tambahkan menu terlebih dahulu.');navigate('menu');return}editingTransactionId=null;document.getElementById('transactionForm').reset();document.getElementById('txModalTitle').textContent='Transaksi baru';document.getElementById('txMemberSearch').disabled=false;document.getElementById('txMember').value='';document.getElementById('txMemberSearch').value='';document.getElementById('txSelectedMember').textContent='Belum ada member dipilih.';document.getElementById('txSelectedMember').classList.add('empty-selection');document.getElementById('txMemberResults').innerHTML='';document.getElementById('txMemberResults').classList.remove('open');document.getElementById('txNotes').value='';document.getElementById('txPayment').value='Tunai';document.getElementById('txItems').innerHTML='';populateTransactionOptions();document.getElementById('txCoupon').value='';document.getElementById('transactionModal').classList.add('open');updateTxPreview();if(window.matchMedia('(min-width: 761px)').matches){document.getElementById('txMemberSearch').focus({preventScroll:true})}};
   function populateTransactionOptions(){const ms=document.getElementById('txMember');ms.innerHTML='<option value="">Pilih member</option>'+data.members.map(m=>`<option value="${esc(m.id)}">${esc(m.name)} — ${esc(m.id)}</option>`).join('');const box=document.getElementById('txItems');if(!box.children.length){box.innerHTML='';addTransactionItem()}else{box.querySelectorAll('.tx-item-row').forEach(row=>{const sel=row.querySelector('.tx-item-menu');const current=sel.value;sel.innerHTML=data.menus.map(m=>`<option value="${esc(m.id)}">${esc(m.name)} — ${money(m.price)}</option>`).join('');if(data.menus.some(m=>m.id===current))sel.value=current})}updateTxPreview()}
   function memberMatches(q){const term=String(q||'').trim().toLowerCase();if(!term)return [];return data.members.filter(m=>[m.name,m.id,m.phone,m.email].some(v=>String(v||'').toLowerCase().includes(term))).slice(0,8)}
-  async function setTransactionMember(id){const m=data.members.find(x=>x.id===id);if(!m)return;ensureMemberDefaults(m);document.getElementById('txMember').value=m.id;document.getElementById('txMemberSearch').value=`${m.name} — ${m.id}`;const selected=document.getElementById('txSelectedMember');selected.textContent=`✓ ${m.name} · ${m.id} · ${number(m.points)} poin · Level ${memberLevel(m.points)}`;selected.classList.remove('empty-selection');document.getElementById('txMemberResults').innerHTML='';document.getElementById('txMemberResults').classList.remove('open');await refreshCouponOptions();updateTxPreview()}
+  async function setTransactionMember(id){const m=data.members.find(x=>x.id===id);if(!m)return;ensureMemberDefaults(m);document.getElementById('txMember').value=m.id;document.getElementById('txMemberSearch').value=`${m.name} — ${m.id}`;const selected=document.getElementById('txSelectedMember');selected.textContent=`✓ ${m.name} · ${m.id} · ${number(m.points)} poin · Level ${memberLevel(m)}`;selected.classList.remove('empty-selection');document.getElementById('txMemberResults').innerHTML='';document.getElementById('txMemberResults').classList.remove('open');await refreshCouponOptions();updateTxPreview()}
   window.selectTransactionMember=setTransactionMember;
   function renderTransactionMemberResults(){const input=document.getElementById('txMemberSearch');const selectedId=document.getElementById('txMember').value;const selected=data.members.find(m=>m.id===selectedId);if(selected&&input.value===`${selected.name} — ${selected.id}`){document.getElementById('txMemberResults').innerHTML='';document.getElementById('txMemberResults').classList.remove('open');return}document.getElementById('txMember').value='';const results=memberMatches(input.value);const box=document.getElementById('txMemberResults');if(!input.value.trim()){box.innerHTML='';box.classList.remove('open');return}box.innerHTML=results.length?results.map(m=>`<button type="button" class="member-result" role="option" data-member-id="${esc(m.id)}"><span><strong>${esc(m.name)}</strong><small>${esc(m.phone)} · ${esc(m.id)}</small></span><span class="pill">${number(m.points)} poin</span></button>`).join(''):`<div class="empty" style="padding:16px">Member tidak ditemukan.</div>`;box.classList.add('open')}
   document.getElementById('txMemberSearch').addEventListener('input',()=>{const selected=document.getElementById('txMember').value;const m=data.members.find(x=>x.id===selected);if(!m||document.getElementById('txMemberSearch').value!==`${m.name} — ${m.id}`){document.getElementById('txMember').value='';const status=document.getElementById('txSelectedMember');status.textContent='Pilih member dari hasil pencarian atau scan QR.';status.classList.add('empty-selection')}renderTransactionMemberResults()});
@@ -1209,7 +1209,7 @@
   function getTransactionItems(){return [...document.querySelectorAll('#txItems .tx-item-row')].map(row=>{const menu=data.menus.find(m=>m.id===row.querySelector('.tx-item-menu').value);const qty=Number(row.querySelector('.tx-item-qty').value);return menu&&Number.isInteger(qty)&&qty>=1&&qty<=99?{menuId:menu.id,menuName:menu.name,price:Number(menu.price)||0,qty,subtotal:(Number(menu.price)||0)*qty}:null})}
   function updateTxPreview(){
     const rows=[...document.querySelectorAll('#txItems .tx-item-row')];let subtotal=0;rows.forEach(row=>{const menu=data.menus.find(m=>m.id===row.querySelector('.tx-item-menu')?.value);const qty=Math.max(1,Number(row.querySelector('.tx-item-qty')?.value)||1);const lineTotal=(Number(menu?.price)||0)*qty;subtotal+=lineTotal;const line=row.querySelector('.tx-line-total');if(line)line.textContent=money(lineTotal)});
-    refreshCouponOptions();const member=data.members.find(m=>m.id===document.getElementById('txMember').value);const couponId=document.getElementById('txCoupon')?.value||'';const discount=calcCouponDiscount(member,couponId,subtotal);const total=Math.max(0,subtotal-discount);const rate=Math.max(1,Number(data.pointRate)||10000);document.getElementById('txSubtotalPreview').textContent=money(subtotal);document.getElementById('txDiscountPreview').textContent='− '+money(discount);document.getElementById('txTotalPreview').textContent=money(total);document.getElementById('txPointPreview').textContent=number(Math.floor(total/rate))+' poin';document.getElementById('txPointRuleLabel').textContent=`Poin yang didapat (tiap ${money(rate)} = 1 poin)`;
+    refreshCouponOptions();const member=data.members.find(m=>m.id===document.getElementById('txMember').value);const couponId=document.getElementById('txCoupon')?.value||'';const selectedTpl=couponId?couponTemplate(member,couponId):null;const discount=calcCouponDiscount(member,couponId,subtotal);const total=Math.max(0,subtotal-discount);const rate=Math.max(1,Number(data.pointRate)||10000);document.getElementById('txSubtotalPreview').textContent=money(subtotal);const benefitLabel=document.querySelector('.discount-row span');if(benefitLabel)benefitLabel.textContent=selectedTpl&&selectedTpl.type==='free_item'?'Benefit gratis':'Potongan kupon';document.getElementById('txDiscountPreview').textContent=selectedTpl&&selectedTpl.type==='free_item'?'Gratis '+(selectedTpl.rewardName||'menu pilihan'):'− '+money(discount);document.getElementById('txTotalPreview').textContent=money(total);document.getElementById('txPointPreview').textContent=number(Math.floor(total/rate))+' poin';document.getElementById('txPointRuleLabel').textContent=`Poin yang didapat (tiap ${money(rate)} = 1 poin)`;
   }
   document.getElementById('txCoupon').addEventListener('change',updateTxPreview);
   document.getElementById('transactionForm').addEventListener('submit',async e=>{
@@ -1426,7 +1426,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('File CSV berhasil dibuat.')}
   function renderAll(){data.members.forEach(ensureMemberDefaults);data.benefitRules=benefitRules;document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();renderBenefitRulesForm();loadPromoToForm();loadHeroContentToForm();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();populateTransactionOptions()}
   async function persistPublicCopyToServer(){
-  const payload={promo:data.promo,heroContent:data.heroContent||readHeroForm(),galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft,benefitRules:benefitRules};
+  const payload={promo:data.promo,heroContent:data.heroContent||readHeroForm(),galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft};
   return await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(payload)}}});
 }
 document.addEventListener('change',event=>{
@@ -1439,32 +1439,30 @@ document.addEventListener('change',event=>{
 document.addEventListener('submit',async event=>{
  if(event.target?.id!=='benefitRulesForm')return;
  event.preventDefault();
- const form=event.target;
- const thresholds={Bronze:0,Silver:Number(form.elements['threshold_Silver'].value),Gold:Number(form.elements['threshold_Gold'].value),Platinum:Number(form.elements['threshold_Platinum'].value)};
- if(!Number.isInteger(thresholds.Silver)||!Number.isInteger(thresholds.Gold)||!Number.isInteger(thresholds.Platinum)||thresholds.Silver<1||thresholds.Gold<=thresholds.Silver||thresholds.Platinum<=thresholds.Gold){notify('Urutan level harus naik: Silver < Gold < Platinum, dengan nilai poin positif.');return;}
- const coupons={};
- for(const level of ['Bronze','Silver','Gold','Platinum']){
-  coupons[level]=[];
-  for(let i=0;i<5;i++){
-   const type=form.elements['type_'+level+'_'+i].value;
-   const value=Number(form.elements['value_'+level+'_'+i].value),min=Number(form.elements['min_'+level+'_'+i].value),max=Number(form.elements['max_'+level+'_'+i].value);
-   if(!Number.isInteger(value)||value<1||(type==='percent'&&value>100)||!Number.isInteger(min)||min<0||!Number.isInteger(max)||max<0){notify('Periksa kembali nilai diskon dan minimum transaksi kupon '+level+' ke-'+(i+1)+'.');return;}
-   coupons[level].push({type,value,min,max:max===0?null:max});
-  }
+ const form=event.target,levels=[];let previous=0;
+ for(const level of BENEFIT_LEVELS){
+   const minSpend=Number(form.elements['threshold_'+level]?.value),rewardMenuId=String(form.elements['reward_'+level]?.value||'');
+   if(!Number.isInteger(minSpend)||minSpend<1000||minSpend<=previous){notify('Minimum belanja lima level harus berurutan dan selalu meningkat.');return;}
+   if(!rewardMenuId){notify('Pilih menu gratis untuk Level '+level+'. Pastikan menu tersebut sudah terdaftar di Menu & Harga.');return;}
+   const menu=data.menus.find(item=>String(item.id)===rewardMenuId&&item.isActive!==false);
+   if(!menu){notify('Menu benefit '+level+' tidak ditemukan atau tidak aktif.');return;}
+   levels.push({level,minSpend,rewardMenuId,rewardMenuName:menu.name});previous=minSpend;
  }
- benefitRules=normalizeBenefitRules({thresholds,coupons});data.benefitRules=benefitRules;saveData();renderBenefitRulesForm();
- if(remoteOperationalMode){
-  const submit=form.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
-  try{const result=await persistPublicCopyToServer();if(result?.benefit_rules_applied!==true)throw new Error('Aturan dikirim, tetapi API belum mengonfirmasi penerapan ke database kupon. Pasang update API PA.YU sebelum memakai aturan ini untuk transaksi.');await window.payuAdminHydrateFromServer();notify('Aturan level dan kupon berhasil disimpan dan diterapkan di server.');}
-  catch(err){notify('Aturan benefit belum diterapkan: '+err.message);}
-  finally{const fresh=document.getElementById('benefitRulesForm')?.querySelector('button[type="submit"]');if(fresh)fresh.disabled=false;}
- }else notify('Aturan benefit disimpan pada browser ini saja. Login ke backend untuk menyimpan ke server.');
+ const button=form.querySelector('button[type="submit"]');if(button)button.disabled=true;
+ if(!remoteOperationalMode){benefitRules=normalizeBenefitRules({levels});data.benefitRules=benefitRules;saveData();renderBenefitRulesForm();renderAll();notify('Aturan disimpan di browser ini saja. Untuk sinkronisasi member, simpan melalui API server.');if(button)button.disabled=false;return;}
+ try{
+   const result=await window.payuAdminApiRequest('staff/benefits/save',{method:'POST',body:{levels:levels.map(row=>({level:row.level,min_spend:row.minSpend,reward_menu_id:Number(row.rewardMenuId)}))}});
+   if(result.benefit_rules_applied!==true)throw new Error(result.message||'API belum mengonfirmasi penyimpanan aturan.');
+   benefitRules=normalizeBenefitRules({levels:Array.isArray(result.levels)?result.levels:levels});data.benefitRules=benefitRules;
+   await window.payuAdminHydrateFromServer();renderDashboard();renderDashboardStats();notify('Lima level dan kupon menu gratis berhasil disimpan ke server.');
+ }catch(err){notify('Aturan benefit belum diterapkan: '+err.message);}
+ finally{const fresh=document.getElementById('benefitRulesForm')?.querySelector('button[type="submit"]');if(fresh)fresh.disabled=false;}
 });
 window.payuAdminHydrateFromServer=async function(){
  const request=window.payuAdminApiRequest;if(typeof request!=='function')throw new Error('Helper API belum siap.');
- const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings'),request('public/banners')]);
+ const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings'),request('public/banners'),request('staff/benefits').catch(error=>({levels:[],_error:error.message}))]);
  const oldMenus=data.menus.slice();
- data.members=(Array.isArray(results[0].members)?results[0].members:[]).map(m=>({id:String(m.member_id),backendId:Number(m.member_id),memberCode:String(m.member_code||''),name:String(m.display_name||''),phone:String(m.phone||''),email:String(m.email||''),points:Number(m.points_balance||0),level:String(m.level||'Bronze'),createdAt:String(m.created_at||''),isActive:Boolean(m.is_active),coupons:[],couponsLoaded:false}));
+ data.members=(Array.isArray(results[0].members)?results[0].members:[]).map(m=>({id:String(m.member_id),backendId:Number(m.member_id),memberCode:String(m.member_code||''),name:String(m.display_name||''),phone:String(m.phone||''),email:String(m.email||''),points:Number(m.points_balance||0),totalSpend:m.total_spend==null?null:Number(m.total_spend||0),level:String(m.level||'Bronze'),createdAt:String(m.created_at||''),isActive:Boolean(m.is_active),coupons:[],couponsLoaded:false}));
  data.menus=(Array.isArray(results[1].menus)?results[1].menus:[]).map(m=>{const old=oldMenus.find(x=>String(x.name).toLowerCase()===String(m.name).toLowerCase());return {id:String(m.id),backendId:Number(m.id),name:String(m.name||''),category:String(m.category||'Coffee'),price:Number(m.price||0),emoji:old?.emoji||'☕',description:old?.description||'',isActive:Boolean(m.is_active)};});
  const mapRemoteTransaction=(tx, fallbackMember=null)=>{
   const noteText=String(tx.notes||''),payMatch=noteText.match(/^Pembayaran: (Tunai|QRIS|Debit|Transfer)(?:\r?\n|$)/),notes=payMatch?noteText.replace(/^Pembayaran: (?:Tunai|QRIS|Debit|Transfer)(?:\r?\n)?/,''):noteText;
@@ -1503,7 +1501,7 @@ window.payuAdminHydrateFromServer=async function(){
   data.transactions=remoteTransactionFallbackCache.map(tx=>({...tx,items:(tx.items||[]).map(item=>({...item}))}));
  }
  const settings=Array.isArray(results[3].settings)?results[3].settings:[],pointSetting=settings.find(x=>x.setting_key==='point_rupiah_per_point'),promoSetting=settings.find(x=>x.setting_key==='public_opening_message');
- if(results[3].benefit_rules){benefitRules=normalizeBenefitRules(results[3].benefit_rules);data.benefitRules=benefitRules;}
+ if(Array.isArray(results[5]?.levels)&&results[5].levels.length){benefitRules=normalizeBenefitRules({levels:results[5].levels});data.benefitRules=benefitRules;}
  const readRemoteSettingField=key=>String(settings.find(x=>x.setting_key===key)?.setting_value||'');
  document.getElementById('publicInfoAddress').value=readRemoteSettingField('business_address');
  document.getElementById('publicInfoHours').value=readRemoteSettingField('business_hours');
@@ -1514,11 +1512,11 @@ window.payuAdminHydrateFromServer=async function(){
  document.getElementById('publicInfoHours').value=settingValue('business_hours');
  document.getElementById('publicInfoInstagram').value=settingValue('instagram_url');
  document.getElementById('publicInfoMaps').value=settingValue('google_maps_url');
- if(promoSetting&&promoSetting.setting_value){try{const savedCopy=JSON.parse(promoSetting.setting_value);if(savedCopy&&typeof savedCopy==='object'){data.promo=savedCopy.promo&&typeof savedCopy.promo==='object'?savedCopy.promo:(savedCopy.title?savedCopy:data.promo);if(savedCopy.heroContent)data.heroContent=savedCopy.heroContent;if(Array.isArray(savedCopy.galleryContent)){data.galleryContent=savedCopy.galleryContent;galleryDraft=structuredCloneSafe(savedCopy.galleryContent)}if(Array.isArray(savedCopy.promoCards)){data.promoCards=savedCopy.promoCards;promoCardsDraft=structuredCloneSafe(savedCopy.promoCards)}if(savedCopy.benefitRules){benefitRules=normalizeBenefitRules(savedCopy.benefitRules);data.benefitRules=benefitRules}}}catch(_){}}
+ if(promoSetting&&promoSetting.setting_value){try{const savedCopy=JSON.parse(promoSetting.setting_value);if(savedCopy&&typeof savedCopy==='object'){data.promo=savedCopy.promo&&typeof savedCopy.promo==='object'?savedCopy.promo:(savedCopy.title?savedCopy:data.promo);if(savedCopy.heroContent)data.heroContent=savedCopy.heroContent;if(Array.isArray(savedCopy.galleryContent)){data.galleryContent=savedCopy.galleryContent;galleryDraft=structuredCloneSafe(savedCopy.galleryContent)}if(Array.isArray(savedCopy.promoCards)){data.promoCards=savedCopy.promoCards;promoCardsDraft=structuredCloneSafe(savedCopy.promoCards)}}}catch(_){}}
  const banners=Array.isArray(results[4].banners)?results[4].banners:[];
  const keyForSlot=id=>id==='hero-main'?'banner_utama':id==='menu-banner'?'banner_menu':id==='promo-poster-1'?'banner_promo':id==='promo-poster-2'?'foto_4':id==='promo-poster-3'?'foto_5':(/^shop-photo-(\\d+)$/.test(id)?'foto_'+(Number(id.match(/(\\d+)$/)?.[1])+5):'');
  data.bannerSlots=data.bannerSlots.map(slot=>{const key=keyForSlot(slot.id),remote=banners.find(b=>b.slot_key===key);return {...slot,image:remote?.image_url||'',fileName:remote?.title||''};});
- remoteOperationalMode=true;data.members.forEach(ensureMemberDefaults);if(pointSetting&&Number(pointSetting.setting_value)>=1000)data.pointRate=Number(pointSetting.setting_value);renderAll();
+ remoteOperationalMode=true;data.members.forEach(ensureMemberDefaults);if(pointSetting&&Number(pointSetting.setting_value)>=1000)data.pointRate=Number(pointSetting.setting_value);renderAll();renderDashboard();renderDashboardStats();
  return {members:data.members.length,menus:data.menus.length,transactions:data.transactions.length};
 };
 const localOpenMemberModal=window.openMemberModal;window.openMemberModal=function(){if(remoteOperationalMode){notify('Tambah member dari dashboard sedang disiapkan. Gunakan menu Daftar member di website publik agar tersimpan di server.');return;}return localOpenMemberModal();};
