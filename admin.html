@@ -1264,7 +1264,7 @@
     }catch(error){notify('Member belum tersimpan: '+(error.message||'Kesalahan server.'));}
     finally{if(button){button.disabled=false;button.textContent='Simpan member';}}
   });
-  window.deleteMember=id=>{const m=data.members.find(x=>x.id===id);if(!m)return;if(!confirm(`Hapus member ${m.name}? Riwayat transaksi tetap tersimpan.`))return;data.members=data.members.filter(x=>x.id!==id);saveData();renderAll();notify('Member berhasil dihapus.')};
+  window.deleteMember=id=>{if(remoteOperationalMode){notify('Hapus member pada database belum diaktifkan untuk menjaga riwayat transaksi dan poin.');return;}const m=data.members.find(x=>x.id===id);if(!m)return;if(!confirm(`Hapus member ${m.name}? Riwayat transaksi tetap tersimpan.`))return;data.members=data.members.filter(x=>x.id!==id);saveData();renderAll();notify('Member berhasil dihapus.')};
   window.showMemberQR=id=>{const m=data.members.find(x=>x.id===id);if(!m)return;document.getElementById('scanManualInput').value=m.id;openScanner();document.getElementById('scanStatus').textContent=`ID member: ${m.id} · ${m.name}. QR dapat berisi teks ID tersebut.`};
   window.openMemberProfile=async id=>{
     const m=data.members.find(x=>x.id===id);if(!m)return;ensureMemberDefaults(m);if(remoteOperationalMode)await ensureRemoteMemberCoupons(m);const level=memberLevel(m);const history=[...data.transactions].filter(t=>t.memberId===id).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
