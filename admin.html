@@ -93,6 +93,18 @@
     .banner-slot-card{overflow:hidden;border:1px solid var(--line);border-radius:15px;background:var(--paper);min-width:0}
     .banner-slot-preview{height:170px;position:relative;display:grid;place-items:center;background:linear-gradient(130deg,#263021,#66784d);overflow:hidden;color:#d7ee78}
     .banner-slot-preview img{width:100%;height:100%;object-fit:cover;display:block}
+    /* Area pratinjau menjadi tombol unggah: mudah digunakan di desktop dan ponsel. */
+    .banner-slot-trigger{width:100%;padding:0;border:0;border-radius:0;font:inherit;text-align:inherit;cursor:pointer;touch-action:manipulation;appearance:none}
+    .banner-slot-trigger img{transition:filter .2s ease,transform .2s ease}
+    .banner-slot-trigger:hover img{filter:brightness(.83);transform:scale(1.015)}
+    .banner-slot-trigger:focus-visible{outline:3px solid var(--gold);outline-offset:-3px}
+    .banner-slot-trigger:disabled{cursor:progress}
+    .banner-slot-trigger:disabled img{filter:brightness(.72)}
+    .banner-slot-status{z-index:2}
+    .banner-slot-change-hint{position:absolute;z-index:2;bottom:12px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;justify-content:center;max-width:calc(100% - 26px);min-height:31px;padding:7px 13px;border-radius:999px;background:rgba(26,33,24,.88);border:1px solid #ffffff45;color:#fff;font-size:11px;font-weight:800;text-align:center;line-height:1.35;box-shadow:0 5px 18px #0003;pointer-events:none}
+    .banner-slot-file-input{display:none!important}
+    @media(hover:none){.banner-slot-trigger:hover img{filter:none;transform:none}}
+
     .banner-slot-placeholder{text-align:center;padding:15px;line-height:1.5}
     .banner-slot-placeholder span{font-size:28px;display:block;margin-bottom:8px}
     .banner-slot-placeholder strong{display:block;font-size:12px;letter-spacing:.06em}
@@ -681,7 +693,7 @@
       </section>
 
       <section class="panel banner-manager">
-        <div class="banner-manager-head"><div><h2 class="panel-title">Banner website</h2><p class="panel-subtitle">Upload gambar hanya pada bagian yang ingin diganti.</p></div><button class="btn gold" type="button" onclick="addBannerSlot()">＋ Tambah slot banner</button></div>
+        <div class="banner-manager-head"><div><h2 class="panel-title">Banner website</h2><p class="panel-subtitle">Klik atau ketuk pratinjau untuk mengunggah atau mengganti gambar.</p></div><button class="btn gold" type="button" onclick="addBannerSlot()">＋ Tambah slot banner</button></div>
         <div class="banner-manager-note"><strong>Slot gambar yang terhubung ke index.html:</strong> <b>Banner Utama</b> mengubah background Beranda; <b>Foto Galeri 1–3</b> mengubah tiga foto pada Galeri; dan <b>Poster Promo 1–3</b> mengubah tiga poster pada Promo. <b>Penting:</b> gambar diunggah ke server Rumahweb dan akan terlihat oleh semua pengunjung setelah website publik dimuat ulang. Format yang didukung: JPG, JPEG, PNG, dan WebP hingga 15 MB. Foto besar dikompres otomatis sebelum dikirim ke server.</div>
         <div id="bannerSlotGrid" class="banner-slot-grid"></div>
         <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn secondary" type="button" onclick="exportBannerConfig()">↓ Ekspor konfigurasi banner</button><span class="form-note">Ekspor hanya untuk cadangan konfigurasi. Data publik disimpan di server.</span></div>
@@ -1504,16 +1516,40 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
     if(!Array.isArray(data.bannerSlots))data.bannerSlots=structuredCloneSafe(seed.bannerSlots);
     grid.innerHTML=data.bannerSlots.map(slot=>{
       const uploaded=Boolean(slot.image);
-      const preview=uploaded?`<img src="${esc(slot.image)}" alt="Pratinjau ${esc(slot.name)}" loading="lazy" />`:`<div class="banner-slot-placeholder"><span>▧</span><strong>${esc(slot.name)}</strong><small>Belum ada gambar · ${esc(slot.recommended||'Ukuran fleksibel')}</small></div>`;
+      const preview=uploaded
+        ?`<img src="${esc(slot.image)}" alt="" loading="lazy" />`
+        :`<div class="banner-slot-placeholder" aria-hidden="true"><span>▧</span><strong>${esc(slot.name)}</strong><small>Belum ada gambar · ${esc(slot.recommended||'Ukuran fleksibel')}</small></div>`;
       const custom=!seed.bannerSlots.some(base=>base.id===slot.id);
       const fileName=slot.fileName?`<div class="banner-file-meta">File: ${esc(slot.fileName)}</div>`:'';
-      return `<article class="banner-slot-card"><div class="banner-slot-preview">${preview}<span class="banner-slot-status">${uploaded?'Gambar tersimpan':'Belum diatur'}</span></div><div class="banner-slot-body"><div class="banner-slot-title"><div><h3>${esc(slot.name)}</h3><small>${esc(slot.description||'Slot gambar website')}<br />Rekomendasi: ${esc(slot.recommended||'sesuaikan desain website')}</small></div>${custom?`<button type="button" class="btn danger small" title="Hapus slot" onclick="removeBannerSlot('${esc(slot.id)}')">×</button>`:''}</div>${fileName}<div class="banner-slot-actions"><label class="btn" for="banner-file-${esc(slot.id)}">↑ ${uploaded?'Ganti gambar':'Upload gambar'}</label><input id="banner-file-${esc(slot.id)}" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-banner-upload="${esc(slot.id)}" />${uploaded?`<button class="btn secondary" type="button" onclick="downloadBannerImage('${esc(slot.id)}')">Unduh</button><button class="btn danger" type="button" onclick="clearBannerImage('${esc(slot.id)}')">Hapus gambar</button>`:''}</div></div></article>`;
+      const uploadLabel=`${uploaded?'Ganti gambar':'Upload gambar'} pada ${slot.name}`;
+      const actions=uploaded
+        ?`<div class="banner-slot-actions"><button class="btn secondary" type="button" onclick="downloadBannerImage('${esc(slot.id)}')">Unduh</button><button class="btn danger" type="button" onclick="clearBannerImage('${esc(slot.id)}')">Hapus gambar</button></div>`
+        :'';
+      return `<article class="banner-slot-card"><button type="button" class="banner-slot-preview banner-slot-trigger" data-banner-preview-upload="${esc(slot.id)}" aria-label="${esc(uploadLabel)}" title="${esc(uploadLabel)}">${preview}<span class="banner-slot-status" aria-hidden="true">${uploaded?'Gambar tersimpan':'Belum diatur'}</span><span class="banner-slot-change-hint" data-banner-change-hint aria-hidden="true">↑ ${uploaded?'Klik / ketuk untuk ganti foto':'Klik / ketuk untuk upload'}</span></button><input class="banner-slot-file-input" id="banner-file-${esc(slot.id)}" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-banner-upload="${esc(slot.id)}" hidden /><div class="banner-slot-body"><div class="banner-slot-title"><div><h3>${esc(slot.name)}</h3><small>${esc(slot.description||'Slot gambar website')}<br />Rekomendasi: ${esc(slot.recommended||'sesuaikan desain website')}</small></div>${custom?`<button type="button" class="btn danger small" title="Hapus slot" onclick="removeBannerSlot('${esc(slot.id)}')">×</button>`:''}</div>${fileName}${actions}</div></article>`;
     }).join('');
-    grid.querySelectorAll('input[data-banner-upload]').forEach(input=>input.addEventListener('change',async e=>{
-      const file=e.target.files&&e.target.files[0];
-      const id=e.target.getAttribute('data-banner-upload');
-      if(file)await saveBannerImage(id,file);
-      e.target.value='';
+
+    grid.querySelectorAll('[data-banner-preview-upload]').forEach(button=>button.addEventListener('click',()=>{
+      if(button.disabled)return;
+      const input=button.closest('.banner-slot-card')?.querySelector('input[data-banner-upload]');
+      if(input)input.click();
+    }));
+    grid.querySelectorAll('input[data-banner-upload]').forEach(input=>input.addEventListener('change',async event=>{
+      const file=event.target.files?.[0];
+      if(!file)return;
+      const id=event.target.getAttribute('data-banner-upload');
+      const button=event.target.closest('.banner-slot-card')?.querySelector('[data-banner-preview-upload]');
+      const hint=button?.querySelector('[data-banner-change-hint]');
+      const previousHint=hint?.textContent||'';
+      if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
+      if(hint)hint.textContent='Memproses gambar…';
+      // Kosongkan pilihan sebelum upload supaya file yang sama dapat dipilih lagi jika gagal.
+      event.target.value='';
+      try{await saveBannerImage(id,file);}
+      finally{
+        // Saat upload berhasil renderBannerSlots() mengganti DOM lama dengan pratinjau terbaru.
+        if(button&&button.isConnected){button.disabled=false;button.removeAttribute('aria-busy');}
+        if(hint&&hint.isConnected)hint.textContent=previousHint;
+      }
     }));
   }
   const MAX_BANNER_SOURCE_BYTES=15*1024*1024;
