@@ -1769,7 +1769,8 @@ window.payuAdminHydrateFromServer=async function(){
  galleryDraft=structuredCloneSafe(data.galleryContent||seed.galleryContent);
  promoCardsDraft=structuredCloneSafe(data.promoCards||seed.promoCards);
  const banners=Array.isArray(results[4].banners)?results[4].banners:[];
- const keyForSlot=id=>id==='hero-main'?'banner_utama':id==='menu-banner'?'banner_menu':id==='promo-poster-1'?'banner_promo':id==='promo-poster-2'?'foto_4':id==='promo-poster-3'?'foto_5':(/^shop-photo-(\\d+)$/.test(id)?'foto_'+(Number(id.match(/(\\d+)$/)?.[1])+5):'');
+ // Gunakan satu sumber pemetaan slot yang sama untuk upload dan pratinjau, supaya galeri tidak dianggap kosong.
+ const keyForSlot=id=>REMOTE_BANNER_KEYS[id]||'';
  data.bannerSlots=data.bannerSlots.map(slot=>{const key=keyForSlot(slot.id),remote=banners.find(b=>b.slot_key===key);return {...slot,image:resolvePayuBannerUrl(remote?.image_url),fileName:remote?.title||''};});
  remoteOperationalMode=true;data.members.forEach(ensureMemberDefaults);if(pointSetting&&Number(pointSetting.setting_value)>=1000)data.pointRate=Number(pointSetting.setting_value);renderAll();renderDashboard();renderDashboardStats();
  return {members:data.members.length,menus:data.menus.length,transactions:data.transactions.length};
