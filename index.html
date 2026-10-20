@@ -357,7 +357,8 @@ body.promo-viewer-open{overflow:hidden}
 
     /* Keep modal panels hidden even when their class defines display:grid/flex. */
     #memberAccessView [hidden] { display: none !important; }
-  </style>
+  #loginModal .auth-view[hidden],#loginModal .auth-tabs[hidden],#loginModal #authNote[hidden]{display:none!important;}
+</style>
 
 <style id="payu-editable-hero-promo-overlay">
 /* Promo images are backgrounds; editable PA.YU copy sits above them on carousel cards. */
