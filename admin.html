@@ -750,12 +750,12 @@
 
 <!-- Kode aktivasi hanya tampil saat dibuat; tidak disimpan di browser -->
 <div class="modal-backdrop" id="memberActivationModal" role="dialog" aria-modal="true" aria-labelledby="memberActivationTitle">
-  <div class="modal"><div class="modal-head"><div><h3 id="memberActivationTitle">Aktivasi akun member</h3><p>Serahkan kode secara pribadi kepada pemilik akun.</p></div><button class="close-btn" onclick="closeModal('memberActivationModal')" aria-label="Tutup">×</button></div>
+  <div class="modal"><div class="modal-head"><div><h3 id="memberActivationTitle">Aktivasi akun member</h3><p>Serahkan kode secara pribadi kepada pemilik akun.</p></div><button class="close-btn" onclick="closeMemberActivationModal()" aria-label="Tutup">×</button></div>
     <div style="padding:18px;display:grid;gap:14px">
       <p class="form-note" id="memberActivationIntro">Kode hanya tampil saat diterbitkan.</p>
       <div class="panel" style="padding:14px;text-align:center"><div style="font-size:11px;color:var(--muted)">Kode aktivasi sekali pakai</div><strong id="memberActivationCode" style="display:block;font-size:23px;letter-spacing:1px;overflow-wrap:anywhere;margin-top:5px">—</strong></div>
       <p class="form-note">Kode berlaku 48 jam, maksimal 5 percobaan. Member membuka menu <b>Aktivasi Akun</b> di website utama, memasukkan nomor HP/email dan kode ini, lalu menetapkan password. Kode tidak dikirim otomatis lewat SMS atau email.</p>
-      <div class="modal-footer"><button class="btn secondary" type="button" onclick="copyMemberActivationCode()">Salin kode</button><button class="btn" type="button" onclick="closeModal('memberActivationModal')">Selesai</button></div>
+      <div class="modal-footer"><button class="btn secondary" type="button" onclick="copyMemberActivationCode()">Salin kode</button><button class="btn" type="button" onclick="closeMemberActivationModal()">Selesai</button></div>
     </div>
   </div>
 </div>
@@ -1188,6 +1188,7 @@
     document.getElementById('memberActivationCode').textContent=code;
     document.getElementById('memberActivationModal').classList.add('open');
   }
+  window.closeMemberActivationModal=()=>{document.getElementById('memberActivationCode').textContent='—';closeModal('memberActivationModal');};
   window.copyMemberActivationCode=async()=>{
     const code=document.getElementById('memberActivationCode').textContent.trim();
     try{await navigator.clipboard.writeText(code);notify('Kode aktivasi disalin. Berikan secara pribadi kepada member.');}
