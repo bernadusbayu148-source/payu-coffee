@@ -432,7 +432,7 @@ berbagi, dan bercerita.</span></span><span class="poster-bottom"><span data-prom
 <div class="auth-brand-row"><img src="pa-yu-logo.png" alt="" class="auth-brand-logo"><div class="auth-brand-wordmark"><strong>pa.yu</strong><span>COFFEE · COMMUNITY</span></div><span class="auth-brand-tag">MEMBER SPACE</span></div>
 <div class="auth-heading"><div class="kicker" id="authKicker"><span class="auth-heading-dot"></span> WELCOME, KERABAT</div><h2 id="loginTitle">Member pa.yu</h2><p id="authIntro">Masuk untuk melihat profil, poin, peringkat, dan benefit membership kamu.</p></div>
 <div id="memberAccessView">
-  <div class="auth-tabs" role="tablist" aria-label="Pilih login atau daftar"><button class="auth-tab active" id="loginTab" role="tab" aria-selected="true" onclick="switchAuth('login')">Masuk</button><button class="auth-tab" id="registerTab" role="tab" aria-selected="false" onclick="switchAuth('register')">Daftar member</button></div>
+  <div class="auth-tabs" role="tablist" aria-label="Pilih login atau daftar"><button class="auth-tab active" id="loginTab" role="tab" aria-selected="true" onclick="switchAuth('login')">Masuk</button><button class="auth-tab" id="registerTab" role="tab" aria-selected="false" onclick="switchAuth('register')">Daftar member</button><button class="auth-tab" id="activationTab" role="tab" aria-selected="false" onclick="switchAuth('activate')">Aktivasi Akun</button></div>
   <form id="loginForm" class="auth-view"><div class="field"><label for="loginId">Email atau ID member</label><input id="loginId" name="loginId" autocomplete="username" required placeholder="Email / ID member"></div><div class="field"><label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button class="primary" type="submit">Masuk ke akun ↗</button><div class="message" id="loginMessage" aria-live="polite"></div></form>
   <form id="registerForm" class="auth-view" hidden>
     <div class="field"><label for="memberName">Nama</label><input id="memberName" name="displayName" autocomplete="name" required maxlength="80" placeholder="Nama yang ingin ditampilkan"></div>
@@ -443,6 +443,14 @@ berbagi, dan bercerita.</span></span><span class="poster-bottom"><span data-prom
     <div class="field full" style="display:flex;grid-template-columns:none;align-items:flex-start;gap:9px"><input id="registerShowOnLeaderboard" type="checkbox" style="width:auto;flex:0 0 auto;margin-top:3px"><label for="registerShowOnLeaderboard" style="font-weight:500;line-height:1.55">Saya setuju nama dan poin saya ditampilkan di leaderboard publik pa.yu.</label></div>     <div class="field"><label for="registerPassword">Buat password</label><input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="10" required placeholder="Minimal 10 karakter"></div>
     <div class="field"><label for="confirmPassword">Konfirmasi password</label><input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required placeholder="Ulangi password"></div>
     <button class="primary" type="submit">Buat akun member ↗</button><div class="message" id="registerMessage" aria-live="polite"></div>
+  </form>
+  <form id="activateForm" class="auth-view" hidden>
+    <p class="note">Sudah didaftarkan oleh kasir PA.YU? Akun dan poin Anda tersimpan. Masukkan kode aktivasi dari kasir, lalu buat password untuk akun yang sama.</p>
+    <div class="field"><label for="activationIdentifier">Nomor HP atau email terdaftar</label><input id="activationIdentifier" autocomplete="username" required placeholder="08xxxxxxxxxx atau nama@email.com" /></div>
+    <div class="field"><label for="activationCode">Kode aktivasi dari kasir</label><input id="activationCode" required maxlength="19" autocomplete="off" autocapitalize="characters" placeholder="PY-XXXXXXXXXXXXXXXX" /></div>
+    <div class="field"><label for="activationPassword">Buat password baru</label><input id="activationPassword" type="password" autocomplete="new-password" minlength="10" required placeholder="Minimal 10 karakter" /></div>
+    <div class="field"><label for="activationConfirm">Konfirmasi password</label><input id="activationConfirm" type="password" autocomplete="new-password" minlength="10" required placeholder="Ulangi password" /></div>
+    <button class="primary" type="submit">Aktifkan akun saya ↗</button><div class="message" id="activationMessage" aria-live="polite"></div>
   </form>
   <p class="note auth-note" id="authNote">Akun member tersimpan di server PA.YU. Nama hanya muncul di leaderboard bila kamu memberi persetujuan saat mendaftar.</p><div id="memberProfileView" class="auth-view" hidden></div>
   <div class="staff-access-row"><button type="button" class="staff-access-link" onclick="goToAdminLogin()" aria-label="Akses staf PA.YU"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"></path><path d="M9 12h6"></path></svg><span>Akses staf</span></button></div>
@@ -483,6 +491,7 @@ function resetVisiblePasswords(root=document){
 }
 const loginForm=document.getElementById('loginForm');
 const registerForm=document.getElementById('registerForm');
+const activateForm=document.getElementById('activateForm');
 function openLogin(mode='login'){
   resetVisiblePasswords(modal);
   modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');
@@ -490,20 +499,19 @@ function openLogin(mode='login'){
 }
 function closeLogin(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open')}
 function switchAuth(mode){
-  const registering=mode==='register';
+  const registering=mode==='register',activating=mode==='activate';
   activeMemberProfile=null;
   document.getElementById('memberProfileView').hidden=true;
   document.querySelector('.auth-tabs').hidden=false;
   document.getElementById('authNote').hidden=false;
-  loginForm.hidden=registering;registerForm.hidden=!registering;
-  document.getElementById('loginTab').classList.toggle('active',!registering);
-  document.getElementById('registerTab').classList.toggle('active',registering);
-  document.getElementById('loginTab').setAttribute('aria-selected',String(!registering));
-  document.getElementById('registerTab').setAttribute('aria-selected',String(registering));
+  loginForm.hidden=registering||activating;registerForm.hidden=!registering;activateForm.hidden=!activating;
+  for(const [id,active] of [['loginTab',!registering&&!activating],['registerTab',registering],['activationTab',activating]]){
+    const tab=document.getElementById(id);tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));
+  }
   document.getElementById('authKicker').innerHTML='<span class="auth-heading-dot"></span> WELCOME, KERABAT';
-  document.getElementById('loginTitle').textContent=registering?'Bergabung dengan pa.yu':'Member pa.yu';
-  document.getElementById('authIntro').textContent=registering?'Daftar menjadi bagian dari komunitas dan nikmati benefit membership pa.yu.':'Masuk untuk melihat profil, poin, peringkat, dan benefit membership kamu.';
-  document.getElementById('loginMessage').textContent='';document.getElementById('registerMessage').textContent='';
+  document.getElementById('loginTitle').textContent=activating?'Aktivasi akun PA.YU':registering?'Bergabung dengan pa.yu':'Member pa.yu';
+  document.getElementById('authIntro').textContent=activating?'Jika sudah didaftarkan oleh kasir, Anda hanya perlu membuat password dengan kode aktivasi.':registering?'Daftar menjadi bagian dari komunitas dan nikmati benefit membership pa.yu.':'Masuk untuk melihat profil, poin, peringkat, dan benefit membership kamu.';
+  document.getElementById('loginMessage').textContent='';document.getElementById('registerMessage').textContent='';document.getElementById('activationMessage').textContent='';
 }
 modal.addEventListener('click',e=>{if(e.target===modal)closeLogin()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLogin()});
@@ -585,7 +593,7 @@ function syncMemberHeader(isLoggedIn=Boolean(activeMemberProfile)){
  if(button){button.setAttribute('aria-label',isLoggedIn?'Buka akun member':'Login Member');button.dataset.loggedIn=String(isLoggedIn);}
 }
 function setMemberAuthView(profileData){
- const profile=profileData.profile||{};activeMemberProfile=profileData;syncMemberHeader(true);document.querySelector('.auth-tabs').hidden=true;loginForm.hidden=true;registerForm.hidden=true;document.getElementById('authNote').hidden=true;const view=document.getElementById('memberProfileView');view.hidden=false;
+ const profile=profileData.profile||{};activeMemberProfile=profileData;syncMemberHeader(true);document.querySelector('.auth-tabs').hidden=true;loginForm.hidden=true;registerForm.hidden=true;document.getElementById('authNote').hidden=true;const view=document.getElementById('memberProfileView');view.hidden=false;activateForm.hidden=true;
  const transactions=Array.isArray(profileData.transactions)?profileData.transactions:[],coupons=Array.isArray(profileData.coupons)?profileData.coupons:[];
  const txHtml=transactions.length?transactions.map(tx=>{const items=Array.isArray(tx.items)?tx.items.map(item=>escapeMemberHtml(item.menu_name_snapshot)+' × '+Number(item.quantity||1)).join('<br>'):'';return '<div style="padding:12px 0;border-bottom:1px solid #e5e4d9"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><strong>'+escapeMemberHtml(formatMemberDate(tx.created_at))+'</strong><strong>'+formatMemberMoney(tx.total_amount)+'</strong></div><div style="font-size:12px;margin-top:5px;color:#74796d">'+(items||'Transaksi PA.YU')+'</div><div style="font-size:12px;margin-top:5px">+'+Number(tx.points_earned||0).toLocaleString('id-ID')+' poin</div></div>';}).join(''):'<p class="note">Belum ada transaksi yang tercatat.</p>';
  const couponHtml=coupons.length?coupons.map(c=>{const status=String(c.status||'available'),available=status==='available',expired=status==='expired';const rewardName=String(c.reward_menu_name||c.name||'Menu gratis');const detail=c.discount_type==='free_item'?'Gratis '+rewardName:(c.discount_type==='percent'?String(c.discount_value)+'%':formatMemberMoney(c.discount_value));const statusText=available?'Tersedia':expired?'Kedaluwarsa · Kupon tingkat lebih tinggi ditukar':'Sudah digunakan';return '<div style="border:1px solid #e5e4d9;border-radius:12px;padding:12px;background:'+(available?'#fffef9':'#f2f0e8')+'"><strong>'+escapeMemberHtml(c.name||'Benefit member')+'</strong><div style="font-size:12px;margin-top:5px">Benefit: '+escapeMemberHtml(detail)+'</div><div style="font-size:11px;margin-top:5px;color:#74796d">Terbuka saat akumulasi belanja mencapai '+formatMemberMoney(c.min_spend)+'</div><div style="font-size:11px;margin-top:7px;color:'+(available?'#39734b':'#74796d')+'">'+statusText+'</div>'+(available?'<div style="font-size:11px;margin-top:4px">Kode: '+escapeMemberHtml(c.coupon_code)+'</div>':'')+'</div>';}).join(''):'<p class="note">Belum ada kupon gratis yang terbuka. Kupon akan aktif setelah total belanja mencapai minimum salah satu level.</p>';
