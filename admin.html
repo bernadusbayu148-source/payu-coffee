@@ -359,7 +359,8 @@
       .stats-filter input[type="number"]{font-size:16px!important;padding:10px 11px;}
       .stats-export-btn{grid-column:1 / -1;width:100%;}
     }
-  </style>
+  #membersTable button[hidden]{display:none!important;}
+</style>
 
   <style id="payu-admin-auth-styles">
     .app{display:none!important}
@@ -1245,9 +1246,10 @@
         if(editId)body.id=Number(editId);
         const result=await window.payuAdminApiRequest('staff/members/save',{method:'POST',body});
         closeModal('memberModal');
-        await window.payuAdminHydrateFromServer();
-        notify(result.message||'Member berhasil disimpan ke database.');
         if(result.activation_code)showMemberActivationCode(result);
+        notify(result.message||'Member berhasil disimpan ke database.');
+        try{await window.payuAdminHydrateFromServer();}
+        catch(loadError){console.warn('[PA.YU] Member tersimpan tetapi daftar gagal dimuat ulang:',loadError);notify('Member tersimpan, tetapi daftar belum diperbarui. Muat ulang halaman.');}
         return;
       }
       if(editId){
