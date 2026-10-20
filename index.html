@@ -378,18 +378,24 @@ body.promo-viewer-open{overflow:hidden}
 @media(max-width:780px){.promo-poster-meta{padding-top:10px}.promo-poster-meta strong{display:block;overflow-wrap:anywhere}}
 </style>
 <style id="payu-visit-contact-map">
-/* Bagian Alamat: tombol kontak yang jelas, peta responsif, tanpa mengubah palet PA.YU. */
+/* Informasi kontak ditampilkan sebagai baris tautan yang ringan, selaras desain PA.YU. */
 .visit-card{display:flex;flex-direction:column;justify-content:center;min-width:0}
-.visit-item>div:last-child{min-width:0}
+.visit-item>div:last-child,.visit-contact-link{min-width:0}
+.visit-item[hidden]{display:none!important}
 .visit-item p{overflow-wrap:anywhere}
-.visit-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:18px}
-.visit-btn{display:inline-flex;justify-content:center;align-items:center;gap:7px;min-height:44px;padding:11px 17px;border-radius:999px;font-size:.88rem;font-weight:800;line-height:1.35;text-decoration:none;border:1px solid transparent;transition:transform .18s,filter .18s}
-.visit-btn:hover{transform:translateY(-2px);filter:brightness(.94)}
-.visit-btn:focus-visible{outline:3px solid #d8ae64;outline-offset:3px}
-.visit-btn-maps{background:var(--red);color:#fff}
-.visit-btn-instagram{background:#fff5ee;border-color:#bf847a;color:#892d35}
-.visit-btn-whatsapp{background:#1e7d56;color:#fff}
-.visit-btn[hidden]{display:none!important}
+.visit-contact-link{display:block;flex:1;padding:3px 5px;margin:-3px -5px;border-radius:8px;text-decoration:none;color:inherit;transition:background .18s ease}
+.visit-contact-link h3{display:flex;align-items:center;gap:6px;width:max-content;max-width:100%;transition:color .18s}
+.visit-contact-link p{transition:color .18s}
+.visit-contact-arrow{font-size:.78rem;color:var(--red);transition:transform .18s ease}
+.visit-contact-link:hover,.visit-contact-link:focus-visible{background:#f9eee7}
+.visit-contact-link:hover h3,.visit-contact-link:focus-visible h3{color:var(--red)}
+.visit-contact-link:hover .visit-contact-arrow,.visit-contact-link:focus-visible .visit-contact-arrow{transform:translate(2px,-2px)}
+.visit-contact-link:focus-visible{outline:2px solid var(--red);outline-offset:4px}
+.visit-map-column{display:flex;flex-direction:column;min-width:0;gap:14px}
+.visit-map-link{align-self:center;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:43px;padding:10px 21px;background:#fffdf9;color:var(--red);border:1px solid #cfbcb1;border-radius:999px;font-size:.88rem;font-weight:800;text-decoration:none;transition:background .18s,transform .18s}
+.visit-map-link:hover{background:#f7e9e1;transform:translateY(-2px)}
+.visit-map-link:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.visit-map-link[hidden]{display:none!important}
 .map-card{padding:0;display:block;min-height:350px;border:1px solid var(--line)}
 .map-card>iframe{width:100%;height:100%;min-height:350px;position:absolute;inset:0;border:0;display:block;background:#eee7dc}
 .map-card>iframe[hidden]{display:none!important}
@@ -397,8 +403,8 @@ body.promo-viewer-open{overflow:hidden}
 .map-card>div.map-fallback{max-width:min(82%,340px);z-index:1;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#292723d9;padding:22px;border-radius:16px;color:#fff}
 .map-card .map-fallback[hidden]{display:none!important}
 .map-fallback-hint{display:block;font-size:.76rem;color:#f0e2d6;line-height:1.55}
-@media(max-width:780px){.visit-actions{gap:9px}.visit-btn{flex:1 1 185px}.map-card,.map-card>iframe{min-height:310px}}
-@media(max-width:440px){.visit-btn{width:100%;flex-basis:100%}.map-card,.map-card>iframe{min-height:300px}}
+@media(max-width:780px){.map-card,.map-card>iframe{min-height:310px}}
+@media(max-width:440px){.map-card,.map-card>iframe{min-height:300px}.visit-map-link{align-self:stretch}}
 </style>
 </head>
 <body>
@@ -449,20 +455,31 @@ berbagi, dan bercerita.</span></span><span class="poster-bottom"><span data-prom
    <div class="visit-card">
     <div class="visit-item"><div class="visit-icon">⌖</div><div><h3>Alamat</h3><p id="publicBusinessAddress">[Alamat PA.YU akan ditampilkan di sini]</p></div></div>
     <div class="visit-item"><div class="visit-icon">◷</div><div><h3>Jam operasional</h3><p id="publicBusinessHours">[Jam operasional PA.YU akan ditampilkan di sini]</p></div></div>
-    <div class="visit-item"><div class="visit-icon">◎</div><div><h3>Instagram</h3><p id="publicInstagramText">Ikuti kabar, menu, dan cerita terbaru PA.YU.</p></div></div>
-    <div class="visit-actions">
-     <a class="visit-btn visit-btn-maps" id="publicGoogleMapsLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Buka Google Maps ↗</a>
-     <a class="visit-btn visit-btn-instagram" id="publicInstagramLink" href="#" target="_blank" rel="noopener noreferrer" hidden>◎ Kunjungi Instagram ↗</a>
-     <a class="visit-btn visit-btn-whatsapp" id="publicWhatsAppLink" href="#" target="_blank" rel="noopener noreferrer" hidden>◉ Chat via WhatsApp ↗</a>
+    <div class="visit-item" id="publicInstagramItem" hidden>
+     <div class="visit-icon" aria-hidden="true">◎</div>
+     <a class="visit-contact-link" id="publicInstagramLink" href="#" target="_blank" rel="noopener noreferrer" aria-label="Kunjungi Instagram PA.YU (tab baru)">
+      <h3>Instagram <span class="visit-contact-arrow" aria-hidden="true">↗</span></h3>
+      <p id="publicInstagramText">Ikuti kabar, menu, dan cerita terbaru PA.YU.</p>
+     </a>
+    </div>
+    <div class="visit-item" id="publicWhatsAppItem" hidden>
+     <div class="visit-icon" aria-hidden="true">◉</div>
+     <a class="visit-contact-link" id="publicWhatsAppLink" href="#" target="_blank" rel="noopener noreferrer" aria-label="Chat WhatsApp PA.YU (tab baru)">
+      <h3>WhatsApp <span class="visit-contact-arrow" aria-hidden="true">↗</span></h3>
+      <p id="publicWhatsAppText">Hubungi PA.YU langsung melalui WhatsApp.</p>
+     </a>
     </div>
    </div>
-   <div class="map-card" id="publicMapCard">
-    <iframe id="publicMapFrame" title="Pratinjau lokasi PA.YU Coffee di Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen hidden></iframe>
-    <div class="map-fallback" id="publicMapFallback">
-     <strong>See you at pa.yu.</strong>
-     <p id="publicMapNote">Untuk melihat lokasi di sini, tambahkan alamat lengkap atau kode sematan Google Maps melalui Admin.</p>
-     <span class="map-fallback-hint">Temukan PA.YU dan rencanakan kunjunganmu.</span>
+   <div class="visit-map-column">
+    <div class="map-card" id="publicMapCard">
+     <iframe id="publicMapFrame" title="Pratinjau lokasi PA.YU Coffee di Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen hidden></iframe>
+     <div class="map-fallback" id="publicMapFallback">
+      <strong>See you at pa.yu.</strong>
+      <p id="publicMapNote">Pratinjau lokasi akan tersedia setelah URL Google Maps disimpan melalui Admin.</p>
+      <span class="map-fallback-hint">Temukan PA.YU dan rencanakan kunjunganmu.</span>
+     </div>
     </div>
+    <a class="visit-map-link" id="publicGoogleMapsLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Buka Google Maps <span aria-hidden="true">↗</span></a>
    </div>
   </div>
  </div>
@@ -740,6 +757,8 @@ async function loadPublicSiteSettingsAndBanners(){
       }
     }catch(_){}
   }
+  const instagramItem=document.getElementById('publicInstagramItem');
+  if(instagramItem)instagramItem.hidden=!instagramHandle;
   if(instagramLink){
     instagramLink.hidden=!instagramHandle;
     if(instagramHandle)instagramLink.href='https://www.instagram.com/'+encodeURIComponent(instagramHandle)+'/';
@@ -783,6 +802,8 @@ async function loadPublicSiteSettingsAndBanners(){
   const whatsAppLink=document.getElementById('publicWhatsAppLink');
   const whatsAppNumber=String(storeContact.whatsappNumber||'').replace(/\D/g,'');
   const validWhatsApp=/^[1-9][0-9]{7,14}$/.test(whatsAppNumber);
+  const whatsAppItem=document.getElementById('publicWhatsAppItem');
+  if(whatsAppItem)whatsAppItem.hidden=!validWhatsApp;
   if(whatsAppLink){
     whatsAppLink.hidden=!validWhatsApp;
     if(validWhatsApp)whatsAppLink.href='https://wa.me/'+whatsAppNumber;
@@ -813,7 +834,7 @@ async function loadPublicSiteSettingsAndBanners(){
     else mapFrame.removeAttribute('src');
   }
   if(mapNote&&!embedUrl){
-    mapNote.textContent=mapUrl?'Pratinjau peta belum tersedia. Lengkapi alamat toko atau tempel kode sematan Google Maps melalui Admin.':'Tambahkan alamat lengkap atau sematan Google Maps melalui Admin agar peta terlihat di sini.';
+    mapNote.textContent=mapUrl?'Pratinjau peta belum tersedia. Simpan kembali URL Google Maps dari halaman Admin untuk memproses lokasi secara otomatis.':'Tambahkan URL Google Maps melalui Admin agar pratinjau lokasi terlihat di sini.';
   }
   const banner=key=>banners.find(item=>item&&item.slot_key===key&&item.image_url);
   const apply=(img,key)=>{const item=banner(key),url=item?resolvePayuPublicBannerUrl(item.image_url):'';if(img&&url){img.setAttribute('src',url);img.hidden=false;img.style.display='';}};
