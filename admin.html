@@ -1552,6 +1552,8 @@ document.addEventListener('submit',async event=>{
  finally{const fresh=document.getElementById('benefitRulesForm')?.querySelector('button[type="submit"]');if(fresh)fresh.disabled=false;}
 });
 window.payuAdminHydrateFromServer=async function(){
+ // Jangan simpan member palsu di browser saat database sedang dimuat.
+ remoteOperationalMode=true;
  const request=window.payuAdminApiRequest;if(typeof request!=='function')throw new Error('Helper API belum siap.');
  const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings'),request('public/banners'),request('staff/benefits').catch(error=>({levels:[],_error:error.message}))]);
  const oldMenus=data.menus.slice();
