@@ -377,6 +377,29 @@ body.promo-viewer-open{overflow:hidden}
 .promo-viewer-zoom .poster-art img{z-index:1!important;object-fit:contain;background:transparent}
 @media(max-width:780px){.promo-poster-meta{padding-top:10px}.promo-poster-meta strong{display:block;overflow-wrap:anywhere}}
 </style>
+<style id="payu-visit-contact-map">
+/* Bagian Alamat: tombol kontak yang jelas, peta responsif, tanpa mengubah palet PA.YU. */
+.visit-card{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.visit-item>div:last-child{min-width:0}
+.visit-item p{overflow-wrap:anywhere}
+.visit-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:18px}
+.visit-btn{display:inline-flex;justify-content:center;align-items:center;gap:7px;min-height:44px;padding:11px 17px;border-radius:999px;font-size:.88rem;font-weight:800;line-height:1.35;text-decoration:none;border:1px solid transparent;transition:transform .18s,filter .18s}
+.visit-btn:hover{transform:translateY(-2px);filter:brightness(.94)}
+.visit-btn:focus-visible{outline:3px solid #d8ae64;outline-offset:3px}
+.visit-btn-maps{background:var(--red);color:#fff}
+.visit-btn-instagram{background:#fff5ee;border-color:#bf847a;color:#892d35}
+.visit-btn-whatsapp{background:#1e7d56;color:#fff}
+.visit-btn[hidden]{display:none!important}
+.map-card{padding:0;display:block;min-height:350px;border:1px solid var(--line)}
+.map-card>iframe{width:100%;height:100%;min-height:350px;position:absolute;inset:0;border:0;display:block;background:#eee7dc}
+.map-card>iframe[hidden]{display:none!important}
+.map-card.has-map:before,.map-card.has-map:after{display:none}
+.map-card>div.map-fallback{max-width:min(82%,340px);z-index:1;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#292723d9;padding:22px;border-radius:16px;color:#fff}
+.map-card .map-fallback[hidden]{display:none!important}
+.map-fallback-hint{display:block;font-size:.76rem;color:#f0e2d6;line-height:1.55}
+@media(max-width:780px){.visit-actions{gap:9px}.visit-btn{flex:1 1 185px}.map-card,.map-card>iframe{min-height:310px}}
+@media(max-width:440px){.visit-btn{width:100%;flex-basis:100%}.map-card,.map-card>iframe{min-height:300px}}
+</style>
 </head>
 <body>
 <header><div class="wrap nav">
@@ -419,7 +442,31 @@ berbagi, dan bercerita.</span></span><span class="poster-bottom"><span data-prom
     </div>
   </div>
 </div></section>
-<section class="section" id="visit"><div class="wrap"><div class="section-head"><div><div class="kicker">Come by anytime</div><h2>Alamat rumah<br>pa.yu.</h2></div><p>Catat alamat kami dan mampir saat kamu butuh kopi atau teman bercerita.</p></div><div class="visit-grid"><div class="visit-card"><div class="visit-item"><div class="visit-icon">⌖</div><div><h3>Alamat</h3><p id="publicBusinessAddress">[Alamat PA.YU akan ditampilkan di sini]</p></div></div><div class="visit-item"><div class="visit-icon">◷</div><div><h3>Jam operasional</h3><p id="publicBusinessHours">[Jam operasional PA.YU akan ditampilkan di sini]</p></div></div><div class="visit-item"><div class="visit-icon">◎</div><div><h3>Instagram</h3><p><a id="publicInstagramLink" href="#" target="_blank" rel="noopener">Instagram PA.YU</a></p></div></div><a class="primary" id="publicGoogleMapsLink" href="#" target="_blank" rel="noopener">Buka Google Maps ↗</a></div><div class="map-card"><div><strong>See you at pa.yu.</strong><p id="publicMapNote">Lokasi dan peta akan ditampilkan setelah alamat resmi ditambahkan.</p><a class="primary" href="#visit" onclick="return false">Alamat segera hadir</a></div></div></div></div></section>
+<section class="section" id="visit">
+ <div class="wrap">
+  <div class="section-head"><div><div class="kicker">Come by anytime</div><h2>Alamat rumah<br>pa.yu.</h2></div><p>Catat alamat kami dan mampir saat kamu butuh kopi atau teman bercerita.</p></div>
+  <div class="visit-grid">
+   <div class="visit-card">
+    <div class="visit-item"><div class="visit-icon">⌖</div><div><h3>Alamat</h3><p id="publicBusinessAddress">[Alamat PA.YU akan ditampilkan di sini]</p></div></div>
+    <div class="visit-item"><div class="visit-icon">◷</div><div><h3>Jam operasional</h3><p id="publicBusinessHours">[Jam operasional PA.YU akan ditampilkan di sini]</p></div></div>
+    <div class="visit-item"><div class="visit-icon">◎</div><div><h3>Instagram</h3><p id="publicInstagramText">Ikuti kabar, menu, dan cerita terbaru PA.YU.</p></div></div>
+    <div class="visit-actions">
+     <a class="visit-btn visit-btn-maps" id="publicGoogleMapsLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Buka Google Maps ↗</a>
+     <a class="visit-btn visit-btn-instagram" id="publicInstagramLink" href="#" target="_blank" rel="noopener noreferrer" hidden>◎ Kunjungi Instagram ↗</a>
+     <a class="visit-btn visit-btn-whatsapp" id="publicWhatsAppLink" href="#" target="_blank" rel="noopener noreferrer" hidden>◉ Chat via WhatsApp ↗</a>
+    </div>
+   </div>
+   <div class="map-card" id="publicMapCard">
+    <iframe id="publicMapFrame" title="Pratinjau lokasi PA.YU Coffee di Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen hidden></iframe>
+    <div class="map-fallback" id="publicMapFallback">
+     <strong>See you at pa.yu.</strong>
+     <p id="publicMapNote">Untuk melihat lokasi di sini, tambahkan alamat lengkap atau kode sematan Google Maps melalui Admin.</p>
+     <span class="map-fallback-hint">Temukan PA.YU dan rencanakan kunjunganmu.</span>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
 </main>
 <footer><div class="wrap footer-row"><div><div class="footer-brand">pa.yu</div><div>Coffee, community, and a place to pause.</div></div><div>© <span id="year"></span> pa.yu. Dibuat untuk kerabat.</div><a href="#" onclick="openLogin();return false">Member Area ↗</a></div></footer>
 <nav class="mobile-dock" aria-label="Navigasi mobile">
