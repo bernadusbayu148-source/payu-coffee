@@ -632,7 +632,9 @@
           <div class="field full"><label for="publicInfoAddress">Alamat lengkap</label><textarea id="publicInfoAddress" maxlength="1000" rows="2" placeholder="Alamat resmi PA.YU"></textarea></div>
           <div class="field"><label for="publicInfoHours">Jam operasional</label><input id="publicInfoHours" maxlength="300" placeholder="Contoh: Setiap hari, 08.00–22.00"></div>
           <div class="field"><label for="publicInfoInstagram">Instagram (URL atau akun)</label><input id="publicInfoInstagram" maxlength="300" placeholder="https://instagram.com/akun"></div>
-          <div class="field full"><label for="publicInfoMaps">URL Google Maps</label><input id="publicInfoMaps" type="url" maxlength="1000" placeholder="https://maps.google.com/..."></div>
+          <div class="field full"><label for="publicInfoMaps">URL Google Maps (tombol petunjuk arah)</label><input id="publicInfoMaps" type="url" maxlength="1000" placeholder="https://maps.app.goo.gl/..." /><p class="form-note">Tautan Maps pendek tetap dapat digunakan untuk tombol "Buka Google Maps".</p></div>
+          <div class="field"><label for="publicInfoWhatsApp">Nomor WhatsApp toko</label><input id="publicInfoWhatsApp" type="tel" inputmode="tel" maxlength="22" placeholder="Contoh: 0812 3456 7890 atau +62 812 3456 7890" /><p class="form-note">Opsional. Digunakan untuk tombol Chat WhatsApp di website publik.</p></div>
+          <div class="field full"><label for="publicInfoMapsEmbed">Sematkan Google Maps (pratinjau peta)</label><textarea id="publicInfoMapsEmbed" rows="2" maxlength="4500" placeholder="Tempel URL https://www.google.com/maps/embed?pb=... atau kode &lt;iframe ...&gt; dari Google Maps"></textarea><p class="form-note">Di Google Maps desktop: Bagikan → Sematkan peta → Salin HTML. Tempel kode tersebut di sini. Jika tidak diisi, pratinjau menggunakan kolom Alamat lengkap. Link pendek maps.app.goo.gl saja tidak dapat dijadikan peta sematan secara andal.</p></div>
           <div class="field full"><button class="btn" type="submit">Simpan informasi toko</button><p class="form-note">Perubahan akan tersedia untuk pengunjung setelah halaman publik memuat ulang data dari server.</p></div>
         </form>
       </section>
@@ -796,6 +798,7 @@
     }catch(_){return '';}
   }
   let remoteOperationalMode=false;
+  let publicStoreContact={whatsappNumber:'',mapsEmbedUrl:''};
   let remoteTransactionFallbackCache=null;
   let benefitRules=null;
   const PAGE_INFO = {
@@ -1322,13 +1325,62 @@
   window.deleteTransaction=async (id,profileMemberId=null)=>{const remoteT=data.transactions.find(x=>String(x.id)===String(id));if(!remoteT)return;if(remoteOperationalMode){if(!confirm(`Batalkan transaksi ${remoteT.transactionCode||remoteT.id}? Poin akan dikoreksi server.`))return;try{await window.payuAdminApiRequest('staff/transactions/void',{method:'POST',body:{id:Number(remoteT.backendId||remoteT.id)}});remoteTransactionFallbackCache=null;await window.payuAdminHydrateFromServer();notify('Transaksi dibatalkan di database dan poin dikoreksi.')}catch(err){notify('Transaksi gagal dibatalkan: '+err.message)}return;}const t=data.transactions.find(x=>x.id===id);if(!t)return;if(!confirm(`Hapus transaksi ${t.id}? Poin yang berasal dari transaksi ini akan dikoreksi dan kupon akan dikembalikan jika digunakan.`))return;const m=data.members.find(x=>x.id===t.memberId);if(m)m.points=Math.max(0,(Number(m.points)||0)-(Number(t.points)||0));releaseTransactionCoupon(t);data.transactions=data.transactions.filter(x=>x.id!==id);saveData();renderAll();if(profileMemberId&&document.getElementById('profileModal').classList.contains('open'))openMemberProfile(profileMemberId);notify('Transaksi dihapus, poin dan kupon sudah disesuaikan.')};
   window.exportTransactions=()=>downloadCSV('payu-transactions.csv',[['ID Transaksi','Waktu','ID Member','Nama Member','Daftar Menu','Total Jumlah Item','Total Belanja','Poin','Pembayaran','Catatan'],...data.transactions.map(t=>[t.id,t.createdAt,t.memberId,t.memberName,Array.isArray(t.items)?t.items.map(i=>`${i.menuName} x ${i.qty} (${i.subtotal})`).join(' | '):(t.menuName||''),t.qty||1,t.total,t.points,t.payment,t.notes||''])]);
 
-  document.getElementById('publicInfoForm').addEventListener('submit',async e=>{
- e.preventDefault();
- if(!remoteOperationalMode){notify('Login terlebih dahulu untuk menyimpan informasi website ke server.');return}
- const settings={business_address:document.getElementById('publicInfoAddress').value.trim(),business_hours:document.getElementById('publicInfoHours').value.trim(),instagram_url:document.getElementById('publicInfoInstagram').value.trim(),google_maps_url:document.getElementById('publicInfoMaps').value.trim()};
- try{await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings}});notify('Informasi toko disimpan ke database.')}
- catch(err){notify('Informasi toko gagal disimpan: '+err.message)}
-});
+  function normalizeStoreWhatsApp(value){
+    let digits=String(value||'').replace(/\D/g,'');
+    if(!digits)return '';
+    if(digits.startsWith('00'))digits=digits.slice(2);
+    if(digits.startsWith('0'))digits='62'+digits.slice(1);
+    else if(digits.startsWith('8'))digits='62'+digits;
+    return /^[1-9][0-9]{7,14}$/.test(digits)?digits:'';
+  }
+  function parseMapsEmbedUrl(value){
+    const raw=String(value||'').trim();
+    if(!raw)return '';
+    const match=raw.match(/<iframe\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/i);
+    const candidate=match?match[2].replace(/&amp;/g,'&'):raw;
+    try{
+      const url=new URL(candidate);
+      const hosts=['www.google.com','google.com','maps.google.com'];
+      if(url.protocol!=='https:'||!hosts.includes(url.hostname))return '';
+      if(url.pathname.startsWith('/maps/embed'))return url.href;
+      if(url.pathname==='/maps'&&url.searchParams.get('output')==='embed')return url.href;
+    }catch(_){}
+    return '';
+  }
+  function buildPublicContentPayload(contact=publicStoreContact){
+    return {promo:data.promo,heroContent:data.heroContent||readHeroForm(),
+      galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft,
+      contact:{whatsappNumber:String(contact.whatsappNumber||''),mapsEmbedUrl:String(contact.mapsEmbedUrl||'')}};
+  }
+  document.getElementById('publicInfoForm').addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(!remoteOperationalMode){notify('Login staf terlebih dahulu untuk menyimpan informasi toko ke server.');return;}
+    const form=event.currentTarget;
+    const submit=form.querySelector('button[type="submit"]');
+    const whatsappInput=document.getElementById('publicInfoWhatsApp').value.trim();
+    const embedInput=document.getElementById('publicInfoMapsEmbed').value.trim();
+    const whatsappNumber=normalizeStoreWhatsApp(whatsappInput);
+    if(whatsappInput&&!whatsappNumber){notify('Nomor WhatsApp belum valid. Gunakan nomor aktif seperti 081234567890.');return;}
+    const mapsEmbedUrl=parseMapsEmbedUrl(embedInput);
+    if(embedInput&&!mapsEmbedUrl){notify('URL sematan Maps tidak valid. Salin HTML dari Google Maps → Bagikan → Sematkan peta.');return;}
+    const nextContact={whatsappNumber,mapsEmbedUrl};
+    const settings={
+      business_address:document.getElementById('publicInfoAddress').value.trim(),
+      business_hours:document.getElementById('publicInfoHours').value.trim(),
+      instagram_url:document.getElementById('publicInfoInstagram').value.trim(),
+      google_maps_url:document.getElementById('publicInfoMaps').value.trim(),
+      public_opening_message:JSON.stringify(buildPublicContentPayload(nextContact))
+    };
+    if(submit)submit.disabled=true;
+    try{
+      await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings}});
+      publicStoreContact=nextContact;
+      document.getElementById('publicInfoWhatsApp').value=whatsappNumber;
+      document.getElementById('publicInfoMapsEmbed').value=mapsEmbedUrl;
+      notify('Informasi toko, Instagram, WhatsApp, dan peta berhasil disimpan ke server.');
+    }catch(error){notify('Informasi toko gagal disimpan: '+error.message);}
+    finally{if(submit)submit.disabled=false;}
+  });
 document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.preventDefault();const rate=Number(document.getElementById('pointRateInput').value);if(!Number.isInteger(rate)||rate<1000||rate%1000!==0){notify('Aturan poin harus kelipatan Rp1.000, minimal Rp1.000. Contoh: Rp1.000, Rp2.000, atau Rp10.000.');document.getElementById('pointRateInput').focus();return}if(remoteOperationalMode){try{await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{point_rupiah_per_point:String(rate)}}});data.pointRate=rate;updateTxPreview();notify(`Aturan poin disimpan ke database: setiap ${money(rate)} = 1 poin.`)}catch(err){notify('Aturan poin gagal disimpan: '+err.message)}return}data.pointRate=rate;saveData();updateTxPreview();notify(`Aturan diperbarui: setiap ${money(rate)} = 1 poin.`)});
   function renderMenu(){const q=(document.getElementById('menuSearch').value||'').toLowerCase().trim();const cat=document.getElementById('menuCategoryFilter').value;const list=data.menus.filter(m=>(m.name+' '+m.description+' '+m.category).toLowerCase().includes(q)&&(cat==='all'||m.category===cat));document.getElementById('menuGrid').innerHTML=list.length?list.map(m=>`<article class="menu-card"><div class="menu-art">${esc(m.emoji||'☕')}</div><div class="menu-info"><h3>${esc(m.name)}</h3><p>${esc(m.category)} · ${esc(m.description||'Menu PA.YU Coffee')}</p><div class="menu-card-bottom"><span class="price">${money(m.price)}</span><span class="menu-actions"><button class="btn secondary small" onclick="editMenu('${esc(m.id)}')">Edit</button><button class="btn danger small" onclick="deleteMenu('${esc(m.id)}')">Hapus</button></span></div></div></article>`).join(''):`<div class="panel empty" style="grid-column:1/-1">Belum ada menu yang sesuai.</div>`}
   document.getElementById('menuSearch').addEventListener('input',renderMenu);document.getElementById('menuCategoryFilter').addEventListener('change',renderMenu);
@@ -1614,9 +1666,9 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('File CSV berhasil dibuat.')}
   function renderAll(){data.members.forEach(ensureMemberDefaults);data.benefitRules=benefitRules;document.getElementById('pointRateInput').value=String(data.pointRate||10000);renderDashboard();renderMembers();renderTransactions();renderMenu();renderBenefitRulesForm();loadPromoToForm();loadHeroContentToForm();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();populateTransactionOptions()}
   async function persistPublicCopyToServer(){
-  const payload={promo:data.promo,heroContent:data.heroContent||readHeroForm(),galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft};
-  return await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(payload)}}});
-}
+    const payload=buildPublicContentPayload();
+    return await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{public_opening_message:JSON.stringify(payload)}}});
+  }
 document.addEventListener('change',event=>{
  const target=event.target;
  if(!target||!/^type_(Bronze|Silver|Gold|Platinum)_[0-4]$/.test(String(target.name||'')))return;
@@ -1692,17 +1744,27 @@ window.payuAdminHydrateFromServer=async function(){
  }
  const settings=Array.isArray(results[3].settings)?results[3].settings:[],pointSetting=settings.find(x=>x.setting_key==='point_rupiah_per_point'),promoSetting=settings.find(x=>x.setting_key==='public_opening_message');
  if(Array.isArray(results[5]?.levels)&&results[5].levels.length){benefitRules=normalizeBenefitRules({levels:results[5].levels});data.benefitRules=benefitRules;}
- const readRemoteSettingField=key=>String(settings.find(x=>x.setting_key===key)?.setting_value||'');
- document.getElementById('publicInfoAddress').value=readRemoteSettingField('business_address');
- document.getElementById('publicInfoHours').value=readRemoteSettingField('business_hours');
- document.getElementById('publicInfoInstagram').value=readRemoteSettingField('instagram_url');
- document.getElementById('publicInfoMaps').value=readRemoteSettingField('google_maps_url');
  const settingValue=key=>String(settings.find(x=>x.setting_key===key)?.setting_value||'');
  document.getElementById('publicInfoAddress').value=settingValue('business_address');
  document.getElementById('publicInfoHours').value=settingValue('business_hours');
  document.getElementById('publicInfoInstagram').value=settingValue('instagram_url');
  document.getElementById('publicInfoMaps').value=settingValue('google_maps_url');
- if(promoSetting&&promoSetting.setting_value){try{const savedCopy=JSON.parse(promoSetting.setting_value);if(savedCopy&&typeof savedCopy==='object'){data.promo=savedCopy.promo&&typeof savedCopy.promo==='object'?savedCopy.promo:(savedCopy.title?savedCopy:data.promo);if(savedCopy.heroContent)data.heroContent=savedCopy.heroContent;if(Array.isArray(savedCopy.galleryContent)){data.galleryContent=savedCopy.galleryContent;galleryDraft=structuredCloneSafe(savedCopy.galleryContent)}if(Array.isArray(savedCopy.promoCards)){data.promoCards=savedCopy.promoCards;promoCardsDraft=structuredCloneSafe(savedCopy.promoCards)}}}catch(_){}}
+ publicStoreContact={whatsappNumber:'',mapsEmbedUrl:''};
+ if(promoSetting&&promoSetting.setting_value){try{
+   const savedCopy=JSON.parse(promoSetting.setting_value);
+   if(savedCopy&&typeof savedCopy==='object'){
+     data.promo=savedCopy.promo&&typeof savedCopy.promo==='object'?savedCopy.promo:(savedCopy.title?savedCopy:data.promo);
+     if(savedCopy.heroContent)data.heroContent=savedCopy.heroContent;
+     if(Array.isArray(savedCopy.galleryContent)){data.galleryContent=savedCopy.galleryContent;galleryDraft=structuredCloneSafe(savedCopy.galleryContent);}
+     if(Array.isArray(savedCopy.promoCards)){data.promoCards=savedCopy.promoCards;promoCardsDraft=structuredCloneSafe(savedCopy.promoCards);}
+     if(savedCopy.contact&&typeof savedCopy.contact==='object'){
+       publicStoreContact.whatsappNumber=String(savedCopy.contact.whatsappNumber||'');
+       publicStoreContact.mapsEmbedUrl=String(savedCopy.contact.mapsEmbedUrl||'');
+     }
+   }
+ }catch(error){console.warn('[PA.YU] Pengaturan konten publik tidak dapat dibaca:',error);}}
+ document.getElementById('publicInfoWhatsApp').value=publicStoreContact.whatsappNumber;
+ document.getElementById('publicInfoMapsEmbed').value=publicStoreContact.mapsEmbedUrl;
  // Gunakan naskah yang baru dibaca dari server, bukan draft lama dari localStorage.
  galleryDraft=structuredCloneSafe(data.galleryContent||seed.galleryContent);
  promoCardsDraft=structuredCloneSafe(data.promoCards||seed.promoCards);
