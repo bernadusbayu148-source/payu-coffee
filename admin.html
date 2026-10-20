@@ -1443,6 +1443,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
     if(saveData())notify('Teks foto Galeri berhasil disimpan. Buka atau muat ulang index.html untuk melihat hasilnya.');
   };
 
+  const REMOTE_BANNER_KEYS=Object.freeze({'hero-main':'banner_utama','menu-banner':'banner_menu','promo-poster-1':'banner_promo','promo-poster-2':'foto_4','promo-poster-3':'foto_5','shop-photo-1':'foto_6','shop-photo-2':'foto_7','shop-photo-3':'foto_8','shop-photo-4':'foto_9'});
   function renderBannerSlots(){
     const grid=document.getElementById('bannerSlotGrid');
     if(!grid)return;
@@ -1465,8 +1466,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
     const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;
     if(!file.type||!file.type.startsWith('image/')){notify('Pilih file gambar seperti JPG, PNG, atau WebP.');return}
     if(file.size>12*1024*1024){notify('Ukuran file maksimal 12 MB sebelum dikompres.');return};if(remoteOperationalMode){
-      const slotKeys={'hero-main':'banner_utama','menu-banner':'banner_menu','promo-poster-1':'banner_promo','promo-poster-2':'foto_4','promo-poster-3':'foto_5','shop-photo-1':'foto_6','shop-photo-2':'foto_7','shop-photo-3':'foto_8','shop-photo-4':'foto_9'};
-      const slotKey=slotKeys[id];if(!slotKey){notify('Slot gambar ini belum didukung oleh server.');return}
+      const slotKey=REMOTE_BANNER_KEYS[id];if(!slotKey){notify('Slot gambar ini belum didukung oleh server.');return}
       if(file.size>5*1024*1024){notify('Ukuran gambar untuk server maksimal 5 MB.');return}
       try{const result=await window.payuAdminUploadBanner(slotKey,slot.name,file);slot.image=result.image_url;slot.fileName=file.name;slot.updatedAt=new Date().toISOString();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify('Gambar berhasil diunggah ke server.')}catch(err){notify('Unggah gambar gagal: '+err.message)}
       return;
@@ -1488,9 +1488,28 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
       renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify(`Gambar “${slot.name}” berhasil disimpan di browser ini.`);
     }catch(err){console.error(err);notify('Gambar gagal diproses. Coba gunakan file JPG, PNG, atau WebP yang lain.');}
   }
-  window.clearBannerImage=id=>{if(remoteOperationalMode){notify('Server belum menyediakan penghapusan banner. Unggah gambar pengganti untuk mengganti gambar yang tampil.');return;}const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;if(!confirm(`Hapus gambar pada ${slot.name}?`))return;const oldImage=slot.image,oldName=slot.fileName;slot.image='';slot.fileName='';delete slot.updatedAt;if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify(`Gambar ${slot.name} dihapus dari penyimpanan browser.`)};
+  window.clearBannerImage=async id=>{
+    const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;
+    if(!confirm('Hapus gambar pada '+slot.name+'? Di website publik gambar akan kembali ke versi bawaan bila ada.'))return;
+    if(remoteOperationalMode){
+      const slotKey=REMOTE_BANNER_KEYS[id];
+      if(!slotKey){notify('Slot tambahan belum didukung server.');return;}
+      try{
+        await window.payuAdminApiRequest('staff/banners/delete',{method:'POST',body:{slot_key:slotKey}});
+        slot.image='';slot.fileName='';delete slot.updatedAt;
+        renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();
+        notify('Gambar '+slot.name+' sudah dinonaktifkan di server.');
+      }catch(error){notify('Gambar belum dihapus: '+error.message);}
+      return;
+    }
+    const oldImage=slot.image,oldName=slot.fileName;
+    slot.image='';slot.fileName='';delete slot.updatedAt;
+    if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return;}
+    renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();
+    notify('Gambar '+slot.name+' dihapus dari simulasi browser.');
+  };
   window.downloadBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image){notify('Slot belum memiliki gambar.');return}const a=document.createElement('a');a.href=slot.image;const base=(slot.name||'banner').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'banner';a.download=`payu-${base}.jpg`;document.body.appendChild(a);a.click();a.remove();};
-  window.addBannerSlot=()=>{const name=prompt('Nama slot banner baru (contoh: Banner Foto 5):');if(!name||!name.trim())return;const clean=name.trim();if(data.bannerSlots.some(s=>s.name.toLowerCase()===clean.toLowerCase())){notify('Nama slot tersebut sudah ada.');return}const id='custom-'+makeId('BANNER').toLowerCase();data.bannerSlots.push({id,name:clean,description:'Slot banner tambahan untuk website',recommended:'sesuaikan desain website',image:'',fileName:''});if(saveData()){renderBannerSlots();notify(`Slot “${clean}” berhasil ditambahkan.`)}};
+  window.addBannerSlot=()=>{if(remoteOperationalMode){notify('Slot tambahan belum ditampilkan oleh website publik. Gunakan slot Banner Utama, Galeri 1–3, atau Poster Promo 1–3 yang sudah terhubung.');return;}const name=prompt('Nama slot banner baru (contoh: Banner Foto 5):');if(!name||!name.trim())return;const clean=name.trim();if(data.bannerSlots.some(s=>s.name.toLowerCase()===clean.toLowerCase())){notify('Nama slot tersebut sudah ada.');return}const id='custom-'+makeId('BANNER').toLowerCase();data.bannerSlots.push({id,name:clean,description:'Slot banner tambahan untuk website',recommended:'sesuaikan desain website',image:'',fileName:''});if(saveData()){renderBannerSlots();notify(`Slot “${clean}” berhasil ditambahkan.`)}};
   window.removeBannerSlot=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;if(seed.bannerSlots.some(s=>s.id===id)){notify('Slot bawaan tidak dapat dihapus. Hapus gambar saja jika tidak dipakai.');return}if(!confirm(`Hapus slot “${slot.name}” beserta gambar tersimpannya?`))return;data.bannerSlots=data.bannerSlots.filter(s=>s.id!==id);if(saveData()){renderBannerSlots();notify('Slot banner dihapus.')}};
   window.exportBannerConfig=()=>{const payload={brand:'PA.YU Coffee',exportedAt:new Date().toISOString(),note:'Konfigurasi banner dan teks PA.YU tersinkron melalui server; ekspor ini adalah cadangan data editor.',bannerSlots:data.bannerSlots,heroContent:data.heroContent,promoCards:data.promoCards,promo:data.promo,galleryContent:data.galleryContent};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='payu-banner-config.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Konfigurasi banner diekspor sebagai JSON.');};
 
