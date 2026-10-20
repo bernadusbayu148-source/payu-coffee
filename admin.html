@@ -359,7 +359,8 @@
       .stats-filter input[type="number"]{font-size:16px!important;padding:10px 11px;}
       .stats-export-btn{grid-column:1 / -1;width:100%;}
     }
-  </style>
+  #membersTable button[hidden]{display:none!important;}
+</style>
 
   <style id="payu-admin-auth-styles">
     .app{display:none!important}
@@ -738,13 +739,26 @@
 <!-- Modal member -->
 <div class="modal-backdrop" id="memberModal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle"><div class="modal"><div class="modal-head"><div><h3 id="memberModalTitle">Tambah member</h3><p>Isi informasi pelanggan untuk membuat kartu member.</p></div><button class="close-btn" onclick="closeModal('memberModal')" aria-label="Tutup">×</button></div><form id="memberForm" class="form-grid"><input type="hidden" id="memberEditId" />
   <div class="field full"><label for="memberName">Nama lengkap *</label><input id="memberName" required maxlength="80" placeholder="Contoh: Nadia Putri" /></div>
-  <div class="field"><label for="memberPhone">Nomor HP *</label><input id="memberPhone" required maxlength="20" inputmode="tel" placeholder="08xxxxxxxxxx" /></div>
-  <div class="field"><label for="memberEmail">Email (opsional)</label><input id="memberEmail" type="email" maxlength="100" placeholder="nama@email.com" /></div>
+  <div class="field"><label for="memberPhone">Nomor HP *</label><input id="memberPhone" required maxlength="30" inputmode="tel" autocomplete="tel" placeholder="0812... / +62812..." /></div>
+  <div class="field"><label for="memberEmail">Email (opsional)</label><input id="memberEmail" type="email" maxlength="190" autocomplete="email" placeholder="nama@email.com" /></div>
+  <div class="field"><label for="memberBirthday">Tanggal lahir *</label><input id="memberBirthday" type="date" required /></div>
+  <div class="field"><label for="memberDomicile">Domisili Kalimantan Selatan *</label><select id="memberDomicile" required><option value="">Pilih kabupaten/kota</option><option>Balangan</option><option>Banjar</option><option>Barito Kuala</option><option>Hulu Sungai Selatan</option><option>Hulu Sungai Tengah</option><option>Hulu Sungai Utara</option><option>Kotabaru</option><option>Tabalong</option><option>Tanah Bumbu</option><option>Tanah Laut</option><option>Tapin</option><option>Banjarbaru</option><option>Banjarmasin</option></select></div>
   <div class="field full"><label for="memberNotes">Catatan (opsional)</label><textarea id="memberNotes" maxlength="250" placeholder="Catatan singkat untuk member"></textarea></div>
-  <div class="field full"><p class="form-note">ID member dan poin awal dibuat otomatis. Untuk keamanan, jangan masukkan kata sandi atau informasi sensitif pelanggan.</p></div>
+  <div class="field full"><p class="form-note">Nomor HP dan email diperiksa agar tidak ada akun ganda. Pendaftaran staf membuat akun tanpa password, dan member akan menetapkan password sendiri melalui website publik menggunakan kode aktivasi sekali pakai.</p></div>
   <div class="field full"><div class="modal-footer"><button type="button" class="btn secondary" onclick="closeModal('memberModal')">Batal</button><button class="btn" type="submit">Simpan member</button></div></div>
 </form></div></div>
 
+<!-- Kode aktivasi hanya tampil saat dibuat; tidak disimpan di browser -->
+<div class="modal-backdrop" id="memberActivationModal" role="dialog" aria-modal="true" aria-labelledby="memberActivationTitle">
+  <div class="modal"><div class="modal-head"><div><h3 id="memberActivationTitle">Aktivasi akun member</h3><p>Serahkan kode secara pribadi kepada pemilik akun.</p></div><button class="close-btn" onclick="closeMemberActivationModal()" aria-label="Tutup">×</button></div>
+    <div style="padding:18px;display:grid;gap:14px">
+      <p class="form-note" id="memberActivationIntro">Kode hanya tampil saat diterbitkan.</p>
+      <div class="panel" style="padding:14px;text-align:center"><div style="font-size:11px;color:var(--muted)">Kode aktivasi sekali pakai</div><strong id="memberActivationCode" style="display:block;font-size:23px;letter-spacing:1px;overflow-wrap:anywhere;margin-top:5px">—</strong></div>
+      <p class="form-note">Kode berlaku 48 jam, maksimal 5 percobaan. Member membuka menu <b>Aktivasi Akun</b> di website utama, memasukkan nomor HP/email dan kode ini, lalu menetapkan password. Kode tidak dikirim otomatis lewat SMS atau email.</p>
+      <div class="modal-footer"><button class="btn secondary" type="button" onclick="copyMemberActivationCode()">Salin kode</button><button class="btn" type="button" onclick="closeMemberActivationModal()">Selesai</button></div>
+    </div>
+  </div>
+</div>
 <!-- Modal profil member -->
 <div class="modal-backdrop" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle"><div class="modal wide"><div class="modal-head"><div><h3 id="profileModalTitle">Profil member</h3><p>Data member, status keanggotaan, kupon, dan riwayat transaksi.</p></div><button class="close-btn" onclick="closeModal('profileModal')" aria-label="Tutup">×</button></div><div id="profileContent"></div><div class="modal-footer"><button class="btn secondary" onclick="closeModal('profileModal')">Tutup</button></div></div></div>
 
@@ -1164,13 +1178,93 @@
   function renderMembers(){
     const q=(document.getElementById('memberSearch').value||'').toLowerCase().trim();const list=data.members.filter(m=>[m.name,m.phone,m.id,m.memberCode,m.email].some(v=>String(v||'').toLowerCase().includes(q)));
     document.getElementById('memberCount').textContent=number(data.members.length);document.getElementById('memberPoints').textContent=number(data.members.reduce((s,m)=>s+(+m.points||0),0));document.getElementById('memberToday').textContent=number(data.members.filter(m=>m.createdAt===todayISO()).length);
-    document.getElementById('membersTable').innerHTML=list.length?`<div class="table-wrap"><table><thead><tr><th>Member</th><th>ID Member</th><th>Poin / Level</th><th>Bergabung</th><th>Aksi</th></tr></thead><tbody>${list.map(m=>`<tr><td><div class="member-cell"><span class="mini-avatar">${esc(initials(m.name))}</span><div><strong>${esc(m.name)}</strong><small>${esc(m.phone)}${m.email?' · '+esc(m.email):''}</small>${m.mustChangePassword?'<small style="color:var(--red);font-weight:700">Wajib buat password baru</small>':''}</div></div></td><td>${esc(m.memberCode||m.id)}</td><td><b>${number(m.points)}</b> poin<br><span class="level-badge">${memberLevel(m)}</span></td><td>${esc(m.createdAt||'-')}</td><td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn secondary small" onclick="openMemberProfile('${esc(m.id)}')">Cek profil</button><button class="btn secondary small" onclick="editMember('${esc(m.id)}')">Edit</button><button class="btn secondary small" onclick="resetMemberPassword('${esc(m.id)}')">Reset password</button><button class="btn danger small" onclick="deleteMember('${esc(m.id)}')">Hapus</button></div></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><div class="empty-icon">⌕</div>Tidak ada member yang cocok dengan pencarian.</div>`;
+    document.getElementById('membersTable').innerHTML=list.length?`<div class="table-wrap"><table><thead><tr><th>Member</th><th>ID Member</th><th>Poin / Level</th><th>Bergabung</th><th>Aksi</th></tr></thead><tbody>${list.map(m=>`<tr><td><div class="member-cell"><span class="mini-avatar">${esc(initials(m.name))}</span><div><strong>${esc(m.name)}</strong><small>${esc(m.phone)}${m.email?' · '+esc(m.email):''}</small>${m.needsActivation?'<small style="color:var(--red);font-weight:700">Menunggu aktivasi akun</small>':(m.mustChangePassword?'<small style="color:var(--red);font-weight:700">Wajib buat password baru</small>':'')}</div></div></td><td>${esc(m.memberCode||m.id)}</td><td><b>${number(m.points)}</b> poin<br><span class="level-badge">${memberLevel(m)}</span></td><td>${esc(m.createdAt||'-')}</td><td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn secondary small" onclick="openMemberProfile('${esc(m.id)}')">Cek profil</button><button class="btn secondary small" onclick="editMember('${esc(m.id)}')">Edit</button><button class="btn secondary small" onclick="resetMemberPassword('${esc(m.id)}')" ${m.needsActivation?'hidden':''}>Reset password</button><button class="btn secondary small" onclick="renewMemberActivation('${esc(m.id)}')" ${m.needsActivation?'':'hidden'}>Kode aktivasi</button><button class="btn danger small" onclick="deleteMember('${esc(m.id)}')">Hapus</button></div></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><div class="empty-icon">⌕</div>Tidak ada member yang cocok dengan pencarian.</div>`;
   }
   document.getElementById('memberSearch').addEventListener('input',renderMembers);
-  window.openMemberModal=()=>{document.getElementById('memberForm').reset();document.getElementById('memberEditId').value='';document.getElementById('memberModalTitle').textContent='Tambah member';document.getElementById('memberModal').classList.add('open');setTimeout(()=>document.getElementById('memberName').focus(),100)};
-  window.editMember=id=>{const m=data.members.find(x=>x.id===id);if(!m)return;document.getElementById('memberForm').reset();document.getElementById('memberEditId').value=m.id;document.getElementById('memberName').value=m.name;document.getElementById('memberPhone').value=m.phone;document.getElementById('memberEmail').value=m.email||'';document.getElementById('memberNotes').value=m.notes||'';document.getElementById('memberModalTitle').textContent='Edit member';document.getElementById('memberModal').classList.add('open')};
-  document.getElementById('memberForm').addEventListener('submit',e=>{e.preventDefault();if(remoteOperationalMode){notify('Tambah member dari dashboard belum tersedia; gunakan Daftar member di website publik.');return;}const editId=document.getElementById('memberEditId').value;const name=document.getElementById('memberName').value.trim();const phone=document.getElementById('memberPhone').value.trim();const email=document.getElementById('memberEmail').value.trim();if(data.members.some(m=>m.phone===phone&&m.id!==editId)){notify('Nomor HP tersebut sudah terdaftar.');return}if(editId){const m=data.members.find(m=>m.id===editId);if(m)Object.assign(m,{name,phone,email,notes:document.getElementById('memberNotes').value.trim()});notify('Data member berhasil diperbarui.')}else{const newMember={id:makeId('PYU'),name,phone,email,notes:document.getElementById('memberNotes').value.trim(),points:0,createdAt:todayISO()};ensureMemberDefaults(newMember);data.members.unshift(newMember);notify('Member berhasil ditambahkan.')}saveData();closeModal('memberModal');renderAll()});
-  window.deleteMember=id=>{const m=data.members.find(x=>x.id===id);if(!m)return;if(!confirm(`Hapus member ${m.name}? Riwayat transaksi tetap tersimpan.`))return;data.members=data.members.filter(x=>x.id!==id);saveData();renderAll();notify('Member berhasil dihapus.')};
+  const normalizeMemberPhone=value=>{let d=String(value||'').replace(/\D/g,'');if(d.startsWith('0062'))d=d.slice(2);if(d.startsWith('0'))d='62'+d.slice(1);else if(d.startsWith('8'))d='62'+d;return d;};
+  function showMemberActivationCode(result){
+    const code=String(result?.activation_code||'');if(!code)return;
+    document.getElementById('memberActivationIntro').textContent='Member '+String(result.member_code||result.member_id||'')+' berhasil dicatat. Kode ini hanya ditampilkan sekali.';
+    document.getElementById('memberActivationCode').textContent=code;
+    document.getElementById('memberActivationModal').classList.add('open');
+  }
+  window.closeMemberActivationModal=()=>{document.getElementById('memberActivationCode').textContent='—';closeModal('memberActivationModal');};
+  window.copyMemberActivationCode=async()=>{
+    const code=document.getElementById('memberActivationCode').textContent.trim();
+    try{await navigator.clipboard.writeText(code);notify('Kode aktivasi disalin. Berikan secara pribadi kepada member.');}
+    catch(_){notify('Tidak dapat menyalin otomatis. Pilih dan salin kode secara manual.');}
+  };
+  window.renewMemberActivation=async id=>{
+    const member=data.members.find(m=>String(m.id)===String(id));
+    if(!member||!member.needsActivation||!remoteOperationalMode)return;
+    if(!confirm('Terbitkan kode baru untuk '+member.name+'? Kode sebelumnya tidak berlaku.'))return;
+    try{
+      const result=await window.payuAdminApiRequest('staff/members/activation-code',{method:'POST',body:{member_id:Number(member.backendId||member.id)}});
+      showMemberActivationCode(result);
+    }catch(error){notify(error.message||'Kode aktivasi gagal diterbitkan.');}
+  };
+  window.openMemberModal=()=>{
+    document.getElementById('memberForm').reset();
+    document.getElementById('memberEditId').value='';
+    document.getElementById('memberBirthday').max=todayISO();
+    document.getElementById('memberModalTitle').textContent='Tambah member';
+    document.getElementById('memberModal').classList.add('open');
+    setTimeout(()=>document.getElementById('memberName').focus(),100);
+  };
+  window.editMember=id=>{
+    const m=data.members.find(x=>x.id===id);if(!m)return;
+    document.getElementById('memberForm').reset();
+    document.getElementById('memberEditId').value=m.id;
+    document.getElementById('memberName').value=m.name;
+    document.getElementById('memberPhone').value=m.phone;
+    document.getElementById('memberEmail').value=m.email||'';
+    document.getElementById('memberBirthday').max=todayISO();
+    document.getElementById('memberBirthday').value=m.birthday||'';
+    document.getElementById('memberDomicile').value=m.domicile||'';
+    document.getElementById('memberNotes').value=m.notes||'';
+    document.getElementById('memberModalTitle').textContent='Edit member';
+    document.getElementById('memberModal').classList.add('open');
+  };
+  document.getElementById('memberForm').addEventListener('submit',async event=>{
+    event.preventDefault();
+    const form=event.currentTarget,button=form.querySelector('button[type="submit"]');
+    const editId=document.getElementById('memberEditId').value;
+    const name=document.getElementById('memberName').value.trim();
+    const phone=document.getElementById('memberPhone').value.trim();
+    const email=document.getElementById('memberEmail').value.trim().toLowerCase();
+    const birthday=document.getElementById('memberBirthday').value;
+    const domicile=document.getElementById('memberDomicile').value;
+    const notes=document.getElementById('memberNotes').value.trim();
+    const canonical=normalizeMemberPhone(phone);
+    if(!/^628[0-9]{7,12}$/.test(canonical)){notify('Nomor HP tidak valid. Gunakan 08xxxxxxxxxx.');return;}
+    if(!birthday||birthday>todayISO()||!domicile){notify('Isi tanggal lahir dan domisili yang benar.');return;}
+    const existing=data.members.find(m=>String(m.id)!==String(editId)&&(normalizeMemberPhone(m.phone)===canonical||(email&&String(m.email||'').toLowerCase()===email)));
+    if(existing){notify('Nomor HP atau email sudah digunakan oleh '+existing.name+' ('+(existing.memberCode||existing.id)+').');return;}
+    if(button){button.disabled=true;button.textContent='Menyimpan…';}
+    try{
+      if(remoteOperationalMode){
+        const body={display_name:name,phone,email,birthday,domicile,notes};
+        if(editId)body.id=Number(editId);
+        const result=await window.payuAdminApiRequest('staff/members/save',{method:'POST',body});
+        closeModal('memberModal');
+        if(result.activation_code)showMemberActivationCode(result);
+        notify(result.message||'Member berhasil disimpan ke database.');
+        try{await window.payuAdminHydrateFromServer();}
+        catch(loadError){console.warn('[PA.YU] Member tersimpan tetapi daftar gagal dimuat ulang:',loadError);notify('Member tersimpan, tetapi daftar belum diperbarui. Muat ulang halaman.');}
+        return;
+      }
+      if(editId){
+        const m=data.members.find(m=>m.id===editId);
+        if(m)Object.assign(m,{name,phone:canonical,email,birthday,domicile,notes});
+      }else{
+        const m={id:makeId('PYU'),name,phone:canonical,email,birthday,domicile,notes,points:0,createdAt:todayISO(),needsActivation:false};
+        ensureMemberDefaults(m);data.members.unshift(m);
+      }
+      saveData();closeModal('memberModal');renderAll();notify('Member disimpan pada simulasi browser (belum tersimpan di server).');
+    }catch(error){notify('Member belum tersimpan: '+(error.message||'Kesalahan server.'));}
+    finally{if(button){button.disabled=false;button.textContent='Simpan member';}}
+  });
+  window.deleteMember=id=>{if(remoteOperationalMode){notify('Hapus member pada database belum diaktifkan untuk menjaga riwayat transaksi dan poin.');return;}const m=data.members.find(x=>x.id===id);if(!m)return;if(!confirm(`Hapus member ${m.name}? Riwayat transaksi tetap tersimpan.`))return;data.members=data.members.filter(x=>x.id!==id);saveData();renderAll();notify('Member berhasil dihapus.')};
   window.showMemberQR=id=>{const m=data.members.find(x=>x.id===id);if(!m)return;document.getElementById('scanManualInput').value=m.id;openScanner();document.getElementById('scanStatus').textContent=`ID member: ${m.id} · ${m.name}. QR dapat berisi teks ID tersebut.`};
   window.openMemberProfile=async id=>{
     const m=data.members.find(x=>x.id===id);if(!m)return;ensureMemberDefaults(m);if(remoteOperationalMode)await ensureRemoteMemberCoupons(m);const level=memberLevel(m);const history=[...data.transactions].filter(t=>t.memberId===id).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
@@ -1178,7 +1272,7 @@
     const trRows=history.length?`<div class="table-wrap"><table><thead><tr><th>Waktu / ID</th><th>Menu</th><th>Total</th><th>Poin</th><th>Aksi</th></tr></thead><tbody>${history.map(t=>`<tr><td><strong>${esc(t.id)}</strong><small style="display:block;color:var(--muted);margin-top:4px">${esc(t.createdAt||'')}</small></td><td>${Array.isArray(t.items)&&t.items.length?t.items.map(i=>`${esc(i.menuName)} × ${number(i.qty)}`).join('<br>'):esc(t.menuName||'Menu')}${t.couponTitle?`<small style="display:block;color:var(--green);margin-top:4px">Kupon: ${esc(t.couponTitle)}</small>`:''}</td><td><b>${money(t.total)}</b></td><td>${number(t.points)} poin</td><td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn secondary small" onclick="profileEditTransaction('${esc(t.id)}')">Edit</button><button class="btn danger small" onclick="deleteTransaction('${esc(t.id)}','${esc(m.id)}')">Hapus</button></div></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty" style="padding:20px">Belum ada riwayat transaksi untuk member ini.</div>';
     document.getElementById('profileModalTitle').textContent='Profil member · '+m.name;
     document.getElementById('profileContent').innerHTML=`<div class="profile-header"><div class="profile-avatar">${esc(initials(m.name))}</div><div style="min-width:0;flex:1"><h4>${esc(m.name)}</h4><p>${esc(m.id)} · Bergabung ${esc(m.createdAt||'-')}</p><p style="margin-top:5px"><span class="level-badge">Level ${level}</span> <b style="margin-left:7px">${number(m.points)} poin</b></p></div><button class="btn secondary small" onclick="editMember('${esc(m.id)}')">Edit data</button></div>
-      <div class="profile-info-grid"><div class="profile-info"><span>Nomor HP</span><strong>${esc(m.phone||'-')}</strong></div><div class="profile-info"><span>Email</span><strong>${esc(m.email||'-')}</strong></div><div class="profile-info"><span>Tanggal bergabung</span><strong>${esc(m.createdAt||'-')}</strong></div><div class="profile-info"><span>Status password</span><strong style="color:${m.mustChangePassword?'var(--red)':'var(--green)'}">${m.mustChangePassword?'Wajib membuat password baru':'Normal'}${m.resetIssuedAt?' · Reset '+esc(m.resetIssuedAt):''}</strong></div><div class="profile-info" style="grid-column:1/-1"><span>Catatan member</span><strong>${esc(m.notes||'Tidak ada catatan')}</strong></div></div>
+      <div class="profile-info-grid"><div class="profile-info"><span>Nomor HP</span><strong>${esc(m.phone||'-')}</strong></div><div class="profile-info"><span>Email</span><strong>${esc(m.email||'-')}</strong></div><div class="profile-info"><span>Tanggal bergabung</span><strong>${esc(m.createdAt||'-')}</strong></div><div class="profile-info"><span>Status password</span><strong style="color:${m.mustChangePassword?'var(--red)':'var(--green)'}">${m.needsActivation?'Belum diaktifkan oleh member':(m.mustChangePassword?'Wajib membuat password baru':'Normal')}${m.resetIssuedAt?' · Reset '+esc(m.resetIssuedAt):''}</strong></div><div class="profile-info" style="grid-column:1/-1"><span>Catatan member</span><strong>${esc(m.notes||'Tidak ada catatan')}</strong></div></div>
       <div class="profile-section-title"><h4>5 kupon member</h4><span class="level-badge">Level ${level}</span></div><p class="form-note">Benefit kupon mengikuti level member saat transaksi. Kupon hanya dapat digunakan satu kali dan pemakaiannya tercatat di transaksi.</p><div class="coupon-grid">${coupons}</div>
       <div class="profile-section-title"><h4>Riwayat transaksi</h4><span class="pill">${history.length} transaksi</span></div>${trRows}`;
     document.getElementById('profileModal').classList.add('open');
@@ -1459,10 +1553,12 @@ document.addEventListener('submit',async event=>{
  finally{const fresh=document.getElementById('benefitRulesForm')?.querySelector('button[type="submit"]');if(fresh)fresh.disabled=false;}
 });
 window.payuAdminHydrateFromServer=async function(){
+ // Jangan simpan member palsu di browser saat database sedang dimuat.
+ remoteOperationalMode=true;
  const request=window.payuAdminApiRequest;if(typeof request!=='function')throw new Error('Helper API belum siap.');
  const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings'),request('public/banners'),request('staff/benefits').catch(error=>({levels:[],_error:error.message}))]);
  const oldMenus=data.menus.slice();
- data.members=(Array.isArray(results[0].members)?results[0].members:[]).map(m=>({id:String(m.member_id),backendId:Number(m.member_id),memberCode:String(m.member_code||''),name:String(m.display_name||''),phone:String(m.phone||''),email:String(m.email||''),points:Number(m.points_balance||0),totalSpend:m.total_spend==null?null:Number(m.total_spend||0),level:String(m.level||'Bronze'),createdAt:String(m.created_at||''),isActive:Boolean(m.is_active),coupons:[],couponsLoaded:false}));
+ data.members=(Array.isArray(results[0].members)?results[0].members:[]).map(m=>({id:String(m.member_id),backendId:Number(m.member_id),memberCode:String(m.member_code||''),name:String(m.display_name||''),phone:String(m.phone||''),email:String(m.email||''),birthday:String(m.birthday||''),domicile:String(m.domicile||''),notes:String(m.notes||''),needsActivation:Boolean(Number(m.needs_activation||0)),points:Number(m.points_balance||0),totalSpend:m.total_spend==null?null:Number(m.total_spend||0),level:String(m.level||'Bronze'),createdAt:String(m.created_at||''),isActive:Boolean(m.is_active),coupons:[],couponsLoaded:false}));
  data.menus=(Array.isArray(results[1].menus)?results[1].menus:[]).map(m=>{const old=oldMenus.find(x=>String(x.name).toLowerCase()===String(m.name).toLowerCase());return {id:String(m.id),backendId:Number(m.id),name:String(m.name||''),category:String(m.category||'Coffee'),price:Number(m.price||0),emoji:old?.emoji||'☕',description:old?.description||'',isActive:Boolean(m.is_active)};});
  const mapRemoteTransaction=(tx, fallbackMember=null)=>{
   const noteText=String(tx.notes||''),payMatch=noteText.match(/^Pembayaran: (Tunai|QRIS|Debit|Transfer)(?:\r?\n|$)/),notes=payMatch?noteText.replace(/^Pembayaran: (?:Tunai|QRIS|Debit|Transfer)(?:\r?\n)?/,''):noteText;
