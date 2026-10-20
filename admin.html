@@ -516,6 +516,33 @@
     @media(max-width:1050px){.promo-card-copy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:760px){.hero-editor-layout{grid-template-columns:minmax(0,1fr)}.hero-copy-preview{min-height:300px}.hero-editor-layout #heroContentForm{grid-template-columns:minmax(0,1fr)}.hero-editor-layout #heroContentForm .field.full{grid-column:auto}.promo-card-copy-grid{grid-template-columns:minmax(0,1fr)}.promo-card-copy-preview{max-height:460px}}
   </style>
+<style id="payu-unified-image-editor">
+/* Pilih gambar pada pratinjau yang sama tempat teks diedit; tidak perlu kartu banner ganda. */
+.editor-photo-select{position:absolute;inset:0;z-index:8;width:100%;height:100%;border:0;background:transparent;color:#fff;cursor:pointer;touch-action:manipulation;appearance:none;padding:0}
+.editor-photo-select:hover{background:rgba(18,20,15,.11)}
+.editor-photo-select:focus-visible{outline:3px solid #d8e98a;outline-offset:-4px}
+.editor-photo-select[disabled]{cursor:progress}
+.editor-photo-select[disabled] .editor-photo-select-hint{opacity:.94}
+.editor-photo-select-hint{position:absolute;top:12px;right:12px;max-width:calc(100% - 24px);display:inline-flex;align-items:center;justify-content:center;text-align:center;padding:7px 11px;line-height:1.35;border:1px solid #ffffff70;border-radius:999px;background:rgba(30,36,27,.85);color:#fff;font:750 10px/1.35 Inter,system-ui,sans-serif;box-shadow:0 4px 18px #0003;pointer-events:none;transition:background .18s,transform .18s}
+.editor-photo-select:hover .editor-photo-select-hint,.editor-photo-select:focus-visible .editor-photo-select-hint{background:#243422;transform:translateY(-1px)}
+.editor-photo-file{display:none!important}
+.editor-photo-actions{display:flex;justify-content:flex-end;gap:12px;padding:8px 13px 0;background:#fffdf9}
+.editor-photo-actions button,.editor-hero-photo-actions button{border:1px solid #d7c9b9;border-radius:7px;padding:6px 10px;background:#fffdf9;color:#665347;font:750 10px/1.4 Inter,system-ui,sans-serif;cursor:pointer;transition:background .18s}
+.editor-photo-actions button:hover,.editor-hero-photo-actions button:hover{background:#f4e6db}
+.editor-photo-actions button:focus-visible,.editor-hero-photo-actions button:focus-visible{outline:2px solid #8e4c30}
+.editor-hero-photo-actions{position:absolute;z-index:10;left:12px;bottom:12px;display:flex;gap:6px}
+.editor-hero-photo-actions[hidden]{display:none!important}
+.hero-copy-preview,.gallery-copy-preview,.promo-card-copy-preview{cursor:pointer}
+.website-extra-banners{margin-top:18px}
+.website-extra-summary{list-style:none;cursor:pointer;font-size:14px;font-weight:850;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.website-extra-summary::-webkit-details-marker{display:none}
+.website-extra-summary:after{content:'＋';font-size:19px;color:#77665c}
+.website-extra-banners[open] .website-extra-summary:after{content:'−'}
+.website-extra-summary span{font-size:11px;font-weight:500;color:var(--muted);margin-right:auto}
+.website-extra-summary:focus-visible{outline:2px solid #31513b;outline-offset:5px}
+.website-extra-banners:not([open]) #bannerSlotGrid{display:none}
+@media(max-width:760px){.editor-photo-select-hint{font-size:10px;padding:7px 10px}.website-extra-summary{flex-wrap:wrap}.website-extra-summary span{width:100%;order:3}}
+</style>
 </head>
 <body>
 <div id="adminLoginGate" class="admin-login-gate">
@@ -548,7 +575,7 @@
         <button class="nav-btn" data-view="members"><span class="nav-icon">♙</span> Data Member</button>
         <button class="nav-btn" data-view="transactions"><span class="nav-icon">▤</span> Transaksi</button>
         <button class="nav-btn" data-view="menu"><span class="nav-icon">☕</span> Menu & Harga</button>
-        <button class="nav-btn" data-view="promo"><span class="nav-icon">✦</span> Promo</button>
+        <button class="nav-btn" data-view="promo"><span class="nav-icon">✦</span> Konten Website</button>
         <button class="nav-btn" data-view="benefits" id="benefitsNavBtn" hidden><span class="nav-icon">♧</span> Benefit & Kupon</button>
         <button class="nav-btn" data-view="roles" id="rolesNavBtn" hidden><span class="nav-icon">♙</span> Role</button>
       </nav>
@@ -637,7 +664,7 @@
     </section>
 
     <section class="view" id="view-promo">
-      <div class="section-heading"><div><h2>Kelola Promo & Banner</h2><p>Atur teks promosi dan upload gambar untuk setiap area website PA.YU.</p></div><button class="btn secondary" onclick="resetPromo()">Pulihkan teks promo</button></div>
+      <div class="section-heading"><div><h2>Kelola Konten Website</h2><p>Ubah foto dan tulisan langsung dari pratinjau, serta kelola informasi toko PA.YU.</p></div><button class="btn secondary" onclick="resetPromo()">Pulihkan teks promo</button></div>
       <section class="panel">
         <div class="panel-head"><div><h2 class="panel-title">Informasi Toko</h2><p class="panel-subtitle">Informasi ini ditampilkan di bagian Alamat website publik dan disimpan di database.</p></div></div>
         <form id="publicInfoForm" class="form-grid">
@@ -650,14 +677,17 @@
         </form>
       </section>
       <section class="panel hero-copy-manager">
-        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Banner Utama</h2><p class="panel-subtitle">Atur tulisan di atas background Beranda. Pratinjau mengikuti gambar Banner Utama yang diunggah di bawah.</p></div></div>
+        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Banner Utama</h2><p class="panel-subtitle">Klik pratinjau di samping untuk mengganti foto Banner Utama, lalu atur tulisannya di sini.</p></div></div>
         <div class="hero-editor-layout">
           <div class="hero-copy-preview" id="heroContentPreview">
             <img id="heroContentPreviewImage" class="hero-copy-preview-image" alt="" hidden>
             <div class="hero-copy-preview-shade"></div>
             <div class="hero-copy-preview-copy"><small id="heroPreviewKicker">Coffee • Friends • Good days</small><h3><span id="heroPreviewHeadlineTop">Tempat pulang</span><br><span id="heroPreviewHeadlineBottomPrefix">untuk</span> <em id="heroPreviewHeadlineAccent">cerita.</em></h3><p id="heroPreviewDescription">pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.</p></div>
             <div class="hero-copy-preview-tag">✳ <span id="heroPreviewTagline">A little pause, a lot of stories.</span></div>
+            <button type="button" class="editor-photo-select" data-integrated-banner-select="hero-main" aria-label="Unggah atau ganti foto Banner Utama" title="Klik untuk mengganti foto Banner Utama"><span class="editor-photo-select-hint" id="heroBannerUploadHint">↑ Klik / ketuk untuk ganti foto</span></button>
+            <div class="editor-hero-photo-actions" id="heroBannerPhotoActions" hidden><button type="button" onclick="downloadBannerImage('hero-main')" aria-label="Unduh gambar Banner Utama">↓ Unduh</button><button type="button" onclick="clearBannerImage('hero-main')" aria-label="Hapus gambar Banner Utama">× Hapus</button></div>
           </div>
+          <input type="file" class="editor-photo-file" data-integrated-banner-upload="hero-main" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
           <form id="heroContentForm" class="form-grid">
             <div class="field full"><label for="heroKickerInput">Tulisan kecil di atas judul</label><input id="heroKickerInput" maxlength="80" /></div>
             <div class="field full"><label for="heroTitleTopInput">Judul baris pertama</label><input id="heroTitleTopInput" maxlength="60" /></div>
@@ -681,23 +711,24 @@
       <div><div class="promo-preview"><div class="promo-top"><div class="promo-brand">PA.YU COFFEE</div><div class="promo-tag" id="previewTag">SPECIAL OFFER</div></div><div class="promo-content"><small id="previewDiscount">SPECIAL PRICE</small><h3 id="previewTitle">Your daily cup of joy.</h3><p id="previewDescription">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</p><span class="promo-code" id="previewCode">PAYUFRIEND</span></div></div><p class="form-note" style="margin-top:12px">Pratinjau teks promo. Untuk melihat gambar banner, gunakan slot banner di bawah.</p></div></div>
 
       <section class="panel gallery-content-manager">
-        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Foto Galeri</h2><p class="panel-subtitle">Lihat pratinjau setiap foto dan ubah tulisan yang tampil di atas foto pada website utama.</p></div></div>
+        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Foto Galeri</h2><p class="panel-subtitle">Klik langsung pratinjau untuk mengganti foto, lalu atur tulisan yang tampil pada website publik.</p></div></div>
         <div class="gallery-copy-grid" id="galleryCopyGrid"></div>
         <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn" type="button" onclick="saveGalleryContent()">Simpan teks galeri</button><span class="form-note">Pratinjau berubah langsung saat diketik. Klik Simpan untuk memperbarui tulisan galeri di website publik.</span></div>
       </section>
 
       <section class="panel promo-card-content-manager">
-        <div class="banner-manager-head"><div><h2 class="panel-title">Teks di Atas Poster Promo</h2><p class="panel-subtitle">Atur tulisan overlay pada tiap foto, pratinjau, dan judul yang muncul di bawah foto.</p></div></div>
+        <div class="banner-manager-head"><div><h2 class="panel-title">Teks di Atas Poster Promo</h2><p class="panel-subtitle">Klik foto poster untuk menggantinya. Sesuaikan teks overlay dan judul yang tampil di website publik.</p></div></div>
         <div id="promoCardGrid" class="promo-card-copy-grid"></div>
         <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn" type="button" onclick="savePromoCardContent()">Simpan teks poster</button><span class="form-note">Popup pada website menampilkan gambar latar saja tanpa tulisan overlay. Unggah foto latar tanpa teks tertanam agar tampil bersih saat dibuka.</span></div>
       </section>
 
-      <section class="panel banner-manager">
-        <div class="banner-manager-head"><div><h2 class="panel-title">Banner website</h2><p class="panel-subtitle">Klik atau ketuk pratinjau untuk mengunggah atau mengganti gambar.</p></div><button class="btn gold" type="button" onclick="addBannerSlot()">＋ Tambah slot banner</button></div>
-        <div class="banner-manager-note"><strong>Slot gambar yang terhubung ke index.html:</strong> <b>Banner Utama</b> mengubah background Beranda; <b>Foto Galeri 1–3</b> mengubah tiga foto pada Galeri; dan <b>Poster Promo 1–3</b> mengubah tiga poster pada Promo. <b>Penting:</b> gambar diunggah ke server Rumahweb dan akan terlihat oleh semua pengunjung setelah website publik dimuat ulang. Format yang didukung: JPG, JPEG, PNG, dan WebP hingga 15 MB. Foto besar dikompres otomatis sebelum dikirim ke server.</div>
+      <details class="panel banner-manager website-extra-banners">
+        <summary class="website-extra-summary">Gambar tambahan &amp; cadangan <span>Kelola banner menu dan slot lain yang tidak memiliki editor di atas</span></summary>
+        <div class="banner-manager-note" style="margin-top:16px">Banner Utama, Foto Galeri, dan Poster Promo kini bisa diganti langsung melalui pratinjau masing-masing editor di atas. Bagian ini disediakan untuk banner tambahan atau cadangan. File JPG/JPEG/PNG/WebP hingga 15 MB tetap didukung.</div>
+        <div class="banner-manager-head"><p class="panel-subtitle">Slot cadangan hanya akan tampil pada halaman publik jika telah dihubungkan ke desain website.</p><button class="btn gold" type="button" onclick="addBannerSlot()">＋ Tambah slot banner</button></div>
         <div id="bannerSlotGrid" class="banner-slot-grid"></div>
-        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn secondary" type="button" onclick="exportBannerConfig()">↓ Ekspor konfigurasi banner</button><span class="form-note">Ekspor hanya untuk cadangan konfigurasi. Data publik disimpan di server.</span></div>
-      </section>
+        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn secondary" type="button" onclick="exportBannerConfig()">↓ Ekspor konfigurasi banner</button><span class="form-note">Ekspor hanya untuk cadangan konfigurasi. Data publik tetap di server.</span></div>
+      </details>
     </section>
 
     <section class="view" id="view-roles">
@@ -817,7 +848,7 @@
     members:['Loyalty program','Data Member','Kelola data pelanggan dan poin loyalitas.'],
     transactions:['Operasional toko','Transaksi','Riwayat pembelian dan poin member.'],
     menu:['Katalog produk','Menu & Harga','Kelola daftar menu dan harga jual.'],
-    promo:['Marketing','Promo','Atur konten promosi PA.YU Coffee.'],
+    promo:['Website publik','Konten Website','Kelola foto, banner, tulisan, dan informasi toko PA.YU.'],
     benefits:['Loyalty program','Benefit & Kupon','Atur ambang poin level dan nilai minimum belanja untuk kupon.'],
     roles:['Akses & keamanan','Role','Kelola username, password, dan status akun tim PA.YU.']
   };
@@ -1419,7 +1450,12 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
     document.getElementById('heroPreviewTagline').textContent=content.tagline;
     const image=document.getElementById('heroContentPreviewImage');
     const slot=data.bannerSlots.find(item=>item.id==='hero-main');
-    if(slot&&slot.image){image.src=slot.image;image.hidden=false}else{image.removeAttribute('src');image.hidden=true}
+    const uploaded=Boolean(slot&&slot.image);
+    if(uploaded){image.src=slot.image;image.hidden=false}else{image.removeAttribute('src');image.hidden=true}
+    const photoActions=document.getElementById('heroBannerPhotoActions');
+    if(photoActions)photoActions.hidden=!uploaded;
+    const photoHint=document.getElementById('heroBannerUploadHint');
+    if(photoHint)photoHint.textContent=uploaded?'↑ Ganti foto':'↑ Unggah foto';
   }
   function loadHeroContentToForm(){
     const content={...seed.heroContent,...(data.heroContent||{})};
@@ -1455,7 +1491,10 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
           <small class="pcp-eyebrow" data-promo-preview-field="eyebrow">${esc(content.eyebrow||'')}</small>
           <div class="pcp-center"><small class="pcp-overline" data-promo-preview-field="overline">${esc(content.overline||'')}</small><h3><span data-promo-preview-field="headline">${esc(content.headline||'')}</span><br><em data-promo-preview-field="accent">${esc(content.accent||'')}</em></h3><p class="pcp-description" data-promo-preview-field="description">${esc(content.description||'')}</p></div>
           <div class="pcp-footer"><span data-promo-preview-field="footer">${esc(content.footer||'')}</span><span data-promo-preview-field="brand">${esc(content.brand||'')}</span></div>
+          <button type="button" class="editor-photo-select" data-integrated-banner-select="${esc(base.id)}" aria-label="${esc(image?'Ganti':'Unggah')} foto poster ${esc(base.id.replace('promo-poster-','Promo '))}" title="Klik pratinjau untuk mengganti foto poster"><span class="editor-photo-select-hint" data-editor-photo-hint>↑ ${image?'Ganti foto':'Unggah foto'}</span></button>
         </div>
+        <input type="file" class="editor-photo-file" data-integrated-banner-upload="${esc(base.id)}" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
+        ${image?`<div class="editor-photo-actions"><button type="button" onclick="downloadBannerImage('${esc(base.id)}')">↓ Unduh</button><button type="button" onclick="clearBannerImage('${esc(base.id)}')">× Hapus</button></div>`:''}
         <div class="promo-card-copy-label" data-promo-preview-field="label">${esc(content.label||'')}</div>
         <div class="promo-card-copy-fields">${fields.map(([field,label,max])=>`<div><label for="pc-${base.id}-${field}">${label}</label>${field==='description'?`<textarea id="pc-${base.id}-${field}" data-promo-card-input="${field}" maxlength="${max}" rows="2">${esc(content[field]||'')}</textarea>`:`<input id="pc-${base.id}-${field}" data-promo-card-input="${field}" maxlength="${max}" value="${esc(content[field]||'')}" />`}</div>`).join('')}</div>
       </article>`;
@@ -1484,7 +1523,11 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
       const slot=data.bannerSlots.find(x=>x.id===base.slotId);
       const image=slot&&slot.image?`<img class="gallery-copy-preview-image" src="${esc(slot.image)}" alt="" />`:'';
       return `<article class="gallery-copy-card" data-gallery-copy-editor="${esc(base.slotId)}">
-        <div class="gallery-copy-preview" id="gallery-preview-${esc(base.slotId)}">${image}<div class="gallery-copy-preview-shade"></div><div class="gallery-copy-preview-caption"><small data-gallery-preview-field="eyebrow">${esc(content.eyebrow||'')}</small><h3 data-gallery-preview-field="title">${esc(content.title||'')}</h3></div></div>
+        <div class="gallery-copy-preview" id="gallery-preview-${esc(base.slotId)}">${image}<div class="gallery-copy-preview-shade"></div><div class="gallery-copy-preview-caption"><small data-gallery-preview-field="eyebrow">${esc(content.eyebrow||'')}</small><h3 data-gallery-preview-field="title">${esc(content.title||'')}</h3></div>
+          <button type="button" class="editor-photo-select" data-integrated-banner-select="${esc(base.slotId)}" aria-label="${esc(image?'Ganti':'Unggah')} foto ${esc(base.slotId.replace('shop-photo-','Galeri '))}" title="Klik pratinjau untuk mengganti foto"><span class="editor-photo-select-hint" data-editor-photo-hint>↑ ${image?'Ganti foto':'Unggah foto'}</span></button>
+        </div>
+        <input type="file" class="editor-photo-file" data-integrated-banner-upload="${esc(base.slotId)}" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
+        ${image?`<div class="editor-photo-actions"><button type="button" onclick="downloadBannerImage('${esc(base.slotId)}')">↓ Unduh</button><button type="button" onclick="clearBannerImage('${esc(base.slotId)}')">× Hapus</button></div>`:''}
         <div class="gallery-copy-fields">
           <div><label for="gallery-eyebrow-${esc(base.slotId)}">Tulisan kecil</label><input id="gallery-eyebrow-${esc(base.slotId)}" data-gallery-copy-input="eyebrow" value="${esc(content.eyebrow||'')}" maxlength="60" /></div>
           <div><label for="gallery-title-${esc(base.slotId)}">Judul pada foto</label><textarea id="gallery-title-${esc(base.slotId)}" data-gallery-copy-input="title" rows="2" maxlength="100">${esc(content.title||'')}</textarea><div class="field-note">Tekan Enter untuk membuat baris baru seperti pada tampilan website.</div></div>
@@ -1510,11 +1553,42 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   };
 
   const REMOTE_BANNER_KEYS=Object.freeze({'hero-main':'banner_utama','menu-banner':'banner_menu','promo-poster-1':'banner_promo','promo-poster-2':'foto_4','promo-poster-3':'foto_5','shop-photo-1':'foto_6','shop-photo-2':'foto_7','shop-photo-3':'foto_8','shop-photo-4':'foto_9'});
+  // Gambar yang sudah memiliki editor (foto + teks) tidak perlu diduplikasi di "Gambar tambahan".
+  const INTEGRATED_EDITOR_IMAGE_IDS=new Set(['hero-main','promo-poster-1','promo-poster-2','promo-poster-3','shop-photo-1','shop-photo-2','shop-photo-3']);
+  // Delegasi event tetap bekerja meski kartu pratinjau dibangun ulang sesudah upload/hapus.
+  document.addEventListener('click',event=>{
+    const previewButton=event.target.closest?.('[data-integrated-banner-select]');
+    if(!previewButton||previewButton.disabled)return;
+    const id=previewButton.getAttribute('data-integrated-banner-select');
+    if(!INTEGRATED_EDITOR_IMAGE_IDS.has(id))return;
+    const fileInput=[...document.querySelectorAll('input[data-integrated-banner-upload]')]
+      .find(input=>input.getAttribute('data-integrated-banner-upload')===id);
+    if(fileInput)fileInput.click();
+  });
+  document.addEventListener('change',async event=>{
+    const input=event.target;
+    if(!input.matches?.('input[data-integrated-banner-upload]'))return;
+    const id=input.getAttribute('data-integrated-banner-upload');
+    const file=input.files?.[0];
+    if(!file||!INTEGRATED_EDITOR_IMAGE_IDS.has(id))return;
+    input.value='';
+    const button=[...document.querySelectorAll('[data-integrated-banner-select]')]
+      .find(item=>item.getAttribute('data-integrated-banner-select')===id);
+    const hint=button?.querySelector('.editor-photo-select-hint');
+    const originalText=hint?.textContent||'';
+    if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
+    if(hint)hint.textContent='Memproses foto…';
+    try{await saveBannerImage(id,file);}
+    finally{
+      if(button?.isConnected){button.disabled=false;button.removeAttribute('aria-busy');}
+      if(hint?.isConnected)hint.textContent=originalText;
+    }
+  });
   function renderBannerSlots(){
     const grid=document.getElementById('bannerSlotGrid');
     if(!grid)return;
     if(!Array.isArray(data.bannerSlots))data.bannerSlots=structuredCloneSafe(seed.bannerSlots);
-    grid.innerHTML=data.bannerSlots.map(slot=>{
+    grid.innerHTML=data.bannerSlots.filter(slot=>!INTEGRATED_EDITOR_IMAGE_IDS.has(slot.id)).map(slot=>{
       const uploaded=Boolean(slot.image);
       const preview=uploaded
         ?`<img src="${esc(slot.image)}" alt="" loading="lazy" />`
