@@ -1623,6 +1623,7 @@ renderAll(); })();
   }
   function showLogin(message=''){
     currentSession=null;
+    form.hidden=false;
     window.payuAdminCanManageRoles=false;
     if(navRoles)navRoles.hidden=true;
     app.classList.remove('admin-authenticated');
@@ -1726,12 +1727,7 @@ renderAll(); })();
     if(String(account.id)===String(currentSession?.accountId)){notifySafe('Akun yang sedang digunakan tidak dapat dinonaktifkan.');return}
     if(!confirm(`Nonaktifkan akun ${account.name||account.username} (${countLabel(account.role)})? Akun tidak dapat login lagi, tetapi riwayatnya tetap disimpan.`))return;
     try{
-      const response=await callApi('staff/roles/delete',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','X-CSRF-Token':currentSession.csrfToken,'Accept':'application/json'},
-        body:JSON.stringify({id:Number(account.id)})
-      });
-      const result=await readApiJson(response);
+      const result=await window.payuAdminApiRequest('staff/roles/delete',{method:'POST',body:{id:Number(account.id)}});
       await loadRoleAccounts();
       notifySafe(result.message||'Akun berhasil dinonaktifkan.');
     }catch(e){notifySafe(e.message||'Gagal menonaktifkan akun.');}
@@ -1760,12 +1756,7 @@ renderAll(); })();
     const body={username,display_name:name,role:uiToBackendRole[role],is_active:active?1:0,password};
     if(id)body.id=Number(id);
     try{
-      const response=await callApi('staff/roles/save',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','X-CSRF-Token':currentSession.csrfToken,'Accept':'application/json'},
-        body:JSON.stringify(body)
-      });
-      const result=await readApiJson(response);
+      const result=await window.payuAdminApiRequest('staff/roles/save',{method:'POST',body});
       closeModal('roleAccountModal');
       document.getElementById('roleAccountPassword').value='';
       await loadRoleAccounts();
@@ -1799,25 +1790,61 @@ renderAll(); })();
     }
     return payload;
   }
-  window.payuAdminApiRequest=async function(route,options={}){
-    const method=String(options.method||'GET').toUpperCase(),headers={'Accept':'application/json',...(options.headers||{})},init={method,headers};
-    if(options.body!==undefined){headers['Content-Type']='application/json';init.body=JSON.stringify(options.body);}
-    if(method!=='GET'){if(!currentSession?.csrfToken)throw new Error('Token keamanan tidak tersedia. Silakan login kembali.');headers['X-CSRF-Token']=currentSession.csrfToken;}
-    const response=await callApi(route,init),result=await readApiJson(response);if(result.csrf_token&&currentSession)currentSession.csrfToken=result.csrf_token;return result;
-  };
-  window.payuAdminUploadBanner = async function(slotKey, title, file) {
-    if (!currentSession?.csrfToken) throw new Error('Token keamanan tidak tersedia. Silakan login kembali.');
-    const form = new FormData();
-    form.append('slot_key', slotKey);
-    form.append('title', title);
-    form.append('image', file, file.name);
-    const url = new URL(API_BASE); url.searchParams.set('route','staff/banners/upload');
-    const response = await fetch(url.toString(), {method:'POST',credentials:'include',cache:'no-store',headers:{'Accept':'application/json','X-CSRF-Token':currentSession.csrfToken},body:form});
-    const result = await readApiJson(response);
-    if (result.csrf_token && currentSession) currentSession.csrfToken = result.csrf_token;
+  // Token CSRF is bound to the PHP session and can rotate after another tab signs in.
+  // Re-check the authenticated user before retrying a request rejected with 419.
+  async function refreshStaffCsrfToken(){
+    if(!currentSession?.backendAuthenticated)throw new Error('Silakan login staf terlebih dahulu.');
+    const auth=await readApiJson(await callApi('auth/me',{method:'GET',headers:{'Accept':'application/json'}}));
+    const user=auth.user;
+    if(!user||!backendRoleToUiRole[user.role]||String(user.id)!==String(currentSession.userId)){
+      showLogin('Sesi staf sudah berakhir atau akun yang aktif berubah. Silakan masuk kembali.');
+      throw new Error('Sesi staf sudah berakhir atau akun yang aktif berubah. Silakan masuk kembali.');
+    }
+    let token=auth.csrf_token||'';
+    if(!token){
+      const csrf=await readApiJson(await callApi('auth/csrf',{method:'GET',headers:{'Accept':'application/json'}}));
+      token=csrf.csrf_token||'';
+    }
+    if(!token)throw new Error('Token keamanan belum tersedia. Silakan coba kembali.');
+    currentSession.csrfToken=token;
+    return token;
+  }
+  async function callAuthenticatedApi(route,buildOptions){
+    let response=await callApi(route,buildOptions());
+    if(response.status===419){
+      await refreshStaffCsrfToken();
+      response=await callApi(route,buildOptions()); // retry once; rejected request was not applied
+    }
+    if(response.status===401&&currentSession?.backendAuthenticated){
+      showLogin('Sesi staf sudah berakhir. Silakan login kembali.');
+    }
+    const result=await readApiJson(response);
+    if(result.csrf_token&&currentSession)currentSession.csrfToken=result.csrf_token;
     return result;
+  }
+  window.payuAdminApiRequest=async function(route,options={}){
+    const method=String(options.method||'GET').toUpperCase();
+    const buildOptions=()=>{
+      const headers={'Accept':'application/json',...(options.headers||{})},init={method,headers};
+      if(options.body!==undefined){headers['Content-Type']='application/json';init.body=JSON.stringify(options.body);}
+      if(method!=='GET'){
+        if(!currentSession?.csrfToken)throw new Error('Sesi staf tidak tersedia. Silakan login kembali.');
+        headers['X-CSRF-Token']=currentSession.csrfToken;
+      }
+      return init;
+    };
+    return callAuthenticatedApi(route,buildOptions);
   };
-
+  window.payuAdminUploadBanner=async function(slotKey,title,file){
+    const form=new FormData();
+    form.append('slot_key',slotKey);
+    form.append('title',title);
+    form.append('image',file,file.name);
+    return callAuthenticatedApi('staff/banners/upload',()=>{
+      if(!currentSession?.csrfToken)throw new Error('Sesi staf tidak tersedia. Silakan login kembali.');
+      return {method:'POST',headers:{'Accept':'application/json','X-CSRF-Token':currentSession.csrfToken},body:form};
+    });
+  };
 
 
   document.getElementById('forcedPasswordForm').addEventListener('submit', async event => {
@@ -1833,12 +1860,7 @@ renderAll(); })();
     button.disabled=true;
     button.textContent='Menyimpan…';
     try{
-      const response=await callApi('auth/change-password',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','X-CSRF-Token':currentSession.csrfToken,'Accept':'application/json'},
-        body:JSON.stringify({current_password:'',new_password:nextPassword,password_confirmation:confirmPassword})
-      });
-      const result=await readApiJson(response);
+      const result=await window.payuAdminApiRequest('auth/change-password',{method:'POST',body:{current_password:'',new_password:nextPassword,password_confirmation:confirmPassword}});
       currentSession.csrfToken=result.csrf_token||currentSession.csrfToken;
       currentSession.mustChangePassword=false;
       try{sessionStorage.setItem(SESSION_KEY,JSON.stringify(currentSession))}catch(_){}
@@ -1856,25 +1878,30 @@ renderAll(); })();
   });
 
   async function serverLogout(csrfToken) {
-    if (!csrfToken) return;
-    try {
-      await callApi('auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken
-        },
-        body: '{}'
-      });
-    } catch (e) {
-      console.warn('[PA.YU] Logout server tidak dapat dikonfirmasi.');
+    if(!csrfToken)return false;
+    const send=token=>callApi('auth/logout',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:'{}'});
+    try{
+      let response=await send(csrfToken);
+      if(response.status===419&&currentSession?.backendAuthenticated){
+        const freshToken=await refreshStaffCsrfToken();
+        response=await send(freshToken);
+      }
+      if(response.status===401)return true; // sudah tidak memiliki sesi aktif
+      await readApiJson(response);
+      return true;
+    }catch(e){
+      console.warn('[PA.YU] Logout server tidak dapat dikonfirmasi:',e.message);
+      return false;
     }
   }
 
-  // Always require a fresh sign-in on each page load. Credentials are checked by Rumahweb API.
-  try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+  // Only the PHP server decides whether a stored browser session is authenticated.
+  // Keep the form hidden during the auth/me check to avoid a false logout flash.
   updateGateRoles();
-  showLogin();
+  gate.style.display='grid';
+  app.style.display='none';
+  form.hidden=true;
+  error.textContent='Memeriksa sesi login…';
 
 
   async function restoreStaffSession(){
@@ -1920,9 +1947,9 @@ renderAll(); })();
       history.replaceState({}, '', url.pathname + url.search + url.hash);
       showDashboard(session);
     } catch (e) {
-      // If the server has no valid staff session, show the login form without treating cached data as authentication.
+      // Network errors are not proof of logout; never trust sessionStorage as authentication.
       try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
-      showLogin();
+      showLogin('Gagal memeriksa sesi ke server. Pastikan koneksi aktif, lalu muat ulang halaman.');
     }
   }
 
@@ -2014,7 +2041,10 @@ renderAll(); })();
 
   window.payuAdminLogout = async () => {
     const csrfToken = currentSession?.csrfToken;
-    await serverLogout(csrfToken);
+    if(!(await serverLogout(csrfToken))){
+      notifySafe('Logout belum dikonfirmasi server. Periksa koneksi dan coba lagi.');
+      return;
+    }
     try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
     document.getElementById('gatePassword').value = '';
     form.reset();
