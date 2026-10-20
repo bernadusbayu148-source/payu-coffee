@@ -1553,11 +1553,42 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   };
 
   const REMOTE_BANNER_KEYS=Object.freeze({'hero-main':'banner_utama','menu-banner':'banner_menu','promo-poster-1':'banner_promo','promo-poster-2':'foto_4','promo-poster-3':'foto_5','shop-photo-1':'foto_6','shop-photo-2':'foto_7','shop-photo-3':'foto_8','shop-photo-4':'foto_9'});
+  // Gambar yang sudah memiliki editor (foto + teks) tidak perlu diduplikasi di "Gambar tambahan".
+  const INTEGRATED_EDITOR_IMAGE_IDS=new Set(['hero-main','promo-poster-1','promo-poster-2','promo-poster-3','shop-photo-1','shop-photo-2','shop-photo-3']);
+  // Delegasi event tetap bekerja meski kartu pratinjau dibangun ulang sesudah upload/hapus.
+  document.addEventListener('click',event=>{
+    const previewButton=event.target.closest?.('[data-integrated-banner-select]');
+    if(!previewButton||previewButton.disabled)return;
+    const id=previewButton.getAttribute('data-integrated-banner-select');
+    if(!INTEGRATED_EDITOR_IMAGE_IDS.has(id))return;
+    const fileInput=[...document.querySelectorAll('input[data-integrated-banner-upload]')]
+      .find(input=>input.getAttribute('data-integrated-banner-upload')===id);
+    if(fileInput)fileInput.click();
+  });
+  document.addEventListener('change',async event=>{
+    const input=event.target;
+    if(!input.matches?.('input[data-integrated-banner-upload]'))return;
+    const id=input.getAttribute('data-integrated-banner-upload');
+    const file=input.files?.[0];
+    if(!file||!INTEGRATED_EDITOR_IMAGE_IDS.has(id))return;
+    input.value='';
+    const button=[...document.querySelectorAll('[data-integrated-banner-select]')]
+      .find(item=>item.getAttribute('data-integrated-banner-select')===id);
+    const hint=button?.querySelector('.editor-photo-select-hint');
+    const originalText=hint?.textContent||'';
+    if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
+    if(hint)hint.textContent='Memproses foto…';
+    try{await saveBannerImage(id,file);}
+    finally{
+      if(button?.isConnected){button.disabled=false;button.removeAttribute('aria-busy');}
+      if(hint?.isConnected)hint.textContent=originalText;
+    }
+  });
   function renderBannerSlots(){
     const grid=document.getElementById('bannerSlotGrid');
     if(!grid)return;
     if(!Array.isArray(data.bannerSlots))data.bannerSlots=structuredCloneSafe(seed.bannerSlots);
-    grid.innerHTML=data.bannerSlots.map(slot=>{
+    grid.innerHTML=data.bannerSlots.filter(slot=>!INTEGRATED_EDITOR_IMAGE_IDS.has(slot.id)).map(slot=>{
       const uploaded=Boolean(slot.image);
       const preview=uploaded
         ?`<img src="${esc(slot.image)}" alt="" loading="lazy" />`
