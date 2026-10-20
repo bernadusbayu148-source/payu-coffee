@@ -636,16 +636,6 @@
           <div class="field full"><button class="btn" type="submit">Simpan informasi toko</button><p class="form-note">Perubahan akan tersedia untuk pengunjung setelah halaman publik memuat ulang data dari server.</p></div>
         </form>
       </section>
-      <section class="panel">
-        <div class="panel-head"><div><h2 class="panel-title">Informasi Toko</h2><p class="panel-subtitle">Informasi ini ditampilkan di bagian Alamat website publik dan disimpan di database.</p></div></div>
-        <form id="publicInfoForm" class="form-grid">
-          <div class="field full"><label for="publicInfoAddress">Alamat lengkap</label><textarea id="publicInfoAddress" maxlength="1000" rows="2" placeholder="Alamat resmi PA.YU"></textarea></div>
-          <div class="field"><label for="publicInfoHours">Jam operasional</label><input id="publicInfoHours" maxlength="300" placeholder="Contoh: Setiap hari, 08.00–22.00"></div>
-          <div class="field"><label for="publicInfoInstagram">Instagram (URL atau akun)</label><input id="publicInfoInstagram" maxlength="300" placeholder="https://instagram.com/akun"></div>
-          <div class="field full"><label for="publicInfoMaps">URL Google Maps</label><input id="publicInfoMaps" type="url" maxlength="1000" placeholder="https://maps.google.com/..."></div>
-          <div class="field full"><button class="btn" type="submit">Simpan informasi toko</button><p class="form-note">Perubahan akan tersedia bagi pengunjung setelah halaman publik memuat data terbaru dari server.</p></div>
-        </form>
-      </section>
       <section class="panel hero-copy-manager">
         <div class="banner-manager-head"><div><h2 class="panel-title">Teks Banner Utama</h2><p class="panel-subtitle">Atur tulisan di atas background Beranda. Pratinjau mengikuti gambar Banner Utama yang diunggah di bawah.</p></div></div>
         <div class="hero-editor-layout">
@@ -1609,6 +1599,9 @@ window.payuAdminHydrateFromServer=async function(){
  document.getElementById('publicInfoInstagram').value=settingValue('instagram_url');
  document.getElementById('publicInfoMaps').value=settingValue('google_maps_url');
  if(promoSetting&&promoSetting.setting_value){try{const savedCopy=JSON.parse(promoSetting.setting_value);if(savedCopy&&typeof savedCopy==='object'){data.promo=savedCopy.promo&&typeof savedCopy.promo==='object'?savedCopy.promo:(savedCopy.title?savedCopy:data.promo);if(savedCopy.heroContent)data.heroContent=savedCopy.heroContent;if(Array.isArray(savedCopy.galleryContent)){data.galleryContent=savedCopy.galleryContent;galleryDraft=structuredCloneSafe(savedCopy.galleryContent)}if(Array.isArray(savedCopy.promoCards)){data.promoCards=savedCopy.promoCards;promoCardsDraft=structuredCloneSafe(savedCopy.promoCards)}}}catch(_){}}
+ // Gunakan naskah yang baru dibaca dari server, bukan draft lama dari localStorage.
+ galleryDraft=structuredCloneSafe(data.galleryContent||seed.galleryContent);
+ promoCardsDraft=structuredCloneSafe(data.promoCards||seed.promoCards);
  const banners=Array.isArray(results[4].banners)?results[4].banners:[];
  const keyForSlot=id=>id==='hero-main'?'banner_utama':id==='menu-banner'?'banner_menu':id==='promo-poster-1'?'banner_promo':id==='promo-poster-2'?'foto_4':id==='promo-poster-3'?'foto_5':(/^shop-photo-(\\d+)$/.test(id)?'foto_'+(Number(id.match(/(\\d+)$/)?.[1])+5):'');
  data.bannerSlots=data.bannerSlots.map(slot=>{const key=keyForSlot(slot.id),remote=banners.find(b=>b.slot_key===key);return {...slot,image:remote?.image_url||'',fileName:remote?.title||''};});
