@@ -784,6 +784,17 @@
 (() => {
   'use strict';
   const STORAGE_KEY = 'payuCoffeeAdmin_v1';
+  // URL banner dari API dapat berupa path relatif (/uploads/...). Selalu arahkan ke host API,
+  // bukan ke host GitHub Pages. URL absolut HTTPS yang sudah ada tidak diubah.
+  const BANNER_API_ORIGIN='https://api.kopimanupi.space';
+  function resolvePayuBannerUrl(value){
+    const raw=String(value||'').trim();
+    if(!raw)return '';
+    try{
+      const url=new URL(raw,BANNER_API_ORIGIN+'/');
+      return url.protocol==='https:'?url.href:'';
+    }catch(_){return '';}
+  }
   let remoteOperationalMode=false;
   let remoteTransactionFallbackCache=null;
   let benefitRules=null;
@@ -1514,9 +1525,10 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
   async function checkPublicBannerUpload(slotKey,imageUrl){
     const response=await window.payuAdminApiRequest('public/banners');
     const entry=Array.isArray(response.banners)?response.banners.find(row=>row.slot_key===slotKey):null;
-    if(!entry||entry.image_url!==imageUrl)throw new Error('Banner belum muncul pada daftar gambar publik.');
+    const resolvedUrl=resolvePayuBannerUrl(imageUrl);
+    if(!entry||!resolvedUrl||resolvePayuBannerUrl(entry.image_url)!==resolvedUrl)throw new Error('Banner belum muncul pada daftar gambar publik.');
     const canLoad=await Promise.race([
-      new Promise(resolve=>{const preview=new Image();preview.onload=()=>resolve(true);preview.onerror=()=>resolve(false);preview.src=imageUrl;}),
+      new Promise(resolve=>{const preview=new Image();preview.onload=()=>resolve(true);preview.onerror=()=>resolve(false);preview.src=resolvedUrl;}),
       new Promise(resolve=>setTimeout(()=>resolve(false),8000))
     ]);
     if(!canLoad)throw new Error('Banner tercatat di database, tetapi URL gambar tidak bisa dibuka dari browser.');
@@ -1530,7 +1542,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
         const prepared=await prepareBannerUploadFile(file,id);
         const result=await window.payuAdminUploadBanner(slotKey,slot.name,prepared.file);
         if(!result.image_url)throw new Error('Server tidak mengembalikan alamat gambar.');
-        slot.image=result.image_url;slot.fileName=file.name;slot.updatedAt=new Date().toISOString();
+        slot.image=resolvePayuBannerUrl(result.image_url);slot.fileName=file.name;slot.updatedAt=new Date().toISOString();
         renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();
         try{
           await checkPublicBannerUpload(slotKey,result.image_url);
@@ -1696,7 +1708,7 @@ window.payuAdminHydrateFromServer=async function(){
  promoCardsDraft=structuredCloneSafe(data.promoCards||seed.promoCards);
  const banners=Array.isArray(results[4].banners)?results[4].banners:[];
  const keyForSlot=id=>id==='hero-main'?'banner_utama':id==='menu-banner'?'banner_menu':id==='promo-poster-1'?'banner_promo':id==='promo-poster-2'?'foto_4':id==='promo-poster-3'?'foto_5':(/^shop-photo-(\\d+)$/.test(id)?'foto_'+(Number(id.match(/(\\d+)$/)?.[1])+5):'');
- data.bannerSlots=data.bannerSlots.map(slot=>{const key=keyForSlot(slot.id),remote=banners.find(b=>b.slot_key===key);return {...slot,image:remote?.image_url||'',fileName:remote?.title||''};});
+ data.bannerSlots=data.bannerSlots.map(slot=>{const key=keyForSlot(slot.id),remote=banners.find(b=>b.slot_key===key);return {...slot,image:resolvePayuBannerUrl(remote?.image_url),fileName:remote?.title||''};});
  remoteOperationalMode=true;data.members.forEach(ensureMemberDefaults);if(pointSetting&&Number(pointSetting.setting_value)>=1000)data.pointRate=Number(pointSetting.setting_value);renderAll();renderDashboard();renderDashboardStats();
  return {members:data.members.length,menus:data.menus.length,transactions:data.transactions.length};
 };
