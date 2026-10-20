@@ -1456,7 +1456,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
     }));
   }
   const MAX_BANNER_SOURCE_BYTES=15*1024*1024;
-  const MAX_BANNER_TRANSFER_BYTES=4*1024*1024; // Aman di bawah batas API yang masih 5 MB.
+  const MAX_BANNER_TRANSFER_BYTES=Math.floor(1.5*1024*1024); // Aman meski batas POST PHP hosting masih 2 MB.
   const BANNER_UPLOAD_DIMENSIONS={
     'hero-main':[1920,1000],'menu-banner':[1440,800],
     'promo-poster-1':[1200,1500],'promo-poster-2':[1200,1500],'promo-poster-3':[1200,1500],
