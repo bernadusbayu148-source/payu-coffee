@@ -1355,16 +1355,84 @@
     const discount=calcCouponDiscount(member,couponId,subtotal);const total=Math.max(0,subtotal-discount);const rate=Math.max(1,Number(data.pointRate)||10000);document.getElementById('txSubtotalPreview').textContent=money(subtotal);const benefitLabel=document.querySelector('.discount-row span');if(benefitLabel)benefitLabel.textContent=selectedTpl&&selectedTpl.type==='free_item'?'Benefit gratis':'Potongan kupon';document.getElementById('txDiscountPreview').textContent=selectedTpl&&selectedTpl.type==='free_item'?'Gratis '+(selectedTpl.rewardName||'menu pilihan'):'− '+money(discount);document.getElementById('txTotalPreview').textContent=money(total);document.getElementById('txPointPreview').textContent=number(Math.floor(total/rate))+' poin';document.getElementById('txPointRuleLabel').textContent=`Poin yang didapat (tiap ${money(rate)} = 1 poin)`;
   }
   document.getElementById('txCoupon').addEventListener('change',updateTxPreview);
-  document.getElementById('transactionForm').addEventListener('submit',async e=>{
-    e.preventDefault();const member=data.members.find(m=>m.id===document.getElementById('txMember').value);const items=getTransactionItems();
-    if(!member){notify('Pilih member yang benar melalui hasil pencarian atau scan QR.');document.getElementById('txMemberSearch').focus();return}
-    if(!items.length||items.length!==document.querySelectorAll('#txItems .tx-item-row').length){notify('Periksa kembali menu dan jumlah yang dimasukkan.');return}
-    if(remoteOperationalMode){const button=document.querySelector('#transactionForm button[type="submit"]');const oldRemote=editingTransactionId?data.transactions.find(x=>String(x.id)===String(editingTransactionId)):null;if(button)button.disabled=true;try{const body={member_id:Number(member.backendId||member.id),items:items.map(item=>({menu_id:Number(item.menuId),quantity:item.qty})),notes:[document.getElementById('txPayment').value?'Pembayaran: '+document.getElementById('txPayment').value:'',document.getElementById('txNotes').value.trim()].filter(Boolean).join('\\n')};const selectedCoupon=document.getElementById('txCoupon').value;if(selectedCoupon)body.coupon_id=Number(selectedCoupon);if(oldRemote)body.id=Number(oldRemote.backendId||oldRemote.id);const result=await window.payuAdminApiRequest('staff/transactions/save',{method:'POST',body});remoteTransactionFallbackCache=null;await window.payuAdminHydrateFromServer();closeModal('transactionModal');editingTransactionId=null;notify((oldRemote?'Transaksi diperbarui':'Transaksi tersimpan')+' di database. Total '+money(Number(result.transaction?.total_amount||result.total_amount||0))+'.')}catch(err){notify('Transaksi gagal disimpan: '+err.message)}finally{if(button)button.disabled=false}return}const subtotal=items.reduce((sum,item)=>sum+item.subtotal,0);const couponId=document.getElementById('txCoupon').value||'';const discount=calcCouponDiscount(member,couponId,subtotal);if(couponId&&discount<=0){notify('Kupon tidak tersedia atau minimum belanja belum terpenuhi.');return}
-    const total=Math.max(0,subtotal-discount);const pts=Math.floor(total/Math.max(1,Number(data.pointRate)||10000));const totalQty=items.reduce((sum,item)=>sum+item.qty,0);const menuName=items.map(item=>`${item.menuName} × ${item.qty}`).join(', ');const old=editingTransactionId?data.transactions.find(t=>t.id===editingTransactionId):null;
-    if(old){const oldMember=data.members.find(m=>m.id===old.memberId);if(oldMember)oldMember.points=Math.max(0,(Number(oldMember.points)||0)-(Number(old.points)||0));releaseTransactionCoupon(old);}
-    const tpl=couponId?couponTemplate(member,couponId):null;const t={...(old||{}),id:old?old.id:makeId('TRX'),memberId:member.id,memberName:member.name,menuId:items[0].menuId,menuName,items,qty:totalQty,subtotal,discount,total,points:pts,couponId:couponId||null,couponTitle:tpl?tpl.label:null,payment:document.getElementById('txPayment').value,notes:document.getElementById('txNotes').value.trim(),date:old?.date||todayISO(),createdAt:old?.createdAt||dateTime(),updatedAt:old?dateTime():null};
-    if(old){const index=data.transactions.findIndex(x=>x.id===old.id);data.transactions[index]=t}else data.transactions.push(t);
-    member.points=(Number(member.points)||0)+pts;if(couponId)markCouponUsed(member,couponId,t.id);saveData();closeModal('transactionModal');renderAll();if(document.getElementById('profileModal').classList.contains('open')){const profileId=data.members.find(m=>m.id===member.id)?.id;if(profileId)openMemberProfile(profileId)}notify(`${old?'Transaksi diperbarui':'Transaksi tersimpan'}. ${member.name} mendapat ${pts} poin.`);editingTransactionId=null;
+  document.getElementById('transactionForm').addEventListener('submit',async event=>{
+    event.preventDefault();
+    const member=data.members.find(m=>m.id===document.getElementById('txMember').value);
+    const items=getTransactionItems();
+    const paidRowCount=document.querySelectorAll('#txItems .tx-item-row').length;
+    const selectedCoupon=document.getElementById('txCoupon').value||'';
+    const couponOnly=items.length===0&&Boolean(selectedCoupon);
+    if(!member){notify('Pilih member yang benar melalui hasil pencarian atau scan QR.');document.getElementById('txMemberSearch').focus();return;}
+    if(items.length!==paidRowCount){notify('Periksa kembali menu dan jumlah yang dimasukkan.');return;}
+    if(!items.length&&!selectedCoupon){notify('Tambahkan menu berbayar atau pilih kupon member untuk klaim tanpa pembelian.');return;}
+    if(remoteOperationalMode){
+      const button=document.querySelector('#transactionForm button[type="submit"]');
+      const oldRemote=editingTransactionId?data.transactions.find(x=>String(x.id)===String(editingTransactionId)):null;
+      if(button)button.disabled=true;
+      try{
+        const body={
+          member_id:Number(member.backendId||member.id),
+          items:items.map(item=>({menu_id:Number(item.menuId),quantity:item.qty})),
+          notes:[
+            couponOnly?'Penukaran kupon tanpa pembelian':'Pembayaran: '+document.getElementById('txPayment').value,
+            document.getElementById('txNotes').value.trim()
+          ].filter(Boolean).join('\n')
+        };
+        if(selectedCoupon)body.coupon_id=Number(selectedCoupon);
+        if(oldRemote)body.id=Number(oldRemote.backendId||oldRemote.id);
+        const result=await window.payuAdminApiRequest('staff/transactions/save',{method:'POST',body});
+        remoteTransactionFallbackCache=null;
+        await window.payuAdminHydrateFromServer();
+        closeModal('transactionModal');editingTransactionId=null;
+        notify((couponOnly?'Penukaran kupon':'Transaksi')+(oldRemote?' diperbarui':' tersimpan')+' di database. Total '+money(Number(result.transaction?.total_amount||result.total_amount||0))+(couponOnly?', poin +0.':'.'));
+      }catch(error){notify('Transaksi gagal disimpan: '+error.message);}
+      finally{if(button)button.disabled=false;}
+      return;
+    }
+    const subtotal=items.reduce((sum,item)=>sum+item.subtotal,0);
+    const couponId=selectedCoupon;
+    const tpl=couponId?couponTemplate(member,couponId):null;
+    const coupon=couponId?couponFor(member,couponId):null;
+    const old=editingTransactionId?data.transactions.find(t=>t.id===editingTransactionId):null;
+    const editingSameCoupon=Boolean(old&&String(old.couponId||'')===String(couponId));
+    if(couponId&&(!tpl||!coupon||(coupon.used&&!editingSameCoupon)||memberSpend(member)<Number(tpl.min||0))){
+      notify('Kupon belum tersedia, sudah digunakan, atau syarat total belanja belum terpenuhi.');return;
+    }
+    const discount=calcCouponDiscount(member,couponId,subtotal);
+    if(couponId&&tpl?.type!=='free_item'&&discount<=0){notify('Kupon tidak berlaku untuk transaksi ini.');return;}
+    const rewardItem=couponId&&tpl?.type==='free_item'
+      ?{menuId:String(tpl.rewardMenuId||''),menuName:(tpl.rewardName||'Menu gratis')+' (GRATIS - Kupon '+tpl.level+')',price:0,qty:1,subtotal:0,freeReward:true}
+      :null;
+    if(couponOnly&&!rewardItem){notify('Penukaran tanpa pembelian hanya tersedia untuk kupon menu gratis.');return;}
+    const recordedItems=rewardItem?[...items,rewardItem]:items;
+    const total=Math.max(0,subtotal-discount);
+    const points=Math.floor(total/Math.max(1,Number(data.pointRate)||10000));
+    const qty=recordedItems.reduce((sum,item)=>sum+item.qty,0);
+    const menuName=recordedItems.map(item=>item.menuName+' × '+item.qty).join(', ');
+    if(old){
+      const oldMember=data.members.find(m=>m.id===old.memberId);
+      if(oldMember)oldMember.points=Math.max(0,(Number(oldMember.points)||0)-(Number(old.points)||0));
+      releaseTransactionCoupon(old);
+    }
+    const transaction={
+      ...(old||{}),id:old?old.id:makeId('TRX'),memberId:member.id,memberName:member.name,
+      menuId:recordedItems[0]?.menuId||'',menuName,items:recordedItems,qty,
+      subtotal,discount,total,points,couponId:couponId||null,couponTitle:tpl?tpl.label:null,
+      payment:couponOnly?'Penukaran kupon':document.getElementById('txPayment').value,
+      notes:document.getElementById('txNotes').value.trim(),
+      date:old?.date||todayISO(),createdAt:old?.createdAt||dateTime(),updatedAt:old?dateTime():null
+    };
+    if(old){const index=data.transactions.findIndex(x=>x.id===old.id);data.transactions[index]=transaction;}
+    else data.transactions.push(transaction);
+    member.points=(Number(member.points)||0)+points;
+    if(couponId)markCouponUsed(member,couponId,transaction.id);
+    saveData();closeModal('transactionModal');renderAll();
+    if(document.getElementById('profileModal').classList.contains('open')){
+      const profileId=data.members.find(m=>m.id===member.id)?.id;
+      if(profileId)openMemberProfile(profileId);
+    }
+    notify(couponOnly?'Penukaran kupon berhasil dicatat dengan total Rp0 dan 0 poin.':(old?'Transaksi diperbarui':'Transaksi tersimpan')+'. '+member.name+' mendapat '+points+' poin.');
+    editingTransactionId=null;
   });
   window.editTransaction=async id=>{const t=data.transactions.find(x=>String(x.id)===String(id));if(!t)return;window.openTransactionModal();editingTransactionId=String(id);document.getElementById('txModalTitle').textContent='Edit transaksi';document.getElementById('txMemberSearch').disabled=true;await setTransactionMember(t.memberId);document.getElementById('txItems').innerHTML='';const sourceItems=Array.isArray(t.items)&&t.items.length?t.items:(t.couponId?[]:[{menuId:t.menuId,qty:t.qty||1}]);
   // Menu hadiah gratis telah dicatat sebagai snapshot transaction_items oleh API,
@@ -1826,7 +1894,8 @@ window.payuAdminHydrateFromServer=async function(){
   const items=(Array.isArray(tx.items)?tx.items:[]).map(i=>({menuId:i.menu_id==null?'':String(i.menu_id),menuName:String(i.name||i.menu_name_snapshot||''),price:Number(i.unit_price||0),qty:Number(i.quantity||1),subtotal:Number(i.line_total||0)}));
   const memberId=tx.member_id!=null?String(tx.member_id):String(fallbackMember?.backendId||fallbackMember?.id||'');
   const memberName=String(tx.member_name||fallbackMember?.name||'Member');
-  return {id:String(tx.id),backendId:Number(tx.id),transactionCode:String(tx.transaction_code||''),memberId,memberName,items,menuId:items[0]?.menuId||'',menuName:items.map(i=>i.menuName+' × '+i.qty).join(', '),qty:items.reduce((sum,item)=>sum+item.qty,0),subtotal:Number(tx.subtotal||0),discount:Number(tx.discount_amount||tx.discount||0),total:Number(tx.total_amount||tx.total||0),points:Number(tx.points_earned||tx.points||0),couponId:tx.coupon_id?String(tx.coupon_id):'',couponTitle:'',payment:payMatch?payMatch[1]:'Tunai',notes,createdAt:String(tx.created_at||''),date:String(tx.created_at||'').slice(0,10)};
+  const couponOnly=Boolean(tx.coupon_id)&&Number(tx.subtotal||0)===0&&items.length>0&&items.every(item=>Number(item.price)===0&&/\(GRATIS\s*-\s*Kupon\b/i.test(item.menuName));
+  return {id:String(tx.id),backendId:Number(tx.id),transactionCode:String(tx.transaction_code||''),memberId,memberName,items,menuId:items[0]?.menuId||'',menuName:items.map(i=>i.menuName+' × '+i.qty).join(', '),qty:items.reduce((sum,item)=>sum+item.qty,0),subtotal:Number(tx.subtotal||0),discount:Number(tx.discount_amount||tx.discount||0),total:Number(tx.total_amount||tx.total||0),points:Number(tx.points_earned||tx.points||0),couponId:tx.coupon_id?String(tx.coupon_id):'',couponTitle:'',payment:couponOnly?'Penukaran kupon':(payMatch?payMatch[1]:'Tunai'),notes,createdAt:String(tx.created_at||''),date:String(tx.created_at||'').slice(0,10)};
  };
  const remoteTxRows=Array.isArray(results[2].transactions)?results[2].transactions:[];
  if(remoteTxRows.length){
