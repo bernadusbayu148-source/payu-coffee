@@ -632,9 +632,8 @@
           <div class="field full"><label for="publicInfoAddress">Alamat lengkap</label><textarea id="publicInfoAddress" maxlength="1000" rows="2" placeholder="Alamat resmi PA.YU"></textarea></div>
           <div class="field"><label for="publicInfoHours">Jam operasional</label><input id="publicInfoHours" maxlength="300" placeholder="Contoh: Setiap hari, 08.00–22.00"></div>
           <div class="field"><label for="publicInfoInstagram">Instagram (URL atau akun)</label><input id="publicInfoInstagram" maxlength="300" placeholder="https://instagram.com/akun"></div>
-          <div class="field full"><label for="publicInfoMaps">URL Google Maps (tombol petunjuk arah)</label><input id="publicInfoMaps" type="url" maxlength="1000" placeholder="https://maps.app.goo.gl/..." /><p class="form-note">Tautan Maps pendek tetap dapat digunakan untuk tombol "Buka Google Maps".</p></div>
+          <div class="field full"><label for="publicInfoMaps">URL Google Maps (tombol dan pratinjau peta)</label><input id="publicInfoMaps" type="url" maxlength="1000" placeholder="https://maps.app.goo.gl/..." /><p class="form-note">Cukup satu tautan Google Maps, termasuk link pendek maps.app.goo.gl. Server akan mengubahnya menjadi pratinjau peta secara otomatis ketika disimpan.</p><p id="publicInfoMapsStatus" class="form-note" role="status" aria-live="polite"></p></div>
           <div class="field"><label for="publicInfoWhatsApp">Nomor WhatsApp toko</label><input id="publicInfoWhatsApp" type="tel" inputmode="tel" maxlength="22" placeholder="Contoh: 0812 3456 7890 atau +62 812 3456 7890" /><p class="form-note">Opsional. Digunakan untuk tombol Chat WhatsApp di website publik.</p></div>
-          <div class="field full"><label for="publicInfoMapsEmbed">Sematkan Google Maps (pratinjau peta)</label><textarea id="publicInfoMapsEmbed" rows="2" maxlength="4500" placeholder="Tempel URL https://www.google.com/maps/embed?pb=... atau kode &lt;iframe ...&gt; dari Google Maps"></textarea><p class="form-note">Di Google Maps desktop: Bagikan → Sematkan peta → Salin HTML. Tempel kode tersebut di sini. Jika tidak diisi, pratinjau menggunakan kolom Alamat lengkap. Link pendek maps.app.goo.gl saja tidak dapat dijadikan peta sematan secara andal.</p></div>
           <div class="field full"><button class="btn" type="submit">Simpan informasi toko</button><p class="form-note">Perubahan akan tersedia untuk pengunjung setelah halaman publik memuat ulang data dari server.</p></div>
         </form>
       </section>
@@ -1333,20 +1332,6 @@
     else if(digits.startsWith('8'))digits='62'+digits;
     return /^[1-9][0-9]{7,14}$/.test(digits)?digits:'';
   }
-  function parseMapsEmbedUrl(value){
-    const raw=String(value||'').trim();
-    if(!raw)return '';
-    const match=raw.match(/<iframe\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/i);
-    const candidate=match?match[2].replace(/&amp;/g,'&'):raw;
-    try{
-      const url=new URL(candidate);
-      const hosts=['www.google.com','google.com','maps.google.com'];
-      if(url.protocol!=='https:'||!hosts.includes(url.hostname))return '';
-      if(url.pathname.startsWith('/maps/embed'))return url.href;
-      if(url.pathname==='/maps'&&url.searchParams.get('output')==='embed')return url.href;
-    }catch(_){}
-    return '';
-  }
   function buildPublicContentPayload(contact=publicStoreContact){
     return {promo:data.promo,heroContent:data.heroContent||readHeroForm(),
       galleryContent:data.galleryContent||galleryDraft,promoCards:data.promoCards||promoCardsDraft,
@@ -1358,12 +1343,18 @@
     const form=event.currentTarget;
     const submit=form.querySelector('button[type="submit"]');
     const whatsappInput=document.getElementById('publicInfoWhatsApp').value.trim();
-    const embedInput=document.getElementById('publicInfoMapsEmbed').value.trim();
     const whatsappNumber=normalizeStoreWhatsApp(whatsappInput);
     if(whatsappInput&&!whatsappNumber){notify('Nomor WhatsApp belum valid. Gunakan nomor aktif seperti 081234567890.');return;}
-    const mapsEmbedUrl=parseMapsEmbedUrl(embedInput);
-    if(embedInput&&!mapsEmbedUrl){notify('URL sematan Maps tidak valid. Salin HTML dari Google Maps → Bagikan → Sematkan peta.');return;}
-    const nextContact={whatsappNumber,mapsEmbedUrl};
+    const inputMapLink=document.getElementById('publicInfoMaps').value.trim();
+    if(inputMapLink){
+      try{
+        const url=new URL(inputMapLink);
+        if(url.protocol!=='https:'||!['maps.app.goo.gl','goo.gl','www.google.com','google.com','maps.google.com'].includes(url.hostname.toLowerCase()))
+          throw new Error('domain');
+      }catch(_){notify('URL Google Maps harus HTTPS dan berasal dari Google Maps resmi.');return;}
+    }
+    // Link Maps tunggal kini sumber pratinjau; jangan lagi memakai sematan lama.
+    const nextContact={whatsappNumber,mapsEmbedUrl:''};
     const settings={
       business_address:document.getElementById('publicInfoAddress').value.trim(),
       business_hours:document.getElementById('publicInfoHours').value.trim(),
@@ -1373,11 +1364,18 @@
     };
     if(submit)submit.disabled=true;
     try{
-      await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings}});
+      const result=await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings}});
       publicStoreContact=nextContact;
       document.getElementById('publicInfoWhatsApp').value=whatsappNumber;
-      document.getElementById('publicInfoMapsEmbed').value=mapsEmbedUrl;
-      notify('Informasi toko, Instagram, WhatsApp, dan peta berhasil disimpan ke server.');
+      const status=document.getElementById('publicInfoMapsStatus');
+      const mapsReady=result.maps_preview_ready===true;
+      if(status){
+        status.textContent=!inputMapLink?'URL Google Maps belum diisi.':
+          mapsReady?'Pratinjau peta berhasil dibuat dari satu tautan Google Maps.':
+          'Tautan tersimpan, tetapi pratinjau belum tersedia: '+(result.maps_preview_note||'Pastikan api.php versi terbaru sudah terpasang di Rumahweb.');
+      }
+      notify(!inputMapLink||mapsReady?'Informasi toko berhasil disimpan. Pratinjau Google Maps mengikuti URL yang sama.':
+        'Informasi tersimpan, namun server belum berhasil membuat pratinjau Maps.');
     }catch(error){notify('Informasi toko gagal disimpan: '+error.message);}
     finally{if(submit)submit.disabled=false;}
   });
@@ -1764,7 +1762,9 @@ window.payuAdminHydrateFromServer=async function(){
    }
  }catch(error){console.warn('[PA.YU] Pengaturan konten publik tidak dapat dibaca:',error);}}
  document.getElementById('publicInfoWhatsApp').value=publicStoreContact.whatsappNumber;
- document.getElementById('publicInfoMapsEmbed').value=publicStoreContact.mapsEmbedUrl;
+ const mapPreviewStatus=document.getElementById('publicInfoMapsStatus');
+ if(mapPreviewStatus)mapPreviewStatus.textContent=settingValue('google_maps_embed_url')?
+   'Pratinjau Google Maps tersedia dari URL yang tersimpan.':'Simpan URL Maps setelah pembaruan API terpasang untuk membuat pratinjau otomatis.';
  // Gunakan naskah yang baru dibaca dari server, bukan draft lama dari localStorage.
  galleryDraft=structuredCloneSafe(data.galleryContent||seed.galleryContent);
  promoCardsDraft=structuredCloneSafe(data.promoCards||seed.promoCards);
