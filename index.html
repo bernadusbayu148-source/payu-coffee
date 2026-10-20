@@ -794,8 +794,11 @@ async function loadPublicSiteSettingsAndBanners(){
   const mapFallback=document.getElementById('publicMapFallback');
   const mapNote=document.getElementById('publicMapNote');
   let embedUrl='';
+  // Pratinjau dibuat sekali oleh API dari tautan Google Maps yang sama dengan tombol
+  // petunjuk arah. Nilai contact.mapsEmbedUrl hanya cadangan dari data Admin versi lama.
+  const savedEmbed=String(settings.google_maps_embed_url||storeContact.mapsEmbedUrl||'').trim();
   try{
-    const candidate=new URL(String(storeContact.mapsEmbedUrl||'').trim());
+    const candidate=new URL(savedEmbed);
     if(candidate.protocol==='https:'&&['www.google.com','google.com','maps.google.com'].includes(candidate.hostname.toLowerCase())&&
       (candidate.pathname.startsWith('/maps/embed')||(candidate.pathname==='/maps'&&candidate.searchParams.get('output')==='embed'))){
       embedUrl=candidate.href;
