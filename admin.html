@@ -526,6 +526,12 @@
 .editor-photo-select-hint{position:absolute;top:12px;right:12px;max-width:calc(100% - 24px);display:inline-flex;align-items:center;justify-content:center;text-align:center;padding:7px 11px;line-height:1.35;border:1px solid #ffffff70;border-radius:999px;background:rgba(30,36,27,.85);color:#fff;font:750 10px/1.35 Inter,system-ui,sans-serif;box-shadow:0 4px 18px #0003;pointer-events:none;transition:background .18s,transform .18s}
 .editor-photo-select:hover .editor-photo-select-hint,.editor-photo-select:focus-visible .editor-photo-select-hint{background:#243422;transform:translateY(-1px)}
 .editor-photo-file{display:none!important}
+.editor-photo-actions{display:flex;justify-content:flex-end;gap:12px;padding:8px 13px 0;background:#fffdf9}
+.editor-photo-actions button,.editor-hero-photo-actions button{border:1px solid #d7c9b9;border-radius:7px;padding:6px 10px;background:#fffdf9;color:#665347;font:750 10px/1.4 Inter,system-ui,sans-serif;cursor:pointer;transition:background .18s}
+.editor-photo-actions button:hover,.editor-hero-photo-actions button:hover{background:#f4e6db}
+.editor-photo-actions button:focus-visible,.editor-hero-photo-actions button:focus-visible{outline:2px solid #8e4c30}
+.editor-hero-photo-actions{position:absolute;z-index:10;left:12px;bottom:12px;display:flex;gap:6px}
+.editor-hero-photo-actions[hidden]{display:none!important}
 .hero-copy-preview,.gallery-copy-preview,.promo-card-copy-preview{cursor:pointer}
 .website-extra-banners{margin-top:18px}
 .website-extra-summary{list-style:none;cursor:pointer;font-size:14px;font-weight:850;display:flex;align-items:center;justify-content:space-between;gap:14px}
@@ -679,6 +685,7 @@
             <div class="hero-copy-preview-copy"><small id="heroPreviewKicker">Coffee • Friends • Good days</small><h3><span id="heroPreviewHeadlineTop">Tempat pulang</span><br><span id="heroPreviewHeadlineBottomPrefix">untuk</span> <em id="heroPreviewHeadlineAccent">cerita.</em></h3><p id="heroPreviewDescription">pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.</p></div>
             <div class="hero-copy-preview-tag">✳ <span id="heroPreviewTagline">A little pause, a lot of stories.</span></div>
             <button type="button" class="editor-photo-select" data-integrated-banner-select="hero-main" aria-label="Unggah atau ganti foto Banner Utama" title="Klik untuk mengganti foto Banner Utama"><span class="editor-photo-select-hint" id="heroBannerUploadHint">↑ Klik / ketuk untuk ganti foto</span></button>
+            <div class="editor-hero-photo-actions" id="heroBannerPhotoActions" hidden><button type="button" onclick="downloadBannerImage('hero-main')" aria-label="Unduh gambar Banner Utama">↓ Unduh</button><button type="button" onclick="clearBannerImage('hero-main')" aria-label="Hapus gambar Banner Utama">× Hapus</button></div>
           </div>
           <input type="file" class="editor-photo-file" data-integrated-banner-upload="hero-main" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
           <form id="heroContentForm" class="form-grid">
@@ -1443,7 +1450,12 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
     document.getElementById('heroPreviewTagline').textContent=content.tagline;
     const image=document.getElementById('heroContentPreviewImage');
     const slot=data.bannerSlots.find(item=>item.id==='hero-main');
-    if(slot&&slot.image){image.src=slot.image;image.hidden=false}else{image.removeAttribute('src');image.hidden=true}
+    const uploaded=Boolean(slot&&slot.image);
+    if(uploaded){image.src=slot.image;image.hidden=false}else{image.removeAttribute('src');image.hidden=true}
+    const photoActions=document.getElementById('heroBannerPhotoActions');
+    if(photoActions)photoActions.hidden=!uploaded;
+    const photoHint=document.getElementById('heroBannerUploadHint');
+    if(photoHint)photoHint.textContent=uploaded?'↑ Ganti foto':'↑ Unggah foto';
   }
   function loadHeroContentToForm(){
     const content={...seed.heroContent,...(data.heroContent||{})};
@@ -1479,7 +1491,10 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
           <small class="pcp-eyebrow" data-promo-preview-field="eyebrow">${esc(content.eyebrow||'')}</small>
           <div class="pcp-center"><small class="pcp-overline" data-promo-preview-field="overline">${esc(content.overline||'')}</small><h3><span data-promo-preview-field="headline">${esc(content.headline||'')}</span><br><em data-promo-preview-field="accent">${esc(content.accent||'')}</em></h3><p class="pcp-description" data-promo-preview-field="description">${esc(content.description||'')}</p></div>
           <div class="pcp-footer"><span data-promo-preview-field="footer">${esc(content.footer||'')}</span><span data-promo-preview-field="brand">${esc(content.brand||'')}</span></div>
+          <button type="button" class="editor-photo-select" data-integrated-banner-select="${esc(base.id)}" aria-label="${esc(image?'Ganti':'Unggah')} foto poster ${esc(base.id.replace('promo-poster-','Promo '))}" title="Klik pratinjau untuk mengganti foto poster"><span class="editor-photo-select-hint" data-editor-photo-hint>↑ ${image?'Ganti foto':'Unggah foto'}</span></button>
         </div>
+        <input type="file" class="editor-photo-file" data-integrated-banner-upload="${esc(base.id)}" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
+        ${image?`<div class="editor-photo-actions"><button type="button" onclick="downloadBannerImage('${esc(base.id)}')">↓ Unduh</button><button type="button" onclick="clearBannerImage('${esc(base.id)}')">× Hapus</button></div>`:''}
         <div class="promo-card-copy-label" data-promo-preview-field="label">${esc(content.label||'')}</div>
         <div class="promo-card-copy-fields">${fields.map(([field,label,max])=>`<div><label for="pc-${base.id}-${field}">${label}</label>${field==='description'?`<textarea id="pc-${base.id}-${field}" data-promo-card-input="${field}" maxlength="${max}" rows="2">${esc(content[field]||'')}</textarea>`:`<input id="pc-${base.id}-${field}" data-promo-card-input="${field}" maxlength="${max}" value="${esc(content[field]||'')}" />`}</div>`).join('')}</div>
       </article>`;
@@ -1508,7 +1523,11 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
       const slot=data.bannerSlots.find(x=>x.id===base.slotId);
       const image=slot&&slot.image?`<img class="gallery-copy-preview-image" src="${esc(slot.image)}" alt="" />`:'';
       return `<article class="gallery-copy-card" data-gallery-copy-editor="${esc(base.slotId)}">
-        <div class="gallery-copy-preview" id="gallery-preview-${esc(base.slotId)}">${image}<div class="gallery-copy-preview-shade"></div><div class="gallery-copy-preview-caption"><small data-gallery-preview-field="eyebrow">${esc(content.eyebrow||'')}</small><h3 data-gallery-preview-field="title">${esc(content.title||'')}</h3></div></div>
+        <div class="gallery-copy-preview" id="gallery-preview-${esc(base.slotId)}">${image}<div class="gallery-copy-preview-shade"></div><div class="gallery-copy-preview-caption"><small data-gallery-preview-field="eyebrow">${esc(content.eyebrow||'')}</small><h3 data-gallery-preview-field="title">${esc(content.title||'')}</h3></div>
+          <button type="button" class="editor-photo-select" data-integrated-banner-select="${esc(base.slotId)}" aria-label="${esc(image?'Ganti':'Unggah')} foto ${esc(base.slotId.replace('shop-photo-','Galeri '))}" title="Klik pratinjau untuk mengganti foto"><span class="editor-photo-select-hint" data-editor-photo-hint>↑ ${image?'Ganti foto':'Unggah foto'}</span></button>
+        </div>
+        <input type="file" class="editor-photo-file" data-integrated-banner-upload="${esc(base.slotId)}" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
+        ${image?`<div class="editor-photo-actions"><button type="button" onclick="downloadBannerImage('${esc(base.slotId)}')">↓ Unduh</button><button type="button" onclick="clearBannerImage('${esc(base.slotId)}')">× Hapus</button></div>`:''}
         <div class="gallery-copy-fields">
           <div><label for="gallery-eyebrow-${esc(base.slotId)}">Tulisan kecil</label><input id="gallery-eyebrow-${esc(base.slotId)}" data-gallery-copy-input="eyebrow" value="${esc(content.eyebrow||'')}" maxlength="60" /></div>
           <div><label for="gallery-title-${esc(base.slotId)}">Judul pada foto</label><textarea id="gallery-title-${esc(base.slotId)}" data-gallery-copy-input="title" rows="2" maxlength="100">${esc(content.title||'')}</textarea><div class="field-note">Tekan Enter untuk membuat baris baru seperti pada tampilan website.</div></div>
