@@ -1878,18 +1878,20 @@ renderAll(); })();
   });
 
   async function serverLogout(csrfToken) {
-    if (!csrfToken) return;
-    try {
-      await callApi('auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken
-        },
-        body: '{}'
-      });
-    } catch (e) {
-      console.warn('[PA.YU] Logout server tidak dapat dikonfirmasi.');
+    if(!csrfToken)return false;
+    const send=token=>callApi('auth/logout',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:'{}'});
+    try{
+      let response=await send(csrfToken);
+      if(response.status===419&&currentSession?.backendAuthenticated){
+        const freshToken=await refreshStaffCsrfToken();
+        response=await send(freshToken);
+      }
+      if(response.status===401)return true; // sudah tidak memiliki sesi aktif
+      await readApiJson(response);
+      return true;
+    }catch(e){
+      console.warn('[PA.YU] Logout server tidak dapat dikonfirmasi:',e.message);
+      return false;
     }
   }
 
@@ -2039,7 +2041,10 @@ renderAll(); })();
 
   window.payuAdminLogout = async () => {
     const csrfToken = currentSession?.csrfToken;
-    await serverLogout(csrfToken);
+    if(!(await serverLogout(csrfToken))){
+      notifySafe('Logout belum dikonfirmasi server. Periksa koneksi dan coba lagi.');
+      return;
+    }
     try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
     document.getElementById('gatePassword').value = '';
     form.reset();
