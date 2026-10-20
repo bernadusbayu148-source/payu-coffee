@@ -1615,8 +1615,7 @@ window.payuAdminHydrateFromServer=async function(){
  remoteOperationalMode=true;data.members.forEach(ensureMemberDefaults);if(pointSetting&&Number(pointSetting.setting_value)>=1000)data.pointRate=Number(pointSetting.setting_value);renderAll();renderDashboard();renderDashboardStats();
  return {members:data.members.length,menus:data.menus.length,transactions:data.transactions.length};
 };
-const localOpenMemberModal=window.openMemberModal;window.openMemberModal=function(){if(remoteOperationalMode){notify('Tambah member dari dashboard sedang disiapkan. Gunakan menu Daftar member di website publik agar tersimpan di server.');return;}return localOpenMemberModal();};
-const localEditMember=window.editMember;window.editMember=function(id){if(remoteOperationalMode){notify('Edit profil member melalui API belum tersedia. Data server tidak diubah.');return;}return localEditMember(id);};
+// Tambah/Edit Member sudah menggunakan handler API di atas; jangan timpa dengan fallback demo.
 const localDeleteMember=window.deleteMember;window.deleteMember=function(id){if(remoteOperationalMode){notify('Penonaktifan member melalui API belum tersedia. Data member tetap aman.');return;}return localDeleteMember(id);};
 const localResetMemberPassword=window.resetMemberPassword;
 window.resetMemberPassword=async function(id){
