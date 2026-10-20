@@ -517,6 +517,16 @@ function switchAuth(mode){
 modal.addEventListener('click',e=>{if(e.target===modal)closeLogin()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLogin()});
 const PAYU_API_URL='https://api.kopimanupi.space/api.php';
+// Backend lama menyimpan banner sebagai /uploads/banners/..., yang harus dibaca
+// dari server API, bukan dari domain website publik (GitHub Pages).
+function resolvePayuPublicBannerUrl(value){
+ const raw=String(value||'').trim();
+ if(!raw)return '';
+ try{
+  const url=new URL(raw,new URL(PAYU_API_URL).origin+'/');
+  return url.protocol==='https:'?url.href:'';
+ }catch(_){return '';}
+}
 let payuCsrfToken=null,activeMemberProfile=null;
 let payuQrLibraryPromise=null;
 function ensurePayuQrLibrary(){
@@ -703,7 +713,7 @@ async function loadPublicSiteSettingsAndBanners(){
     }
   }catch(_){}}
   const banner=key=>banners.find(item=>item&&item.slot_key===key&&item.image_url);
-  const apply=(img,key)=>{const item=banner(key);if(img&&item){img.setAttribute('src',item.image_url);img.hidden=false;img.style.display='';}};
+  const apply=(img,key)=>{const item=banner(key),url=item?resolvePayuPublicBannerUrl(item.image_url):'';if(img&&url){img.setAttribute('src',url);img.hidden=false;img.style.display='';}};
   apply(document.querySelector('.hero-banner-bg'),'banner_utama');
   apply(promoSlides[0]?.querySelector('.poster-art img'),'banner_promo');
   apply(promoSlides[1]?.querySelector('.poster-art img'),'foto_4');
