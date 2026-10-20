@@ -654,8 +654,12 @@ activateForm.addEventListener('submit',async event=>{
 async function loadPublicLeaderboard(){const podium=document.getElementById('leaderPodium'),list=document.getElementById('leaderRows'),foot=document.getElementById('leaderboardFoot');if(!podium||!list)return;try{const result=await payuApi('public/leaderboard?limit=10'),rows=Array.isArray(result.leaderboard)?result.leaderboard:[];if(!rows.length){podium.innerHTML='';list.innerHTML='<div class="leader-foot" style="padding:22px 8px;text-align:center">Belum ada member yang memilih untuk tampil di leaderboard.</div>';foot.textContent='Nama dan poin hanya ditampilkan dengan persetujuan member.';return;}const card=(row,rank,klass)=>'<article class="podium-card '+klass+'"><div class="podium-medal">'+(rank===1?'01 / RANK':rank)+'</div><div class="podium-avatar">'+escapeMemberHtml(String(row.display_name||'P').trim().split(/s+/).slice(0,2).map(v=>v[0]||'').join('').toUpperCase())+'</div><div class="podium-name">'+escapeMemberHtml(row.display_name||'Kerabat pa.yu')+'</div><div class="podium-tier">'+escapeMemberHtml(row.level||'Member')+' member</div><div class="podium-score">'+Number(row.points_balance||0).toLocaleString('id-ID')+' pts</div>'+(rank===1?'<span class="podium-ribbon">Peringkat tertinggi</span>':'')+'</article>';const top=rows.slice(0,3);podium.innerHTML=[top[1]?card(top[1],2,'second'):'',top[0]?card(top[0],1,'first'):'',top[2]?card(top[2],3,'third'):''].join('');list.innerHTML=rows.slice(3).map((row,i)=>'<div class="leader-row"><div class="rank">'+(i+4)+'</div><div class="person"><div class="avatar">'+escapeMemberHtml(String(row.display_name||'P').trim().split(/s+/).slice(0,2).map(v=>v[0]||'').join('').toUpperCase())+'</div><div><div class="person-name">'+escapeMemberHtml(row.display_name||'Kerabat pa.yu')+'</div><div class="person-tier">'+escapeMemberHtml(row.level||'Member')+' member</div></div></div><div class="score">'+Number(row.points_balance||0).toLocaleString('id-ID')+' pts</div></div>').join('');foot.textContent='Peringkat diperbarui otomatis dari data membership PA.YU.';}catch(err){podium.innerHTML='';list.innerHTML='<div class="leader-foot" style="padding:22px 8px;text-align:center">Leaderboard belum dapat dimuat. Silakan muat ulang halaman.</div>';foot.textContent='Koneksi server sedang tidak tersedia.';console.warn('Leaderboard PA.YU:',err.message);}}
 async function loadPublicSiteSettingsAndBanners(){
  try{
-  const results=await Promise.all([payuApi('public/settings'),payuApi('public/banners')]);
-  const settings=results[0].settings||{},banners=Array.isArray(results[1].banners)?results[1].banners:[];
+  // Konten teks dan gambar independen; gangguan satu endpoint tidak memblokir lainnya.
+  const [settingsResult,bannersResult]=await Promise.allSettled([payuApi('public/settings'),payuApi('public/banners')]);
+  if(settingsResult.status==='rejected')console.warn('Pengaturan publik belum dapat dimuat:',settingsResult.reason?.message||settingsResult.reason);
+  if(bannersResult.status==='rejected')console.warn('Banner publik belum dapat dimuat:',bannersResult.reason?.message||bannersResult.reason);
+  const settings=settingsResult.status==='fulfilled'?(settingsResult.value.settings||{}):{};
+  const banners=bannersResult.status==='fulfilled'&&Array.isArray(bannersResult.value.banners)?bannersResult.value.banners:[];
   const setText=(id,value)=>{const el=document.getElementById(id);if(el&&typeof value==='string'&&value.trim())el.textContent=value;};
   setText('publicBusinessAddress',settings.business_address);setText('publicBusinessHours',settings.business_hours);setText('publicInstagramText',settings.instagram_url);
   setText('publicMapNote',settings.business_address?'Lokasi PA.YU: '+settings.business_address:'Lokasi dan peta akan ditampilkan setelah alamat resmi ditambahkan.');
@@ -730,129 +734,8 @@ if('IntersectionObserver' in window){const sectionObserver=new IntersectionObser
 const promoViewer=document.getElementById('promoViewer');
 const promoTrack=document.getElementById('promoTrack');
 const promoSlides=[...document.querySelectorAll('.promo-poster')];
-const ADMIN_DATA_STORAGE_KEY='payuCoffeeAdmin_v1';
-const PROMO_SLOT_IDS=['promo-poster-1','promo-poster-2','promo-poster-3'];
-function readAdminData(){
-  try{
-    const raw=localStorage.getItem(ADMIN_DATA_STORAGE_KEY);
-    const stored=raw?JSON.parse(raw):null;
-    return stored&&typeof stored==='object'?stored:{};
-  }catch(error){console.warn('Data Admin belum dapat dibaca dari browser ini.',error);return {}}
-}
-function readAdminBannerSlots(){
-  const stored=readAdminData();
-  return Array.isArray(stored.bannerSlots)?stored.bannerSlots:[];
-}
-function syncPromoAndGalleryContentFromAdmin(){
-  const stored=readAdminData();
-  const heroContent=stored.heroContent;
-  if(heroContent&&typeof heroContent==='object'){
-    const heroTextMap={heroKickerText:heroContent.kicker,heroHeadlineTop:heroContent.headlineTop,heroHeadlineBottomPrefix:heroContent.headlineBottomPrefix,heroHeadlineAccent:heroContent.headlineAccent,heroDescriptionText:heroContent.description,heroTaglineText:heroContent.tagline};
-    Object.entries(heroTextMap).forEach(([id,value])=>{const el=document.getElementById(id);if(el&&typeof value==='string')el.textContent=value;});
-  }
-  const promoCards=stored.promoCards;
-  if(Array.isArray(promoCards)){
-    promoSlides.forEach((slide,index)=>{
-      const card=promoCards.find(item=>item&&item.id===PROMO_SLOT_IDS[index])||promoCards[index];
-      if(!card)return;
-      slide.querySelectorAll('[data-promo-copy-field]').forEach(el=>{
-        const key=el.getAttribute('data-promo-copy-field');
-        if(typeof card[key]==='string')el.textContent=card[key];
-      });
-      const label=String(card.label||'Poster Promo '+(index+1));
-      slide.dataset.promoTitle=label+' pa.yu';
-      slide.setAttribute('aria-label','Buka poster '+label+' pa.yu');
-    });
-  }
-  const promo=stored.promo;
-  if(promo&&typeof promo==='object'){
-    const textMap={publicPromoTag:promo.tag,publicPromoDiscount:promo.discount,publicPromoTitle:promo.title,publicPromoDescription:promo.description,publicPromoCode:promo.code};
-    Object.entries(textMap).forEach(([id,value])=>{
-      const el=document.getElementById(id);
-      if(el&&typeof value==='string')el.textContent=value;
-    });
-    const codeWrap=document.getElementById('publicPromoCodeWrap');
-    if(codeWrap)codeWrap.hidden=!String(promo.code||'').trim();
-    const tag=document.getElementById('publicPromoTag');if(tag)tag.hidden=!String(promo.tag||'').trim();
-    const discount=document.getElementById('publicPromoDiscount');if(discount)discount.hidden=!String(promo.discount||'').trim();
-  }
-  if(Array.isArray(stored.galleryContent)){
-    stored.galleryContent.forEach(item=>{
-      if(!item||!item.slotId)return;
-      const card=document.querySelector(`[data-gallery-copy="${item.slotId}"]`);
-      if(!card)return;
-      const eyebrow=card.querySelector('[data-gallery-copy-field="eyebrow"]');
-      const title=card.querySelector('[data-gallery-copy-field="title"]');
-      if(eyebrow&&typeof item.eyebrow==='string'){
-        eyebrow.textContent=item.eyebrow;
-        eyebrow.hidden=!item.eyebrow.trim();
-      }
-      if(title&&typeof item.title==='string')title.textContent=item.title;
-    });
-  }
-}
-function getAdminBannerImage(slots,id){
-  const slot=slots.find(item=>item&&item.id===id);
-  return slot&&typeof slot.image==='string'&&slot.image.startsWith('data:image/')?slot.image:'';
-}
-function syncHeroAndGalleryFromAdmin(){
-  const slots=readAdminBannerSlots();
-  const hero=document.querySelector('.hero-banner-bg');
-  if(hero){
-    const source=getAdminBannerImage(slots,'hero-main');
-    if(source){
-      hero.dataset.payuAdminImage='true';
-      if(hero.getAttribute('src')!==source)hero.setAttribute('src',source);
-      hero.hidden=false;
-    }else if(hero.dataset.payuAdminImage==='true'){
-      delete hero.dataset.payuAdminImage;
-      hero.setAttribute('src','banner-utama.jpg');
-      hero.hidden=false;
-    }
-  }
-  document.querySelectorAll('.gallery-admin-bg[data-gallery-slot]').forEach(img=>{
-    const source=getAdminBannerImage(slots,img.dataset.gallerySlot);
-    if(source){
-      img.dataset.payuAdminImage='true';
-      if(img.getAttribute('src')!==source)img.setAttribute('src',source);
-      img.hidden=false;
-    }else if(img.dataset.payuAdminImage==='true'){
-      delete img.dataset.payuAdminImage;
-      img.removeAttribute('src');
-      img.hidden=true;
-    }
-  });
-}
-function syncPromoPostersFromAdmin(){
-  try{
-    const slots=readAdminBannerSlots();
-    promoSlides.forEach((slide,index)=>{
-      const img=slide.querySelector('.poster-art img');
-      if(!img)return;
-      const source=getAdminBannerImage(slots,PROMO_SLOT_IDS[index]) || (index===0?getAdminBannerImage(slots,'promo-banner'):'');
-      if(source){
-        img.dataset.payuAdminPoster='true';
-        if(img.getAttribute('src')!==source)img.setAttribute('src',source);
-        img.style.display='block';
-      }else if(img.dataset.payuAdminPoster==='true'){
-        img.removeAttribute('data-payu-admin-poster');
-        img.setAttribute('src','poster-promo-'+(index+1)+'.jpg');
-        img.style.display='';
-      }
-    });
-  }catch(error){console.warn('Poster admin belum dapat dibaca dari browser ini.',error)}
-}
-syncHeroAndGalleryFromAdmin();
-syncPromoPostersFromAdmin();
-syncPromoAndGalleryContentFromAdmin();
-window.addEventListener('storage',event=>{
-  if(event.key===ADMIN_DATA_STORAGE_KEY||event.key===null){
-    syncHeroAndGalleryFromAdmin();
-    syncPromoPostersFromAdmin();
-    syncPromoAndGalleryContentFromAdmin();
-    if(document.getElementById('promoViewer')?.classList.contains('open'))showPromoSlide(activePromoIndex);
-  }
-});
+// Data publik selalu bersumber dari API Rumahweb; data admin lokal lama tidak boleh
+// menimpa tulisan maupun gambar yang disimpan pada server.
 const promoViewerZoom=document.getElementById('promoViewerZoom');
 const promoViewerMedia=document.getElementById('promoViewerMedia');
 const promoViewerStage=document.getElementById('promoViewerStage');

@@ -636,16 +636,6 @@
           <div class="field full"><button class="btn" type="submit">Simpan informasi toko</button><p class="form-note">Perubahan akan tersedia untuk pengunjung setelah halaman publik memuat ulang data dari server.</p></div>
         </form>
       </section>
-      <section class="panel">
-        <div class="panel-head"><div><h2 class="panel-title">Informasi Toko</h2><p class="panel-subtitle">Informasi ini ditampilkan di bagian Alamat website publik dan disimpan di database.</p></div></div>
-        <form id="publicInfoForm" class="form-grid">
-          <div class="field full"><label for="publicInfoAddress">Alamat lengkap</label><textarea id="publicInfoAddress" maxlength="1000" rows="2" placeholder="Alamat resmi PA.YU"></textarea></div>
-          <div class="field"><label for="publicInfoHours">Jam operasional</label><input id="publicInfoHours" maxlength="300" placeholder="Contoh: Setiap hari, 08.00–22.00"></div>
-          <div class="field"><label for="publicInfoInstagram">Instagram (URL atau akun)</label><input id="publicInfoInstagram" maxlength="300" placeholder="https://instagram.com/akun"></div>
-          <div class="field full"><label for="publicInfoMaps">URL Google Maps</label><input id="publicInfoMaps" type="url" maxlength="1000" placeholder="https://maps.google.com/..."></div>
-          <div class="field full"><button class="btn" type="submit">Simpan informasi toko</button><p class="form-note">Perubahan akan tersedia bagi pengunjung setelah halaman publik memuat data terbaru dari server.</p></div>
-        </form>
-      </section>
       <section class="panel hero-copy-manager">
         <div class="banner-manager-head"><div><h2 class="panel-title">Teks Banner Utama</h2><p class="panel-subtitle">Atur tulisan di atas background Beranda. Pratinjau mengikuti gambar Banner Utama yang diunggah di bawah.</p></div></div>
         <div class="hero-editor-layout">
@@ -662,7 +652,7 @@
             <div class="field"><label for="heroAccentInput">Kata beraksen</label><input id="heroAccentInput" maxlength="40" /></div>
             <div class="field full"><label for="heroDescriptionInput">Deskripsi banner</label><textarea id="heroDescriptionInput" rows="3" maxlength="260"></textarea></div>
             <div class="field full"><label for="heroTaglineInput">Tulisan kecil di sudut banner</label><input id="heroTaglineInput" maxlength="100" /></div>
-            <div class="field full"><button class="btn" type="submit">Simpan teks Beranda</button><p class="form-note">Pratinjau berubah saat diketik. Simpan agar teks dibaca oleh index.html pada browser yang sama.</p></div>
+            <div class="field full"><button class="btn" type="submit">Simpan teks Beranda</button><p class="form-note">Pratinjau berubah saat diketik. Klik Simpan agar teks Beranda tersimpan di server dan terlihat oleh semua pengunjung setelah memuat ulang halaman.</p></div>
           </form>
         </div>
       </section>
@@ -673,14 +663,14 @@
         <div class="field full"><label for="promoDescription">Deskripsi</label><textarea id="promoDescription" maxlength="240">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</textarea></div>
         <div class="field"><label for="promoCode">Kode promo</label><input id="promoCode" maxlength="24" value="PAYUFRIEND" /></div>
         <div class="field"><label for="promoDiscount">Diskon / penawaran</label><input id="promoDiscount" maxlength="32" value="SPECIAL PRICE" /></div>
-        <div class="field full"><button class="btn" type="submit">Simpan promo</button><p class="form-note">Teks ini ditampilkan sebagai kartu informasi di bagian Promo pada index.html. Saat ini tersimpan di browser ini; backend diperlukan agar semua pengunjung melihat perubahan.</p></div>
+        <div class="field full"><button class="btn" type="submit">Simpan promo</button><p class="form-note">Teks ini ditampilkan di bagian Promo website publik dan disimpan di server agar terlihat oleh semua pengunjung.</p></div>
       </form></div>
       <div><div class="promo-preview"><div class="promo-top"><div class="promo-brand">PA.YU COFFEE</div><div class="promo-tag" id="previewTag">SPECIAL OFFER</div></div><div class="promo-content"><small id="previewDiscount">SPECIAL PRICE</small><h3 id="previewTitle">Your daily cup of joy.</h3><p id="previewDescription">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</p><span class="promo-code" id="previewCode">PAYUFRIEND</span></div></div><p class="form-note" style="margin-top:12px">Pratinjau teks promo. Untuk melihat gambar banner, gunakan slot banner di bawah.</p></div></div>
 
       <section class="panel gallery-content-manager">
         <div class="banner-manager-head"><div><h2 class="panel-title">Teks Foto Galeri</h2><p class="panel-subtitle">Lihat pratinjau setiap foto dan ubah tulisan yang tampil di atas foto pada website utama.</p></div></div>
         <div class="gallery-copy-grid" id="galleryCopyGrid"></div>
-        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn" type="button" onclick="saveGalleryContent()">Simpan teks galeri</button><span class="form-note">Pratinjau berubah langsung saat diketik. Klik Simpan agar teks tersimpan di browser ini dan dibaca oleh index.html.</span></div>
+        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn" type="button" onclick="saveGalleryContent()">Simpan teks galeri</button><span class="form-note">Pratinjau berubah langsung saat diketik. Klik Simpan untuk memperbarui tulisan galeri di website publik.</span></div>
       </section>
 
       <section class="panel promo-card-content-manager">
@@ -691,9 +681,9 @@
 
       <section class="panel banner-manager">
         <div class="banner-manager-head"><div><h2 class="panel-title">Banner website</h2><p class="panel-subtitle">Upload gambar hanya pada bagian yang ingin diganti.</p></div><button class="btn gold" type="button" onclick="addBannerSlot()">＋ Tambah slot banner</button></div>
-        <div class="banner-manager-note"><strong>Slot gambar yang terhubung ke index.html:</strong> <b>Banner Utama</b> mengubah background Beranda; <b>Foto Galeri 1–3</b> mengubah tiga foto pada Galeri; dan <b>Poster Promo 1–3</b> mengubah tiga poster pada Promo. <b>Penting:</b> untuk uji coba saat ini gambar disimpan di localStorage browser, sehingga dapat terlihat saat index.html dan admin.html dibuka pada browser/perangkat yang sama. Pengunjung di perangkat lain belum akan melihat gambar baru sampai backend dan penyimpanan online diaktifkan.</div>
+        <div class="banner-manager-note"><strong>Slot gambar yang terhubung ke index.html:</strong> <b>Banner Utama</b> mengubah background Beranda; <b>Foto Galeri 1–3</b> mengubah tiga foto pada Galeri; dan <b>Poster Promo 1–3</b> mengubah tiga poster pada Promo. <b>Penting:</b> gambar diunggah ke server Rumahweb dan akan terlihat oleh semua pengunjung setelah website publik dimuat ulang. Format yang didukung: JPG, PNG, atau WebP maksimal 5 MB.</div>
         <div id="bannerSlotGrid" class="banner-slot-grid"></div>
-        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn secondary" type="button" onclick="exportBannerConfig()">↓ Ekspor konfigurasi banner</button><span class="form-note">Gunakan ekspor untuk memindahkan data banner saat menghubungkan website publik.</span></div>
+        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn secondary" type="button" onclick="exportBannerConfig()">↓ Ekspor konfigurasi banner</button><span class="form-note">Ekspor hanya untuk cadangan konfigurasi. Data publik disimpan di server.</span></div>
       </section>
     </section>
 
@@ -1328,13 +1318,6 @@
  try{await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings}});notify('Informasi toko disimpan ke database.')}
  catch(err){notify('Informasi toko gagal disimpan: '+err.message)}
 });
-document.getElementById('publicInfoForm').addEventListener('submit',async e=>{
- e.preventDefault();
- if(!remoteOperationalMode){notify('Login terlebih dahulu untuk menyimpan informasi website ke server.');return}
- const settings={business_address:document.getElementById('publicInfoAddress').value.trim(),business_hours:document.getElementById('publicInfoHours').value.trim(),instagram_url:document.getElementById('publicInfoInstagram').value.trim(),google_maps_url:document.getElementById('publicInfoMaps').value.trim()};
- try{await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings}});notify('Informasi toko disimpan ke database.')}
- catch(err){notify('Informasi toko gagal disimpan: '+err.message)}
-});
 document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.preventDefault();const rate=Number(document.getElementById('pointRateInput').value);if(!Number.isInteger(rate)||rate<1000||rate%1000!==0){notify('Aturan poin harus kelipatan Rp1.000, minimal Rp1.000. Contoh: Rp1.000, Rp2.000, atau Rp10.000.');document.getElementById('pointRateInput').focus();return}if(remoteOperationalMode){try{await window.payuAdminApiRequest('staff/settings/save',{method:'POST',body:{settings:{point_rupiah_per_point:String(rate)}}});data.pointRate=rate;updateTxPreview();notify(`Aturan poin disimpan ke database: setiap ${money(rate)} = 1 poin.`)}catch(err){notify('Aturan poin gagal disimpan: '+err.message)}return}data.pointRate=rate;saveData();updateTxPreview();notify(`Aturan diperbarui: setiap ${money(rate)} = 1 poin.`)});
   function renderMenu(){const q=(document.getElementById('menuSearch').value||'').toLowerCase().trim();const cat=document.getElementById('menuCategoryFilter').value;const list=data.menus.filter(m=>(m.name+' '+m.description+' '+m.category).toLowerCase().includes(q)&&(cat==='all'||m.category===cat));document.getElementById('menuGrid').innerHTML=list.length?list.map(m=>`<article class="menu-card"><div class="menu-art">${esc(m.emoji||'☕')}</div><div class="menu-info"><h3>${esc(m.name)}</h3><p>${esc(m.category)} · ${esc(m.description||'Menu PA.YU Coffee')}</p><div class="menu-card-bottom"><span class="price">${money(m.price)}</span><span class="menu-actions"><button class="btn secondary small" onclick="editMenu('${esc(m.id)}')">Edit</button><button class="btn danger small" onclick="deleteMenu('${esc(m.id)}')">Hapus</button></span></div></div></article>`).join(''):`<div class="panel empty" style="grid-column:1/-1">Belum ada menu yang sesuai.</div>`}
   document.getElementById('menuSearch').addEventListener('input',renderMenu);document.getElementById('menuCategoryFilter').addEventListener('change',renderMenu);
@@ -1453,6 +1436,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
     if(saveData())notify('Teks foto Galeri berhasil disimpan. Buka atau muat ulang index.html untuk melihat hasilnya.');
   };
 
+  const REMOTE_BANNER_KEYS=Object.freeze({'hero-main':'banner_utama','menu-banner':'banner_menu','promo-poster-1':'banner_promo','promo-poster-2':'foto_4','promo-poster-3':'foto_5','shop-photo-1':'foto_6','shop-photo-2':'foto_7','shop-photo-3':'foto_8','shop-photo-4':'foto_9'});
   function renderBannerSlots(){
     const grid=document.getElementById('bannerSlotGrid');
     if(!grid)return;
@@ -1475,8 +1459,7 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
     const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;
     if(!file.type||!file.type.startsWith('image/')){notify('Pilih file gambar seperti JPG, PNG, atau WebP.');return}
     if(file.size>12*1024*1024){notify('Ukuran file maksimal 12 MB sebelum dikompres.');return};if(remoteOperationalMode){
-      const slotKeys={'hero-main':'banner_utama','menu-banner':'banner_menu','promo-poster-1':'banner_promo','promo-poster-2':'foto_4','promo-poster-3':'foto_5','shop-photo-1':'foto_6','shop-photo-2':'foto_7','shop-photo-3':'foto_8','shop-photo-4':'foto_9'};
-      const slotKey=slotKeys[id];if(!slotKey){notify('Slot gambar ini belum didukung oleh server.');return}
+      const slotKey=REMOTE_BANNER_KEYS[id];if(!slotKey){notify('Slot gambar ini belum didukung oleh server.');return}
       if(file.size>5*1024*1024){notify('Ukuran gambar untuk server maksimal 5 MB.');return}
       try{const result=await window.payuAdminUploadBanner(slotKey,slot.name,file);slot.image=result.image_url;slot.fileName=file.name;slot.updatedAt=new Date().toISOString();renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify('Gambar berhasil diunggah ke server.')}catch(err){notify('Unggah gambar gagal: '+err.message)}
       return;
@@ -1498,11 +1481,30 @@ document.getElementById('pointRateForm').addEventListener('submit',async e=>{e.p
       renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify(`Gambar “${slot.name}” berhasil disimpan di browser ini.`);
     }catch(err){console.error(err);notify('Gambar gagal diproses. Coba gunakan file JPG, PNG, atau WebP yang lain.');}
   }
-  window.clearBannerImage=id=>{if(remoteOperationalMode){notify('Server belum menyediakan penghapusan banner. Unggah gambar pengganti untuk mengganti gambar yang tampil.');return;}const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;if(!confirm(`Hapus gambar pada ${slot.name}?`))return;const oldImage=slot.image,oldName=slot.fileName;slot.image='';slot.fileName='';delete slot.updatedAt;if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return}renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();notify(`Gambar ${slot.name} dihapus dari penyimpanan browser.`)};
+  window.clearBannerImage=async id=>{
+    const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image)return;
+    if(!confirm('Hapus gambar pada '+slot.name+'? Di website publik gambar akan kembali ke versi bawaan bila ada.'))return;
+    if(remoteOperationalMode){
+      const slotKey=REMOTE_BANNER_KEYS[id];
+      if(!slotKey){notify('Slot tambahan belum didukung server.');return;}
+      try{
+        await window.payuAdminApiRequest('staff/banners/delete',{method:'POST',body:{slot_key:slotKey}});
+        slot.image='';slot.fileName='';delete slot.updatedAt;
+        renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();
+        notify('Gambar '+slot.name+' sudah dinonaktifkan di server.');
+      }catch(error){notify('Gambar belum dihapus: '+error.message);}
+      return;
+    }
+    const oldImage=slot.image,oldName=slot.fileName;
+    slot.image='';slot.fileName='';delete slot.updatedAt;
+    if(!saveData()){slot.image=oldImage;slot.fileName=oldName;return;}
+    renderBannerSlots();renderGalleryEditors();renderPromoCardEditors();updateHeroContentPreview();
+    notify('Gambar '+slot.name+' dihapus dari simulasi browser.');
+  };
   window.downloadBannerImage=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot||!slot.image){notify('Slot belum memiliki gambar.');return}const a=document.createElement('a');a.href=slot.image;const base=(slot.name||'banner').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'banner';a.download=`payu-${base}.jpg`;document.body.appendChild(a);a.click();a.remove();};
-  window.addBannerSlot=()=>{const name=prompt('Nama slot banner baru (contoh: Banner Foto 5):');if(!name||!name.trim())return;const clean=name.trim();if(data.bannerSlots.some(s=>s.name.toLowerCase()===clean.toLowerCase())){notify('Nama slot tersebut sudah ada.');return}const id='custom-'+makeId('BANNER').toLowerCase();data.bannerSlots.push({id,name:clean,description:'Slot banner tambahan untuk website',recommended:'sesuaikan desain website',image:'',fileName:''});if(saveData()){renderBannerSlots();notify(`Slot “${clean}” berhasil ditambahkan.`)}};
+  window.addBannerSlot=()=>{if(remoteOperationalMode){notify('Slot tambahan belum ditampilkan oleh website publik. Gunakan slot Banner Utama, Galeri 1–3, atau Poster Promo 1–3 yang sudah terhubung.');return;}const name=prompt('Nama slot banner baru (contoh: Banner Foto 5):');if(!name||!name.trim())return;const clean=name.trim();if(data.bannerSlots.some(s=>s.name.toLowerCase()===clean.toLowerCase())){notify('Nama slot tersebut sudah ada.');return}const id='custom-'+makeId('BANNER').toLowerCase();data.bannerSlots.push({id,name:clean,description:'Slot banner tambahan untuk website',recommended:'sesuaikan desain website',image:'',fileName:''});if(saveData()){renderBannerSlots();notify(`Slot “${clean}” berhasil ditambahkan.`)}};
   window.removeBannerSlot=id=>{const slot=data.bannerSlots.find(x=>x.id===id);if(!slot)return;if(seed.bannerSlots.some(s=>s.id===id)){notify('Slot bawaan tidak dapat dihapus. Hapus gambar saja jika tidak dipakai.');return}if(!confirm(`Hapus slot “${slot.name}” beserta gambar tersimpannya?`))return;data.bannerSlots=data.bannerSlots.filter(s=>s.id!==id);if(saveData()){renderBannerSlots();notify('Slot banner dihapus.')}};
-  window.exportBannerConfig=()=>{const payload={brand:'PA.YU Coffee',exportedAt:new Date().toISOString(),note:'Slot hero-main mengubah background dan heroContent mengubah teks Beranda; shop-photo-1 sampai shop-photo-3 mengubah foto Galeri; promo-poster-1 sampai promo-poster-3 mengubah latar kartu dan promoCards mengubah overlay serta label tiap poster. Saat ini data disimpan di localStorage browser yang sama; penyimpanan online diperlukan agar semua pengunjung melihat perubahan.',bannerSlots:data.bannerSlots,heroContent:data.heroContent,promoCards:data.promoCards,promo:data.promo,galleryContent:data.galleryContent};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='payu-banner-config.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Konfigurasi banner diekspor sebagai JSON.');};
+  window.exportBannerConfig=()=>{const payload={brand:'PA.YU Coffee',exportedAt:new Date().toISOString(),note:'Konfigurasi banner dan teks PA.YU tersinkron melalui server; ekspor ini adalah cadangan data editor.',bannerSlots:data.bannerSlots,heroContent:data.heroContent,promoCards:data.promoCards,promo:data.promo,galleryContent:data.galleryContent};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='payu-banner-config.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Konfigurasi banner diekspor sebagai JSON.');};
 
   function loadPromoToForm(){const p=data.promo;document.getElementById('promoTag').value=p.tag;document.getElementById('promoTitle').value=p.title;document.getElementById('promoDescription').value=p.description;document.getElementById('promoCode').value=p.code;document.getElementById('promoDiscount').value=p.discount;updatePromoPreview()}
   function updatePromoPreview(){const tag=document.getElementById('promoTag').value.trim();const title=document.getElementById('promoTitle').value.trim();const description=document.getElementById('promoDescription').value.trim();const code=document.getElementById('promoCode').value.trim();const discount=document.getElementById('promoDiscount').value.trim();document.getElementById('previewTag').textContent=tag;document.getElementById('previewTag').hidden=!tag;document.getElementById('previewTitle').textContent=title||'PA.YU Coffee';document.getElementById('previewDescription').textContent=description;document.getElementById('previewCode').textContent=code;document.getElementById('previewCode').hidden=!code;document.getElementById('previewDiscount').textContent=discount;document.getElementById('previewDiscount').hidden=!discount}
@@ -1609,6 +1611,9 @@ window.payuAdminHydrateFromServer=async function(){
  document.getElementById('publicInfoInstagram').value=settingValue('instagram_url');
  document.getElementById('publicInfoMaps').value=settingValue('google_maps_url');
  if(promoSetting&&promoSetting.setting_value){try{const savedCopy=JSON.parse(promoSetting.setting_value);if(savedCopy&&typeof savedCopy==='object'){data.promo=savedCopy.promo&&typeof savedCopy.promo==='object'?savedCopy.promo:(savedCopy.title?savedCopy:data.promo);if(savedCopy.heroContent)data.heroContent=savedCopy.heroContent;if(Array.isArray(savedCopy.galleryContent)){data.galleryContent=savedCopy.galleryContent;galleryDraft=structuredCloneSafe(savedCopy.galleryContent)}if(Array.isArray(savedCopy.promoCards)){data.promoCards=savedCopy.promoCards;promoCardsDraft=structuredCloneSafe(savedCopy.promoCards)}}}catch(_){}}
+ // Gunakan naskah yang baru dibaca dari server, bukan draft lama dari localStorage.
+ galleryDraft=structuredCloneSafe(data.galleryContent||seed.galleryContent);
+ promoCardsDraft=structuredCloneSafe(data.promoCards||seed.promoCards);
  const banners=Array.isArray(results[4].banners)?results[4].banners:[];
  const keyForSlot=id=>id==='hero-main'?'banner_utama':id==='menu-banner'?'banner_menu':id==='promo-poster-1'?'banner_promo':id==='promo-poster-2'?'foto_4':id==='promo-poster-3'?'foto_5':(/^shop-photo-(\\d+)$/.test(id)?'foto_'+(Number(id.match(/(\\d+)$/)?.[1])+5):'');
  data.bannerSlots=data.bannerSlots.map(slot=>{const key=keyForSlot(slot.id),remote=banners.find(b=>b.slot_key===key);return {...slot,image:remote?.image_url||'',fileName:remote?.title||''};});
