@@ -516,6 +516,27 @@
     @media(max-width:1050px){.promo-card-copy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:760px){.hero-editor-layout{grid-template-columns:minmax(0,1fr)}.hero-copy-preview{min-height:300px}.hero-editor-layout #heroContentForm{grid-template-columns:minmax(0,1fr)}.hero-editor-layout #heroContentForm .field.full{grid-column:auto}.promo-card-copy-grid{grid-template-columns:minmax(0,1fr)}.promo-card-copy-preview{max-height:460px}}
   </style>
+<style id="payu-unified-image-editor">
+/* Pilih gambar pada pratinjau yang sama tempat teks diedit; tidak perlu kartu banner ganda. */
+.editor-photo-select{position:absolute;inset:0;z-index:8;width:100%;height:100%;border:0;background:transparent;color:#fff;cursor:pointer;touch-action:manipulation;appearance:none;padding:0}
+.editor-photo-select:hover{background:rgba(18,20,15,.11)}
+.editor-photo-select:focus-visible{outline:3px solid #d8e98a;outline-offset:-4px}
+.editor-photo-select[disabled]{cursor:progress}
+.editor-photo-select[disabled] .editor-photo-select-hint{opacity:.94}
+.editor-photo-select-hint{position:absolute;top:12px;right:12px;max-width:calc(100% - 24px);display:inline-flex;align-items:center;justify-content:center;text-align:center;padding:7px 11px;line-height:1.35;border:1px solid #ffffff70;border-radius:999px;background:rgba(30,36,27,.85);color:#fff;font:750 10px/1.35 Inter,system-ui,sans-serif;box-shadow:0 4px 18px #0003;pointer-events:none;transition:background .18s,transform .18s}
+.editor-photo-select:hover .editor-photo-select-hint,.editor-photo-select:focus-visible .editor-photo-select-hint{background:#243422;transform:translateY(-1px)}
+.editor-photo-file{display:none!important}
+.hero-copy-preview,.gallery-copy-preview,.promo-card-copy-preview{cursor:pointer}
+.website-extra-banners{margin-top:18px}
+.website-extra-summary{list-style:none;cursor:pointer;font-size:14px;font-weight:850;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.website-extra-summary::-webkit-details-marker{display:none}
+.website-extra-summary:after{content:'＋';font-size:19px;color:#77665c}
+.website-extra-banners[open] .website-extra-summary:after{content:'−'}
+.website-extra-summary span{font-size:11px;font-weight:500;color:var(--muted);margin-right:auto}
+.website-extra-summary:focus-visible{outline:2px solid #31513b;outline-offset:5px}
+.website-extra-banners:not([open]) #bannerSlotGrid{display:none}
+@media(max-width:760px){.editor-photo-select-hint{font-size:10px;padding:7px 10px}.website-extra-summary{flex-wrap:wrap}.website-extra-summary span{width:100%;order:3}}
+</style>
 </head>
 <body>
 <div id="adminLoginGate" class="admin-login-gate">
@@ -548,7 +569,7 @@
         <button class="nav-btn" data-view="members"><span class="nav-icon">♙</span> Data Member</button>
         <button class="nav-btn" data-view="transactions"><span class="nav-icon">▤</span> Transaksi</button>
         <button class="nav-btn" data-view="menu"><span class="nav-icon">☕</span> Menu & Harga</button>
-        <button class="nav-btn" data-view="promo"><span class="nav-icon">✦</span> Promo</button>
+        <button class="nav-btn" data-view="promo"><span class="nav-icon">✦</span> Konten Website</button>
         <button class="nav-btn" data-view="benefits" id="benefitsNavBtn" hidden><span class="nav-icon">♧</span> Benefit & Kupon</button>
         <button class="nav-btn" data-view="roles" id="rolesNavBtn" hidden><span class="nav-icon">♙</span> Role</button>
       </nav>
@@ -637,7 +658,7 @@
     </section>
 
     <section class="view" id="view-promo">
-      <div class="section-heading"><div><h2>Kelola Promo & Banner</h2><p>Atur teks promosi dan upload gambar untuk setiap area website PA.YU.</p></div><button class="btn secondary" onclick="resetPromo()">Pulihkan teks promo</button></div>
+      <div class="section-heading"><div><h2>Kelola Konten Website</h2><p>Ubah foto dan tulisan langsung dari pratinjau, serta kelola informasi toko PA.YU.</p></div><button class="btn secondary" onclick="resetPromo()">Pulihkan teks promo</button></div>
       <section class="panel">
         <div class="panel-head"><div><h2 class="panel-title">Informasi Toko</h2><p class="panel-subtitle">Informasi ini ditampilkan di bagian Alamat website publik dan disimpan di database.</p></div></div>
         <form id="publicInfoForm" class="form-grid">
@@ -650,14 +671,16 @@
         </form>
       </section>
       <section class="panel hero-copy-manager">
-        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Banner Utama</h2><p class="panel-subtitle">Atur tulisan di atas background Beranda. Pratinjau mengikuti gambar Banner Utama yang diunggah di bawah.</p></div></div>
+        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Banner Utama</h2><p class="panel-subtitle">Klik pratinjau di samping untuk mengganti foto Banner Utama, lalu atur tulisannya di sini.</p></div></div>
         <div class="hero-editor-layout">
           <div class="hero-copy-preview" id="heroContentPreview">
             <img id="heroContentPreviewImage" class="hero-copy-preview-image" alt="" hidden>
             <div class="hero-copy-preview-shade"></div>
             <div class="hero-copy-preview-copy"><small id="heroPreviewKicker">Coffee • Friends • Good days</small><h3><span id="heroPreviewHeadlineTop">Tempat pulang</span><br><span id="heroPreviewHeadlineBottomPrefix">untuk</span> <em id="heroPreviewHeadlineAccent">cerita.</em></h3><p id="heroPreviewDescription">pa.yu adalah ruang untuk menikmati kopi, bertemu orang-orang baru, dan menjadi bagian dari komunitas yang terus tumbuh.</p></div>
             <div class="hero-copy-preview-tag">✳ <span id="heroPreviewTagline">A little pause, a lot of stories.</span></div>
+            <button type="button" class="editor-photo-select" data-integrated-banner-select="hero-main" aria-label="Unggah atau ganti foto Banner Utama" title="Klik untuk mengganti foto Banner Utama"><span class="editor-photo-select-hint" id="heroBannerUploadHint">↑ Klik / ketuk untuk ganti foto</span></button>
           </div>
+          <input type="file" class="editor-photo-file" data-integrated-banner-upload="hero-main" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
           <form id="heroContentForm" class="form-grid">
             <div class="field full"><label for="heroKickerInput">Tulisan kecil di atas judul</label><input id="heroKickerInput" maxlength="80" /></div>
             <div class="field full"><label for="heroTitleTopInput">Judul baris pertama</label><input id="heroTitleTopInput" maxlength="60" /></div>
@@ -681,23 +704,24 @@
       <div><div class="promo-preview"><div class="promo-top"><div class="promo-brand">PA.YU COFFEE</div><div class="promo-tag" id="previewTag">SPECIAL OFFER</div></div><div class="promo-content"><small id="previewDiscount">SPECIAL PRICE</small><h3 id="previewTitle">Your daily cup of joy.</h3><p id="previewDescription">Nikmati momen istimewa bersama kopi favoritmu. Datang dan temukan racikan pilihan di PA.YU Coffee.</p><span class="promo-code" id="previewCode">PAYUFRIEND</span></div></div><p class="form-note" style="margin-top:12px">Pratinjau teks promo. Untuk melihat gambar banner, gunakan slot banner di bawah.</p></div></div>
 
       <section class="panel gallery-content-manager">
-        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Foto Galeri</h2><p class="panel-subtitle">Lihat pratinjau setiap foto dan ubah tulisan yang tampil di atas foto pada website utama.</p></div></div>
+        <div class="banner-manager-head"><div><h2 class="panel-title">Teks Foto Galeri</h2><p class="panel-subtitle">Klik langsung pratinjau untuk mengganti foto, lalu atur tulisan yang tampil pada website publik.</p></div></div>
         <div class="gallery-copy-grid" id="galleryCopyGrid"></div>
         <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn" type="button" onclick="saveGalleryContent()">Simpan teks galeri</button><span class="form-note">Pratinjau berubah langsung saat diketik. Klik Simpan untuk memperbarui tulisan galeri di website publik.</span></div>
       </section>
 
       <section class="panel promo-card-content-manager">
-        <div class="banner-manager-head"><div><h2 class="panel-title">Teks di Atas Poster Promo</h2><p class="panel-subtitle">Atur tulisan overlay pada tiap foto, pratinjau, dan judul yang muncul di bawah foto.</p></div></div>
+        <div class="banner-manager-head"><div><h2 class="panel-title">Teks di Atas Poster Promo</h2><p class="panel-subtitle">Klik foto poster untuk menggantinya. Sesuaikan teks overlay dan judul yang tampil di website publik.</p></div></div>
         <div id="promoCardGrid" class="promo-card-copy-grid"></div>
         <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn" type="button" onclick="savePromoCardContent()">Simpan teks poster</button><span class="form-note">Popup pada website menampilkan gambar latar saja tanpa tulisan overlay. Unggah foto latar tanpa teks tertanam agar tampil bersih saat dibuka.</span></div>
       </section>
 
-      <section class="panel banner-manager">
-        <div class="banner-manager-head"><div><h2 class="panel-title">Banner website</h2><p class="panel-subtitle">Klik atau ketuk pratinjau untuk mengunggah atau mengganti gambar.</p></div><button class="btn gold" type="button" onclick="addBannerSlot()">＋ Tambah slot banner</button></div>
-        <div class="banner-manager-note"><strong>Slot gambar yang terhubung ke index.html:</strong> <b>Banner Utama</b> mengubah background Beranda; <b>Foto Galeri 1–3</b> mengubah tiga foto pada Galeri; dan <b>Poster Promo 1–3</b> mengubah tiga poster pada Promo. <b>Penting:</b> gambar diunggah ke server Rumahweb dan akan terlihat oleh semua pengunjung setelah website publik dimuat ulang. Format yang didukung: JPG, JPEG, PNG, dan WebP hingga 15 MB. Foto besar dikompres otomatis sebelum dikirim ke server.</div>
+      <details class="panel banner-manager website-extra-banners">
+        <summary class="website-extra-summary">Gambar tambahan &amp; cadangan <span>Kelola banner menu dan slot lain yang tidak memiliki editor di atas</span></summary>
+        <div class="banner-manager-note" style="margin-top:16px">Banner Utama, Foto Galeri, dan Poster Promo kini bisa diganti langsung melalui pratinjau masing-masing editor di atas. Bagian ini disediakan untuk banner tambahan atau cadangan. File JPG/JPEG/PNG/WebP hingga 15 MB tetap didukung.</div>
+        <div class="banner-manager-head"><p class="panel-subtitle">Slot cadangan hanya akan tampil pada halaman publik jika telah dihubungkan ke desain website.</p><button class="btn gold" type="button" onclick="addBannerSlot()">＋ Tambah slot banner</button></div>
         <div id="bannerSlotGrid" class="banner-slot-grid"></div>
-        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn secondary" type="button" onclick="exportBannerConfig()">↓ Ekspor konfigurasi banner</button><span class="form-note">Ekspor hanya untuk cadangan konfigurasi. Data publik disimpan di server.</span></div>
-      </section>
+        <div class="modal-footer" style="justify-content:flex-start;margin-top:16px"><button class="btn secondary" type="button" onclick="exportBannerConfig()">↓ Ekspor konfigurasi banner</button><span class="form-note">Ekspor hanya untuk cadangan konfigurasi. Data publik tetap di server.</span></div>
+      </details>
     </section>
 
     <section class="view" id="view-roles">
@@ -817,7 +841,7 @@
     members:['Loyalty program','Data Member','Kelola data pelanggan dan poin loyalitas.'],
     transactions:['Operasional toko','Transaksi','Riwayat pembelian dan poin member.'],
     menu:['Katalog produk','Menu & Harga','Kelola daftar menu dan harga jual.'],
-    promo:['Marketing','Promo','Atur konten promosi PA.YU Coffee.'],
+    promo:['Website publik','Konten Website','Kelola foto, banner, tulisan, dan informasi toko PA.YU.'],
     benefits:['Loyalty program','Benefit & Kupon','Atur ambang poin level dan nilai minimum belanja untuk kupon.'],
     roles:['Akses & keamanan','Role','Kelola username, password, dan status akun tim PA.YU.']
   };
