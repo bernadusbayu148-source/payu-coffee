@@ -543,6 +543,22 @@
 .website-extra-banners:not([open]) #bannerSlotGrid{display:none}
 @media(max-width:760px){.editor-photo-select-hint{font-size:10px;padding:7px 10px}.website-extra-summary{flex-wrap:wrap}.website-extra-summary span{width:100%;order:3}}
 </style>
+<style id="payu-loyalty-round-admin">
+.member-head-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+#startNewLoyaltyRoundBtn[hidden]{display:none!important}
+#startNewLoyaltyRoundBtn{border-color:#B96B60;color:#8D2B23;background:#FFF8F1}
+#startNewLoyaltyRoundBtn:hover{background:#FFEFE8}
+.round-warning{margin:0;padding:14px;border:1px solid #E9B8A6;border-radius:13px;background:#FFF1E9;color:#85322A;font-size:12px;line-height:1.7}
+.round-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.round-stat{padding:13px;border-radius:12px;background:#F7F4E8;border:1px solid #E5DCC8}
+.round-stat small{display:block;color:#77695C;font-size:11px;margin-bottom:4px}
+.round-stat strong{font-size:17px}
+.round-subnote{margin:10px 0 0;font-size:12px;color:#6A6257;line-height:1.6}
+.round-confirm-check{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.6;font-weight:500}
+.round-confirm-check input{width:17px;height:17px;flex:none;margin-top:1px}
+#loyaltyRoundSubmitBtn:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:620px){.member-head-actions{width:100%;justify-content:flex-start}.member-head-actions .btn{flex:1 1 160px}}
+</style>
 </head>
 <body>
 <div id="adminLoginGate" class="admin-login-gate">
@@ -639,7 +655,7 @@
     </section>
 
     <section class="view" id="view-members">
-      <div class="section-heading"><div><h2>Data Member</h2><p>Kelola data pelanggan dan poin loyalitas.</p></div><button class="btn" onclick="openMemberModal()">＋ Tambah member</button></div>
+      <div class="section-heading"><div><h2>Data Member</h2><p>Kelola data pelanggan dan poin loyalitas per putaran.</p></div><div class="member-head-actions"><button class="btn secondary" type="button" id="startNewLoyaltyRoundBtn" onclick="openLoyaltyRoundReset()" hidden>↻ Mulai putaran baru</button><button class="btn" onclick="openMemberModal()">＋ Tambah member</button></div></div>
       <div class="member-summary"><div class="mini-stat"><span>Total member</span><strong id="memberCount">0</strong></div><div class="mini-stat"><span>Total poin</span><strong id="memberPoints">0</strong></div><div class="mini-stat"><span>Member hari ini</span><strong id="memberToday">0</strong></div></div>
       <div class="panel"><div class="toolbar"><div class="search"><span class="search-icon">⌕</span><input id="memberSearch" type="search" placeholder="Cari nama, nomor HP, atau ID member..." /></div><button class="btn secondary" onclick="openScanner()">▦ Scan QR</button><button class="btn secondary" onclick="exportMembers()">↓ Export CSV</button></div><div id="membersTable"></div></div>
     </section>
@@ -652,7 +668,7 @@
 
     <section class="view" id="view-menu">
       <div class="section-heading"><div><h2>Menu & Harga</h2><p>Atur daftar menu yang tersedia di PA.YU Coffee.</p></div><button class="btn" onclick="openMenuModal()">＋ Tambah menu</button></div>
-      <div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Pengaturan poin member</h2><p class="panel-subtitle">Atur nilai belanja untuk mendapatkan 1 poin. Perubahan berlaku untuk transaksi baru dan saat riwayat transaksi diedit.</p></div></div><form id="pointRateForm" class="inline-setting"><div><strong style="font-size:12px">Konversi belanja ke poin</strong><p>Masukkan kelipatan Rp1.000. Contoh: Rp1.000 = 1 poin atau Rp10.000 = 1 poin. Poin dibulatkan ke bawah dari total setelah diskon.</p></div><div class="field"><label for="pointRateInput">Setiap belanja (Rp)</label><input id="pointRateInput" type="number" min="1000" max="100000000" step="1000" value="10000" required /><small style="display:block;color:var(--muted);margin-top:5px">Minimal Rp1.000; naikkan per Rp1.000.</small></div><button class="btn" type="submit">Simpan aturan</button></form></div>
+      <div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><h2 class="panel-title">Pengaturan poin member</h2><p class="panel-subtitle">Atur nilai belanja untuk mendapatkan 1 poin. Perubahan berlaku untuk transaksi baru dan transaksi pada putaran aktif. Transaksi putaran sebelumnya tetap menjadi arsip.</p></div></div><form id="pointRateForm" class="inline-setting"><div><strong style="font-size:12px">Konversi belanja ke poin</strong><p>Masukkan kelipatan Rp1.000. Contoh: Rp1.000 = 1 poin atau Rp10.000 = 1 poin. Poin dibulatkan ke bawah dari total setelah diskon.</p></div><div class="field"><label for="pointRateInput">Setiap belanja (Rp)</label><input id="pointRateInput" type="number" min="1000" max="100000000" step="1000" value="10000" required /><small style="display:block;color:var(--muted);margin-top:5px">Minimal Rp1.000; naikkan per Rp1.000.</small></div><button class="btn" type="submit">Simpan aturan</button></form></div>
       <div class="toolbar"><div class="search"><span class="search-icon">⌕</span><input id="menuSearch" type="search" placeholder="Cari nama menu..." /></div><select id="menuCategoryFilter" style="width:auto;min-width:145px"><option value="all">Semua kategori</option><option value="Coffee">Coffee</option><option value="Non-Coffee">Non-Coffee</option><option value="Food">Food</option></select></div>
       <div class="menu-grid" id="menuGrid"></div>
     </section>
@@ -770,6 +786,21 @@
   </div>
 </div>
 
+
+<!-- Modal reset putaran loyalty; eksekusi hanya Master dan API terautentikasi -->
+<div class="modal-backdrop" id="loyaltyRoundModal" role="dialog" aria-modal="true" aria-labelledby="loyaltyRoundTitle">
+ <div class="modal"><div class="modal-head"><div><h3 id="loyaltyRoundTitle">Mulai putaran baru PA.YU</h3><p>Reset poin, level, dan kupon seluruh member sekaligus.</p></div><button class="close-btn" type="button" onclick="closeModal('loyaltyRoundModal')" aria-label="Tutup">×</button></div>
+  <form id="loyaltyRoundResetForm" class="form-grid">
+   <div class="field full"><p class="round-warning">Tindakan ini berlaku untuk <strong>SEMUA member</strong>, termasuk akun belum aktivasi. Saldo poin menjadi 0, level Bronze, dan kupon lama belum terpakai dinonaktifkan. Riwayat transaksi serta kupon terpakai tetap tersimpan.</p></div>
+   <div class="field full" id="loyaltyRoundPreview" role="status" aria-live="polite">Memuat rekap putaran dari server…</div>
+   <div class="field full"><label for="loyaltyRoundNote">Catatan putaran (opsional)</label><input id="loyaltyRoundNote" maxlength="240" placeholder="Contoh: Putaran November 2026"></div>
+   <div class="field full"><label for="loyaltyRoundConfirmText">Ketik MULAI PUTARAN BARU untuk mengonfirmasi</label><input id="loyaltyRoundConfirmText" autocomplete="off" required placeholder="MULAI PUTARAN BARU"></div>
+   <div class="field full"><label class="round-confirm-check"><input id="loyaltyRoundUnderstand" type="checkbox"> Saya sudah melakukan backup database dan memahami poin, level, serta kupon aktif seluruh member akan direset.</label></div>
+   <div class="field full"><div class="modal-footer"><button type="button" class="btn secondary" onclick="closeModal('loyaltyRoundModal')">Batal</button><button id="loyaltyRoundSubmitBtn" class="btn danger" type="submit" disabled>Reset dan mulai putaran baru</button></div></div>
+  </form>
+ </div>
+</div>
+
 <!-- Modal member -->
 <div class="modal-backdrop" id="memberModal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle"><div class="modal"><div class="modal-head"><div><h3 id="memberModalTitle">Tambah member</h3><p>Isi informasi pelanggan untuk membuat kartu member.</p></div><button class="close-btn" onclick="closeModal('memberModal')" aria-label="Tutup">×</button></div><form id="memberForm" class="form-grid"><input type="hidden" id="memberEditId" />
   <div class="field full"><label for="memberName">Nama lengkap *</label><input id="memberName" required maxlength="80" placeholder="Contoh: Nadia Putri" /></div>
@@ -842,10 +873,11 @@
   let remoteOperationalMode=false;
   let publicStoreContact={whatsappNumber:'',mapsEmbedUrl:''};
   let remoteTransactionFallbackCache=null;
+  window.payuAdminLoyaltyRoundCutoff=0;
   let benefitRules=null;
   const PAGE_INFO = {
     dashboard:['Ringkasan toko','Dashboard','Pantau aktivitas PA.YU Coffee hari ini.'],
-    members:['Loyalty program','Data Member','Kelola data pelanggan dan poin loyalitas.'],
+    members:['Loyalty program','Data Member','Kelola data pelanggan dan poin loyalitas per putaran.'],
     transactions:['Operasional toko','Transaksi','Riwayat pembelian dan poin member.'],
     menu:['Katalog produk','Menu & Harga','Kelola daftar menu dan harga jual.'],
     promo:['Website publik','Konten Website','Kelola foto, banner, tulisan, dan informasi toko PA.YU.'],
@@ -992,7 +1024,7 @@
   function renderBenefitRulesForm(){
     const host=document.getElementById('benefitRulesEditor');if(!host)return;
     const menuOptions=selected=>'<option value="">Pilih menu gratis…</option>'+data.menus.filter(menu=>menu.isActive!==false).map(menu=>'<option value="'+esc(menu.id)+'" '+(String(selected||'')===String(menu.id)?'selected':'')+'>'+esc(menu.name)+' · '+money(menu.price)+'</option>').join('');
-    host.innerHTML='<form id="benefitRulesForm"><p class="form-note" style="margin:0 0 14px">Ambang dihitung dari akumulasi transaksi selesai yang dibayar member, bukan poin dan bukan hanya satu struk. Setiap level membuka satu kupon menu gratis tanpa mengurangi total tagihan.</p><div style="display:grid;gap:12px">'+benefitRules.levels.map((rule,index)=>'<section class="panel" style="box-shadow:none;background:#fffefa;border:1px solid var(--line)"><div class="panel-head"><div><h3 class="panel-title">Level '+(index+1)+' · '+esc(rule.level)+'</h3><p class="panel-subtitle">Kupon '+(index+1)+' terbuka setelah total belanja mencapai syarat ini.</p></div><span class="level-badge">'+esc(rule.level)+'</span></div><div class="form-grid"><div class="field"><label for="benefitThreshold_'+rule.level+'">Minimum akumulasi belanja (Rp)</label><input id="benefitThreshold_'+rule.level+'" name="threshold_'+rule.level+'" type="number" min="1000" max="2000000000" step="1000" value="'+Number(rule.minSpend)+'" required /></div><div class="field"><label for="benefitReward_'+rule.level+'">Benefit / menu gratis</label><select id="benefitReward_'+rule.level+'" name="reward_'+rule.level+'" required>'+menuOptions(rule.rewardMenuId)+'</select></div></div></section>').join('')+'</div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px"><button class="btn" type="submit">Simpan aturan lima level</button><span class="form-note">Contoh awal: Rp50.000 membuka Es Teh, Rp100.000 membuka Kopi Susu. Pilih menu yang sudah terdaftar di Menu & Harga.</span></div></form>';
+    host.innerHTML='<form id="benefitRulesForm"><p class="form-note" style="margin:0 0 14px">Ambang dihitung dari akumulasi transaksi selesai yang dibayar member dalam putaran yang sedang berjalan, bukan poin dan bukan hanya satu struk. Setiap level membuka satu kupon menu gratis tanpa mengurangi total tagihan.</p><div style="display:grid;gap:12px">'+benefitRules.levels.map((rule,index)=>'<section class="panel" style="box-shadow:none;background:#fffefa;border:1px solid var(--line)"><div class="panel-head"><div><h3 class="panel-title">Level '+(index+1)+' · '+esc(rule.level)+'</h3><p class="panel-subtitle">Kupon '+(index+1)+' terbuka setelah total belanja mencapai syarat ini.</p></div><span class="level-badge">'+esc(rule.level)+'</span></div><div class="form-grid"><div class="field"><label for="benefitThreshold_'+rule.level+'">Minimum akumulasi belanja (Rp)</label><input id="benefitThreshold_'+rule.level+'" name="threshold_'+rule.level+'" type="number" min="1000" max="2000000000" step="1000" value="'+Number(rule.minSpend)+'" required /></div><div class="field"><label for="benefitReward_'+rule.level+'">Benefit / menu gratis</label><select id="benefitReward_'+rule.level+'" name="reward_'+rule.level+'" required>'+menuOptions(rule.rewardMenuId)+'</select></div></div></section>').join('')+'</div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px"><button class="btn" type="submit">Simpan aturan lima level</button><span class="form-note">Contoh awal: Rp50.000 membuka Es Teh, Rp100.000 membuka Kopi Susu. Pilih menu yang sudah terdaftar di Menu & Harga.</span></div></form>';
   }
   function ensureMemberDefaults(m){
     if(!m||typeof m!=='object')return;
@@ -1221,6 +1253,78 @@
     },140);
   },{passive:true});
   document.getElementById('statsDate').value=todayISO();document.getElementById('statsMonth').value=todayISO().slice(0,7);document.getElementById('statsYear').value=todayISO().slice(0,4);
+  // Master only. The API records a snapshot of the previous round before resetting member progress.
+  let loyaltyResetPreview=null;
+  function updateLoyaltyResetConfirm(){
+    const button=document.getElementById('loyaltyRoundSubmitBtn');
+    if(!button)return;
+    button.disabled=!loyaltyResetPreview||
+      document.getElementById('loyaltyRoundConfirmText').value!=='MULAI PUTARAN BARU'||
+      !document.getElementById('loyaltyRoundUnderstand').checked;
+  }
+  window.openLoyaltyRoundReset=async function(){
+    if(!remoteOperationalMode||window.payuAdminCanResetLoyaltyRound!==true){
+      notify('Mulai putaran baru hanya bisa dijalankan oleh Master pada database PA.YU.');return;
+    }
+    const modal=document.getElementById('loyaltyRoundModal');
+    document.getElementById('loyaltyRoundResetForm').reset();
+    document.getElementById('loyaltyRoundPreview').textContent='Memuat rekap putaran dari server…';
+    loyaltyResetPreview=null;updateLoyaltyResetConfirm();
+    modal.classList.add('open');
+    try{
+      const response=await window.payuAdminApiRequest('staff/loyalty-round/preview');
+      if(!modal.classList.contains('open'))return;
+      loyaltyResetPreview=response;
+      const counts=response.coupons||{},host=document.getElementById('loyaltyRoundPreview');
+      host.innerHTML='<div class="round-stat-grid">'+
+        '<div class="round-stat"><small>Putaran saat ini</small><strong>#'+number(response.current_round?.id||1)+'</strong></div>'+
+        '<div class="round-stat"><small>Total member</small><strong>'+number(response.member_count||0)+'</strong></div>'+
+        '<div class="round-stat"><small>Poin yang diarsipkan</small><strong>'+number(response.total_points||0)+'</strong></div>'+
+        '<div class="round-stat"><small>Kupon tersedia yang berakhir</small><strong>'+number(counts.available||0)+'</strong></div>'+
+        '</div><p class="round-subnote">Kupon sudah digunakan ('+number(counts.used||0)+') dan transaksi tetap menjadi arsip. Poin, level, dan benefit berikutnya dimulai dari transaksi baru.</p>';
+      updateLoyaltyResetConfirm();
+    }catch(error){
+      loyaltyResetPreview=null;
+      document.getElementById('loyaltyRoundPreview').textContent=
+        'Pratinjau gagal dimuat: '+error.message+'. Pastikan migrasi dan PHP putaran baru sudah terpasang.';
+      updateLoyaltyResetConfirm();
+    }
+  };
+  document.getElementById('loyaltyRoundConfirmText').addEventListener('input',updateLoyaltyResetConfirm);
+  document.getElementById('loyaltyRoundUnderstand').addEventListener('change',updateLoyaltyResetConfirm);
+  document.getElementById('loyaltyRoundResetForm').addEventListener('submit',async event=>{
+    event.preventDefault();
+    updateLoyaltyResetConfirm();
+    const button=document.getElementById('loyaltyRoundSubmitBtn');
+    if(button.disabled||!loyaltyResetPreview||window.payuAdminCanResetLoyaltyRound!==true)return;
+    const preview=loyaltyResetPreview;
+    if(!confirm('Konfirmasi terakhir: reset poin dan benefit SEMUA member dan mulai putaran baru sekarang?'))return;
+    button.disabled=true;button.textContent='Memproses putaran…';
+    try{
+      const payload={
+        confirmation:'MULAI PUTARAN BARU',
+        expected_round_id:Number(preview.current_round.id),
+        expected_total_points:Number(preview.total_points),
+        expected_last_transaction_id:Number(preview.last_transaction_id),
+        note:document.getElementById('loyaltyRoundNote').value.trim()
+      };
+      const result=await window.payuAdminApiRequest('staff/loyalty-round/reset',{method:'POST',body:payload});
+      loyaltyResetPreview=null;
+      closeModal('loyaltyRoundModal');
+      remoteTransactionFallbackCache=null;
+      await window.payuAdminHydrateFromServer();
+      notify(result.message||'Putaran loyalty baru dimulai.');
+    }catch(error){
+      notify('Reset putaran gagal: '+error.message);
+      loyaltyResetPreview=null;updateLoyaltyResetConfirm();
+      document.getElementById('loyaltyRoundPreview').textContent=
+        'Data mungkin sudah berubah. Tutup dan buka kembali untuk mengambil rekap terbaru sebelum konfirmasi.';
+    }finally{
+      button.textContent='Reset dan mulai putaran baru';
+      updateLoyaltyResetConfirm();
+    }
+  });
+
   function renderMembers(){
     const q=(document.getElementById('memberSearch').value||'').toLowerCase().trim();const list=data.members.filter(m=>[m.name,m.phone,m.id,m.memberCode,m.email].some(v=>String(v||'').toLowerCase().includes(q)));
     document.getElementById('memberCount').textContent=number(data.members.length);document.getElementById('memberPoints').textContent=number(data.members.reduce((s,m)=>s+(+m.points||0),0));document.getElementById('memberToday').textContent=number(data.members.filter(m=>m.createdAt===todayISO()).length);
@@ -1438,12 +1542,12 @@
     notify(couponOnly?'Penukaran kupon berhasil dicatat dengan total Rp0 dan 0 poin.':(old?'Transaksi diperbarui':'Transaksi tersimpan')+'. '+member.name+' mendapat '+points+' poin.');
     editingTransactionId=null;
   });
-  window.editTransaction=async id=>{const t=data.transactions.find(x=>String(x.id)===String(id));if(!t)return;window.openTransactionModal();editingTransactionId=String(id);document.getElementById('txModalTitle').textContent='Edit transaksi';document.getElementById('txMemberSearch').disabled=true;await setTransactionMember(t.memberId);document.getElementById('txItems').innerHTML='';const sourceItems=Array.isArray(t.items)&&t.items.length?t.items:(t.couponId?[]:[{menuId:t.menuId,qty:t.qty||1}]);
+  window.editTransaction=async id=>{const t=data.transactions.find(x=>String(x.id)===String(id));if(!t)return;if(remoteOperationalMode&&window.payuAdminLoyaltyRoundCutoff>0&&Number(t.backendId||t.id)<=window.payuAdminLoyaltyRoundCutoff){notify('Transaksi dari putaran lama adalah arsip dan tidak dapat diedit.');return;}window.openTransactionModal();editingTransactionId=String(id);document.getElementById('txModalTitle').textContent='Edit transaksi';document.getElementById('txMemberSearch').disabled=true;await setTransactionMember(t.memberId);document.getElementById('txItems').innerHTML='';const sourceItems=Array.isArray(t.items)&&t.items.length?t.items:(t.couponId?[]:[{menuId:t.menuId,qty:t.qty||1}]);
   // Menu hadiah gratis telah dicatat sebagai snapshot transaction_items oleh API,
   // tetapi bukan pembelian berbayar. Jangan masukkan lagi sebagai baris belanja saat edit.
   const oldItems=sourceItems.filter(item=>!(t.couponId&&Number(item.price)===0&&/\(GRATIS\s*-\s*Kupon\b/i.test(String(item.menuName||''))));
   oldItems.forEach(item=>addTransactionItem(item.menuId,item.qty||1));document.getElementById('txPayment').value=t.payment||'Tunai';document.getElementById('txNotes').value=t.notes||'';await refreshCouponOptions();document.getElementById('txCoupon').value=t.couponId||'';updateTxPreview();document.getElementById('transactionModal').classList.add('open')};
-  window.deleteTransaction=async (id,profileMemberId=null)=>{const remoteT=data.transactions.find(x=>String(x.id)===String(id));if(!remoteT)return;if(remoteOperationalMode){if(!confirm(`Batalkan transaksi ${remoteT.transactionCode||remoteT.id}? Poin akan dikoreksi server.`))return;try{await window.payuAdminApiRequest('staff/transactions/void',{method:'POST',body:{id:Number(remoteT.backendId||remoteT.id)}});remoteTransactionFallbackCache=null;await window.payuAdminHydrateFromServer();notify('Transaksi dibatalkan di database dan poin dikoreksi.')}catch(err){notify('Transaksi gagal dibatalkan: '+err.message)}return;}const t=data.transactions.find(x=>x.id===id);if(!t)return;if(!confirm(`Hapus transaksi ${t.id}? Poin yang berasal dari transaksi ini akan dikoreksi dan kupon akan dikembalikan jika digunakan.`))return;const m=data.members.find(x=>x.id===t.memberId);if(m)m.points=Math.max(0,(Number(m.points)||0)-(Number(t.points)||0));releaseTransactionCoupon(t);data.transactions=data.transactions.filter(x=>x.id!==id);saveData();renderAll();if(profileMemberId&&document.getElementById('profileModal').classList.contains('open'))openMemberProfile(profileMemberId);notify('Transaksi dihapus, poin dan kupon sudah disesuaikan.')};
+  window.deleteTransaction=async (id,profileMemberId=null)=>{const remoteT=data.transactions.find(x=>String(x.id)===String(id));if(!remoteT)return;if(remoteOperationalMode&&window.payuAdminLoyaltyRoundCutoff>0&&Number(remoteT.backendId||remoteT.id)<=window.payuAdminLoyaltyRoundCutoff){notify('Transaksi putaran lama disimpan sebagai arsip dan tidak dapat dibatalkan.');return;}if(remoteOperationalMode){if(!confirm(`Batalkan transaksi ${remoteT.transactionCode||remoteT.id}? Poin akan dikoreksi server.`))return;try{await window.payuAdminApiRequest('staff/transactions/void',{method:'POST',body:{id:Number(remoteT.backendId||remoteT.id)}});remoteTransactionFallbackCache=null;await window.payuAdminHydrateFromServer();notify('Transaksi dibatalkan di database dan poin dikoreksi.')}catch(err){notify('Transaksi gagal dibatalkan: '+err.message)}return;}const t=data.transactions.find(x=>x.id===id);if(!t)return;if(!confirm(`Hapus transaksi ${t.id}? Poin yang berasal dari transaksi ini akan dikoreksi dan kupon akan dikembalikan jika digunakan.`))return;const m=data.members.find(x=>x.id===t.memberId);if(m)m.points=Math.max(0,(Number(m.points)||0)-(Number(t.points)||0));releaseTransactionCoupon(t);data.transactions=data.transactions.filter(x=>x.id!==id);saveData();renderAll();if(profileMemberId&&document.getElementById('profileModal').classList.contains('open'))openMemberProfile(profileMemberId);notify('Transaksi dihapus, poin dan kupon sudah disesuaikan.')};
   window.exportTransactions=()=>downloadCSV('payu-transactions.csv',[['ID Transaksi','Waktu','ID Member','Nama Member','Daftar Menu','Total Jumlah Item','Total Belanja','Poin','Pembayaran','Catatan'],...data.transactions.map(t=>[t.id,t.createdAt,t.memberId,t.memberName,Array.isArray(t.items)?t.items.map(i=>`${i.menuName} x ${i.qty} (${i.subtotal})`).join(' | '):(t.menuName||''),t.qty||1,t.total,t.points,t.payment,t.notes||''])]);
 
   function normalizeStoreWhatsApp(value){
@@ -1901,6 +2005,7 @@ window.payuAdminHydrateFromServer=async function(){
   const couponOnly=Boolean(tx.coupon_id)&&Number(tx.subtotal||0)===0&&items.length>0&&items.every(item=>Number(item.price)===0&&/\(GRATIS\s*-\s*Kupon\b/i.test(item.menuName));
   return {id:String(tx.id),backendId:Number(tx.id),transactionCode:String(tx.transaction_code||''),memberId,memberName,items,menuId:items[0]?.menuId||'',menuName:items.map(i=>i.menuName+' × '+i.qty).join(', '),qty:items.reduce((sum,item)=>sum+item.qty,0),subtotal:Number(tx.subtotal||0),discount:Number(tx.discount_amount||tx.discount||0),total:Number(tx.total_amount||tx.total||0),points:Number(tx.points_earned||tx.points||0),couponId:tx.coupon_id?String(tx.coupon_id):'',couponTitle:'',payment:couponOnly?'Penukaran kupon':(payMatch?payMatch[1]:'Tunai'),notes,createdAt:String(tx.created_at||''),date:String(tx.created_at||'').slice(0,10)};
  };
+ window.payuAdminLoyaltyRoundCutoff=Number(results[2].loyalty_round?.cutoff_transaction_id||0);
  const remoteTxRows=Array.isArray(results[2].transactions)?results[2].transactions:[];
  if(remoteTxRows.length){
   data.transactions=remoteTxRows.map(tx=>mapRemoteTransaction(tx));
@@ -2050,6 +2155,9 @@ renderAll(); })();
 
     const forced=Boolean(session.mustChangePassword);
     window.payuAdminCanManageRoles=canManageRoles(role)&&!forced;
+    window.payuAdminCanResetLoyaltyRound=!forced&&session.backendAuthenticated&&session.backendRole==='master';
+    const resetRoundBtn=document.getElementById('startNewLoyaltyRoundBtn');
+    if(resetRoundBtn)resetRoundBtn.hidden=!window.payuAdminCanResetLoyaltyRound;
     if(navRoles)navRoles.hidden=!window.payuAdminCanManageRoles;
     const benefitsNav=document.getElementById('benefitsNavBtn');if(benefitsNav)benefitsNav.hidden=forced||!['master','owner','admin'].includes(session.backendRole);
     if(!window.payuAdminCanManageRoles && document.getElementById('view-roles')?.classList.contains('active')) window.navigate('dashboard');
@@ -2070,6 +2178,9 @@ renderAll(); })();
     currentSession=null;
     form.hidden=false;
     window.payuAdminCanManageRoles=false;
+    window.payuAdminCanResetLoyaltyRound=false;
+    const resetRoundBtn=document.getElementById('startNewLoyaltyRoundBtn');
+    if(resetRoundBtn)resetRoundBtn.hidden=true;
     if(navRoles)navRoles.hidden=true;
     app.classList.remove('admin-authenticated');
     app.style.display='none';
