@@ -543,6 +543,22 @@
 .website-extra-banners:not([open]) #bannerSlotGrid{display:none}
 @media(max-width:760px){.editor-photo-select-hint{font-size:10px;padding:7px 10px}.website-extra-summary{flex-wrap:wrap}.website-extra-summary span{width:100%;order:3}}
 </style>
+<style id="payu-loyalty-round-admin">
+.member-head-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+#startNewLoyaltyRoundBtn[hidden]{display:none!important}
+#startNewLoyaltyRoundBtn{border-color:#B96B60;color:#8D2B23;background:#FFF8F1}
+#startNewLoyaltyRoundBtn:hover{background:#FFEFE8}
+.round-warning{margin:0;padding:14px;border:1px solid #E9B8A6;border-radius:13px;background:#FFF1E9;color:#85322A;font-size:12px;line-height:1.7}
+.round-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.round-stat{padding:13px;border-radius:12px;background:#F7F4E8;border:1px solid #E5DCC8}
+.round-stat small{display:block;color:#77695C;font-size:11px;margin-bottom:4px}
+.round-stat strong{font-size:17px}
+.round-subnote{margin:10px 0 0;font-size:12px;color:#6A6257;line-height:1.6}
+.round-confirm-check{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.6;font-weight:500}
+.round-confirm-check input{width:17px;height:17px;flex:none;margin-top:1px}
+#loyaltyRoundSubmitBtn:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:620px){.member-head-actions{width:100%;justify-content:flex-start}.member-head-actions .btn{flex:1 1 160px}}
+</style>
 </head>
 <body>
 <div id="adminLoginGate" class="admin-login-gate">
@@ -639,7 +655,7 @@
     </section>
 
     <section class="view" id="view-members">
-      <div class="section-heading"><div><h2>Data Member</h2><p>Kelola data pelanggan dan poin loyalitas.</p></div><button class="btn" onclick="openMemberModal()">＋ Tambah member</button></div>
+      <div class="section-heading"><div><h2>Data Member</h2><p>Kelola data pelanggan dan poin loyalitas per putaran.</p></div><div class="member-head-actions"><button class="btn secondary" type="button" id="startNewLoyaltyRoundBtn" onclick="openLoyaltyRoundReset()" hidden>↻ Mulai putaran baru</button><button class="btn" onclick="openMemberModal()">＋ Tambah member</button></div></div>
       <div class="member-summary"><div class="mini-stat"><span>Total member</span><strong id="memberCount">0</strong></div><div class="mini-stat"><span>Total poin</span><strong id="memberPoints">0</strong></div><div class="mini-stat"><span>Member hari ini</span><strong id="memberToday">0</strong></div></div>
       <div class="panel"><div class="toolbar"><div class="search"><span class="search-icon">⌕</span><input id="memberSearch" type="search" placeholder="Cari nama, nomor HP, atau ID member..." /></div><button class="btn secondary" onclick="openScanner()">▦ Scan QR</button><button class="btn secondary" onclick="exportMembers()">↓ Export CSV</button></div><div id="membersTable"></div></div>
     </section>
@@ -768,6 +784,21 @@
       <div class="field full"><div class="modal-footer"><button id="forcedPasswordSubmit" type="submit" class="btn">Simpan password baru</button></div></div>
     </form>
   </div>
+</div>
+
+
+<!-- Modal reset putaran loyalty; eksekusi hanya Master dan API terautentikasi -->
+<div class="modal-backdrop" id="loyaltyRoundModal" role="dialog" aria-modal="true" aria-labelledby="loyaltyRoundTitle">
+ <div class="modal"><div class="modal-head"><div><h3 id="loyaltyRoundTitle">Mulai putaran baru PA.YU</h3><p>Reset poin, level, dan kupon seluruh member sekaligus.</p></div><button class="close-btn" type="button" onclick="closeModal('loyaltyRoundModal')" aria-label="Tutup">×</button></div>
+  <form id="loyaltyRoundResetForm" class="form-grid">
+   <div class="field full"><p class="round-warning">Tindakan ini berlaku untuk <strong>SEMUA member</strong>, termasuk akun belum aktivasi. Saldo poin menjadi 0, level Bronze, dan kupon lama belum terpakai dinonaktifkan. Riwayat transaksi serta kupon terpakai tetap tersimpan.</p></div>
+   <div class="field full" id="loyaltyRoundPreview" role="status" aria-live="polite">Memuat rekap putaran dari server…</div>
+   <div class="field full"><label for="loyaltyRoundNote">Catatan putaran (opsional)</label><input id="loyaltyRoundNote" maxlength="240" placeholder="Contoh: Putaran November 2026"></div>
+   <div class="field full"><label for="loyaltyRoundConfirmText">Ketik MULAI PUTARAN BARU untuk mengonfirmasi</label><input id="loyaltyRoundConfirmText" autocomplete="off" required placeholder="MULAI PUTARAN BARU"></div>
+   <div class="field full"><label class="round-confirm-check"><input id="loyaltyRoundUnderstand" type="checkbox"> Saya sudah melakukan backup database dan memahami poin, level, serta kupon aktif seluruh member akan direset.</label></div>
+   <div class="field full"><div class="modal-footer"><button type="button" class="btn secondary" onclick="closeModal('loyaltyRoundModal')">Batal</button><button id="loyaltyRoundSubmitBtn" class="btn danger" type="submit" disabled>Reset dan mulai putaran baru</button></div></div>
+  </form>
+ </div>
 </div>
 
 <!-- Modal member -->
