@@ -1252,6 +1252,78 @@
     },140);
   },{passive:true});
   document.getElementById('statsDate').value=todayISO();document.getElementById('statsMonth').value=todayISO().slice(0,7);document.getElementById('statsYear').value=todayISO().slice(0,4);
+  // Master only. The API records a snapshot of the previous round before resetting member progress.
+  let loyaltyResetPreview=null;
+  function updateLoyaltyResetConfirm(){
+    const button=document.getElementById('loyaltyRoundSubmitBtn');
+    if(!button)return;
+    button.disabled=!loyaltyResetPreview||
+      document.getElementById('loyaltyRoundConfirmText').value!=='MULAI PUTARAN BARU'||
+      !document.getElementById('loyaltyRoundUnderstand').checked;
+  }
+  window.openLoyaltyRoundReset=async function(){
+    if(!remoteOperationalMode||window.payuAdminCanResetLoyaltyRound!==true){
+      notify('Mulai putaran baru hanya bisa dijalankan oleh Master pada database PA.YU.');return;
+    }
+    const modal=document.getElementById('loyaltyRoundModal');
+    document.getElementById('loyaltyRoundResetForm').reset();
+    document.getElementById('loyaltyRoundPreview').textContent='Memuat rekap putaran dari server…';
+    loyaltyResetPreview=null;updateLoyaltyResetConfirm();
+    modal.classList.add('open');
+    try{
+      const response=await window.payuAdminApiRequest('staff/loyalty-round/preview');
+      if(!modal.classList.contains('open'))return;
+      loyaltyResetPreview=response;
+      const counts=response.coupons||{},host=document.getElementById('loyaltyRoundPreview');
+      host.innerHTML='<div class="round-stat-grid">'+
+        '<div class="round-stat"><small>Putaran saat ini</small><strong>#'+number(response.current_round?.id||1)+'</strong></div>'+
+        '<div class="round-stat"><small>Total member</small><strong>'+number(response.member_count||0)+'</strong></div>'+
+        '<div class="round-stat"><small>Poin yang diarsipkan</small><strong>'+number(response.total_points||0)+'</strong></div>'+
+        '<div class="round-stat"><small>Kupon tersedia yang berakhir</small><strong>'+number(counts.available||0)+'</strong></div>'+
+        '</div><p class="round-subnote">Kupon sudah digunakan ('+number(counts.used||0)+') dan transaksi tetap menjadi arsip. Poin, level, dan benefit berikutnya dimulai dari transaksi baru.</p>';
+      updateLoyaltyResetConfirm();
+    }catch(error){
+      loyaltyResetPreview=null;
+      document.getElementById('loyaltyRoundPreview').textContent=
+        'Pratinjau gagal dimuat: '+error.message+'. Pastikan migrasi dan PHP putaran baru sudah terpasang.';
+      updateLoyaltyResetConfirm();
+    }
+  };
+  document.getElementById('loyaltyRoundConfirmText').addEventListener('input',updateLoyaltyResetConfirm);
+  document.getElementById('loyaltyRoundUnderstand').addEventListener('change',updateLoyaltyResetConfirm);
+  document.getElementById('loyaltyRoundResetForm').addEventListener('submit',async event=>{
+    event.preventDefault();
+    updateLoyaltyResetConfirm();
+    const button=document.getElementById('loyaltyRoundSubmitBtn');
+    if(button.disabled||!loyaltyResetPreview||window.payuAdminCanResetLoyaltyRound!==true)return;
+    const preview=loyaltyResetPreview;
+    if(!confirm('Konfirmasi terakhir: reset poin dan benefit SEMUA member dan mulai putaran baru sekarang?'))return;
+    button.disabled=true;button.textContent='Memproses putaran…';
+    try{
+      const payload={
+        confirmation:'MULAI PUTARAN BARU',
+        expected_round_id:Number(preview.current_round.id),
+        expected_total_points:Number(preview.total_points),
+        expected_last_transaction_id:Number(preview.last_transaction_id),
+        note:document.getElementById('loyaltyRoundNote').value.trim()
+      };
+      const result=await window.payuAdminApiRequest('staff/loyalty-round/reset',{method:'POST',body:payload});
+      loyaltyResetPreview=null;
+      closeModal('loyaltyRoundModal');
+      remoteTransactionFallbackCache=null;
+      await window.payuAdminHydrateFromServer();
+      notify(result.message||'Putaran loyalty baru dimulai.');
+    }catch(error){
+      notify('Reset putaran gagal: '+error.message);
+      loyaltyResetPreview=null;updateLoyaltyResetConfirm();
+      document.getElementById('loyaltyRoundPreview').textContent=
+        'Data mungkin sudah berubah. Tutup dan buka kembali untuk mengambil rekap terbaru sebelum konfirmasi.';
+    }finally{
+      button.textContent='Reset dan mulai putaran baru';
+      updateLoyaltyResetConfirm();
+    }
+  });
+
   function renderMembers(){
     const q=(document.getElementById('memberSearch').value||'').toLowerCase().trim();const list=data.members.filter(m=>[m.name,m.phone,m.id,m.memberCode,m.email].some(v=>String(v||'').toLowerCase().includes(q)));
     document.getElementById('memberCount').textContent=number(data.members.length);document.getElementById('memberPoints').textContent=number(data.members.reduce((s,m)=>s+(+m.points||0),0));document.getElementById('memberToday').textContent=number(data.members.filter(m=>m.createdAt===todayISO()).length);
@@ -2081,6 +2153,9 @@ renderAll(); })();
 
     const forced=Boolean(session.mustChangePassword);
     window.payuAdminCanManageRoles=canManageRoles(role)&&!forced;
+    window.payuAdminCanResetLoyaltyRound=!forced&&session.backendAuthenticated&&session.backendRole==='master';
+    const resetRoundBtn=document.getElementById('startNewLoyaltyRoundBtn');
+    if(resetRoundBtn)resetRoundBtn.hidden=!window.payuAdminCanResetLoyaltyRound;
     if(navRoles)navRoles.hidden=!window.payuAdminCanManageRoles;
     const benefitsNav=document.getElementById('benefitsNavBtn');if(benefitsNav)benefitsNav.hidden=forced||!['master','owner','admin'].includes(session.backendRole);
     if(!window.payuAdminCanManageRoles && document.getElementById('view-roles')?.classList.contains('active')) window.navigate('dashboard');
@@ -2101,6 +2176,9 @@ renderAll(); })();
     currentSession=null;
     form.hidden=false;
     window.payuAdminCanManageRoles=false;
+    window.payuAdminCanResetLoyaltyRound=false;
+    const resetRoundBtn=document.getElementById('startNewLoyaltyRoundBtn');
+    if(resetRoundBtn)resetRoundBtn.hidden=true;
     if(navRoles)navRoles.hidden=true;
     app.classList.remove('admin-authenticated');
     app.style.display='none';
