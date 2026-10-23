@@ -901,6 +901,8 @@
   let publicStoreContact={whatsappNumber:'',mapsEmbedUrl:''};
   let remoteTransactionFallbackCache=null;
   window.payuAdminLoyaltyRoundCutoff=0;
+  window.payuAdminLoyaltyRoundCurrentId=null;
+  window.payuAdminLoyaltyRoundMetadataReady=false;
   let benefitRules=null;
   const PAGE_INFO = {
     dashboard:['Ringkasan toko','Dashboard','Pantau aktivitas PA.YU Coffee hari ini.'],
@@ -1618,7 +1620,85 @@
   const oldItems=sourceItems.filter(item=>!(t.couponId&&Number(item.price)===0&&/\(GRATIS\s*-\s*Kupon\b/i.test(String(item.menuName||''))));
   oldItems.forEach(item=>addTransactionItem(item.menuId,item.qty||1));document.getElementById('txPayment').value=t.payment||'Tunai';document.getElementById('txNotes').value=t.notes||'';await refreshCouponOptions();document.getElementById('txCoupon').value=t.couponId||'';updateTxPreview();document.getElementById('transactionModal').classList.add('open')};
   window.deleteTransaction=async (id,profileMemberId=null)=>{const remoteT=data.transactions.find(x=>String(x.id)===String(id));if(!remoteT)return;if(transactionIsReadonly(remoteT)){notify('Transaksi putaran lama disimpan sebagai arsip dan tidak dapat dibatalkan.');return;}if(remoteOperationalMode){if(!confirm(`Batalkan transaksi ${remoteT.transactionCode||remoteT.id}? Poin akan dikoreksi server.`))return;try{await window.payuAdminApiRequest('staff/transactions/void',{method:'POST',body:{id:Number(remoteT.backendId||remoteT.id)}});remoteTransactionFallbackCache=null;await window.payuAdminHydrateFromServer();notify('Transaksi dibatalkan di database dan poin dikoreksi.')}catch(err){notify('Transaksi gagal dibatalkan: '+err.message)}return;}const t=data.transactions.find(x=>x.id===id);if(!t)return;if(!confirm(`Hapus transaksi ${t.id}? Poin yang berasal dari transaksi ini akan dikoreksi dan kupon akan dikembalikan jika digunakan.`))return;const m=data.members.find(x=>x.id===t.memberId);if(m)m.points=Math.max(0,(Number(m.points)||0)-(Number(t.points)||0));releaseTransactionCoupon(t);data.transactions=data.transactions.filter(x=>x.id!==id);saveData();renderAll();if(profileMemberId&&document.getElementById('profileModal').classList.contains('open'))openMemberProfile(profileMemberId);notify('Transaksi dihapus, poin dan kupon sudah disesuaikan.')};
-  window.exportTransactions=()=>downloadCSV('payu-transactions.csv',[['ID Transaksi','Waktu','ID Member','Nama Member','Daftar Menu','Total Jumlah Item','Total Belanja','Poin','Pembayaran','Catatan'],...data.transactions.map(t=>[t.id,t.createdAt,t.memberId,t.memberName,Array.isArray(t.items)?t.items.map(i=>`${i.menuName} x ${i.qty} (${i.subtotal})`).join(' | '):(t.menuName||''),t.qty||1,t.total,t.points,t.payment,t.notes||''])]);
+  function txExportRange(){
+  const p=document.getElementById('txExportPeriod').value;
+  const today=todayISO(),month=today.slice(0,7);
+  if(p==='all')return {from:'',to:'',label:'semua-tanggal'};
+  if(p==='this_month')return {from:month+'-01',to:month+'-31',label:month};
+  if(p==='last_month'){
+    const d=new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-2,1);
+    const m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    return {from:m+'-01',to:m+'-31',label:m};
+  }
+  if(p==='month'){
+    const m=document.getElementById('txExportMonth').value;
+    if(!/^\d{4}-\d{2}$/.test(m))return null;
+    return {from:m+'-01',to:m+'-31',label:m};
+  }
+  const from=document.getElementById('txExportStart').value,to=document.getElementById('txExportEnd').value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)||from>to)return null;
+  return {from,to,label:from+'_'+to};
+}
+  function txExportRows(){
+  const range=txExportRange(),scope=document.getElementById('txExportScope').value;
+  if(!range)return null;
+  return data.transactions.filter(tx=>{
+    if(!transactionMatchesRound(tx,scope))return false;
+    const d=transactionReportDay(tx);
+    if((range.from||range.to)&&!d)return false;
+    return (!range.from||d>=range.from)&&(!range.to||d<=range.to);
+  }).sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
+}
+  function txExportPreview(){
+  const p=document.getElementById('txExportPeriod').value;
+  document.getElementById('txExportMonthField').hidden=p!=='month';
+  document.getElementById('txExportStartField').hidden=p!=='custom';
+  document.getElementById('txExportEndField').hidden=p!=='custom';
+  const rows=txExportRows();
+  document.getElementById('txExportPreview').textContent=rows?
+    number(rows.length)+' transaksi sesuai pilihan. Total: '+money(rows.reduce((sum,tx)=>sum+(Number(tx.total)||0),0))+'.':
+    'Isi periode tanggal yang valid; tanggal akhir tidak boleh sebelum tanggal awal.';
+}
+  function openTransactionExportModal(){
+  document.getElementById('txExportForm').reset();
+  const scope=document.getElementById('txExportScope');
+  scope.value=document.getElementById('txRoundFilter').value;
+  scope.disabled=Boolean(remoteOperationalMode&&!window.payuAdminLoyaltyRoundMetadataReady);
+  if(scope.disabled)scope.value='all';
+  document.getElementById('txExportMonth').value=todayISO().slice(0,7);
+  txExportPreview();
+  document.getElementById('txExportModal').classList.add('open');
+}
+  function exportTransactions(){
+  const records=txExportRows(),range=txExportRange();
+  if(!records||!range){notify('Rentang periode ekspor belum valid.');return;}
+  if(!records.length){notify('Tidak ada transaksi untuk putaran dan periode yang dipilih.');return;}
+  if(remoteOperationalMode&&data.transactions.length>=200&&!confirm('Dashboard hanya memuat maksimal 200 transaksi terbaru. CSV mungkin tidak mencakup semua transaksi historis. Lanjutkan ekspor data yang tersedia?'))return;
+  const scope=document.getElementById('txExportScope').value;
+  const safeText=value=>{const v=String(value??'');return /^[=+@\-\t\r]/.test(v)?"'"+v:v;};
+  const columns=['ID Transaksi','Waktu','Putaran','Status Arsip','ID Member','Nama Member','Daftar Menu','Total Jumlah Item','Total Belanja','Poin','Pembayaran','Catatan'];
+  const rows=records.map(tx=>[
+    safeText(tx.transactionCode||tx.id),tx.createdAt,transactionRoundLabel(tx),
+    transactionRoundCategory(tx)==='archive'?'Arsip':transactionRoundCategory(tx)==='unknown'?'Belum terverifikasi':'Aktif',
+    safeText(tx.memberId),safeText(tx.memberName),
+    safeText(Array.isArray(tx.items)?tx.items.map(i=>i.menuName+' x '+i.qty+' ('+i.subtotal+')').join(' | '):(tx.menuName||'')),
+    tx.qty||1,Number(tx.total)||0,Number(tx.points)||0,safeText(tx.payment),safeText(tx.notes||'')
+  ]);
+  downloadCSV('payu-transaksi-'+scope+'-'+range.label+'.csv',[columns,...rows]);
+  closeModal('txExportModal');
+}
+  function initTransactionExport(){
+  window.openTransactionExportModal=openTransactionExportModal;
+  window.exportTransactions=exportTransactions;
+  ['txExportScope','txExportPeriod','txExportMonth','txExportStart','txExportEnd'].forEach(id=>{
+    document.getElementById(id).addEventListener('change',txExportPreview);
+  });
+  document.getElementById('txExportForm').addEventListener('submit',event=>{
+    event.preventDefault();exportTransactions();
+  });
+}
+  initTransactionExport();
+
 
   function normalizeStoreWhatsApp(value){
     let digits=String(value||'').replace(/\D/g,'');
@@ -2063,7 +2143,7 @@ window.payuAdminHydrateFromServer=async function(){
  // Jangan simpan member palsu di browser saat database sedang dimuat.
  remoteOperationalMode=true;
  const request=window.payuAdminApiRequest;if(typeof request!=='function')throw new Error('Helper API belum siap.');
- const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings'),request('public/banners'),request('staff/benefits').catch(error=>({levels:[],_error:error.message}))]);
+ const results=await Promise.all([request('staff/members?limit=100'),request('staff/menus'),request('staff/transactions?limit=200'),request('staff/settings'),request('public/banners'),request('staff/benefits').catch(error=>({levels:[],_error:error.message})),request('public/leaderboard?limit=1').catch(()=>({}))]);
  const oldMenus=data.menus.slice();
  data.members=(Array.isArray(results[0].members)?results[0].members:[]).map(m=>({id:String(m.member_id),backendId:Number(m.member_id),memberCode:String(m.member_code||''),name:String(m.display_name||''),phone:String(m.phone||''),email:String(m.email||''),birthday:String(m.birthday||''),domicile:String(m.domicile||''),notes:String(m.notes||''),needsActivation:Boolean(Number(m.needs_activation||0)),points:Number(m.points_balance||0),totalSpend:m.total_spend==null?null:Number(m.total_spend||0),level:String(m.level||'Bronze'),createdAt:String(m.created_at||''),isActive:Boolean(m.is_active),coupons:[],couponsLoaded:false}));
  data.menus=(Array.isArray(results[1].menus)?results[1].menus:[]).map(m=>{const old=oldMenus.find(x=>String(x.name).toLowerCase()===String(m.name).toLowerCase());return {id:String(m.id),backendId:Number(m.id),name:String(m.name||''),category:String(m.category||'Coffee'),price:Number(m.price||0),emoji:old?.emoji||'☕',description:old?.description||'',isActive:Boolean(m.is_active)};});
@@ -2075,7 +2155,11 @@ window.payuAdminHydrateFromServer=async function(){
   const couponOnly=Boolean(tx.coupon_id)&&Number(tx.subtotal||0)===0&&items.length>0&&items.every(item=>Number(item.price)===0&&/\(GRATIS\s*-\s*Kupon\b/i.test(item.menuName));
   return {id:String(tx.id),backendId:Number(tx.id),transactionCode:String(tx.transaction_code||''),memberId,memberName,items,menuId:items[0]?.menuId||'',menuName:items.map(i=>i.menuName+' × '+i.qty).join(', '),qty:items.reduce((sum,item)=>sum+item.qty,0),subtotal:Number(tx.subtotal||0),discount:Number(tx.discount_amount||tx.discount||0),total:Number(tx.total_amount||tx.total||0),points:Number(tx.points_earned||tx.points||0),couponId:tx.coupon_id?String(tx.coupon_id):'',couponTitle:'',payment:couponOnly?'Penukaran kupon':(payMatch?payMatch[1]:'Tunai'),notes,createdAt:String(tx.created_at||''),date:String(tx.created_at||'').slice(0,10)};
  };
- window.payuAdminLoyaltyRoundCutoff=Number(results[2].loyalty_round?.cutoff_transaction_id||0);
+ const staffRound=results[2]?.loyalty_round||{},publicRound=results[6]?.loyalty_round||{};
+ const currentRound=Number(staffRound.id??publicRound.id),rawCutoff=staffRound.cutoff_transaction_id??publicRound.cutoff_transaction_id,cutoff=Number(rawCutoff);
+ window.payuAdminLoyaltyRoundMetadataReady=Number.isInteger(currentRound)&&currentRound>0&&rawCutoff!=null&&Number.isInteger(cutoff)&&cutoff>=0;
+ window.payuAdminLoyaltyRoundCurrentId=window.payuAdminLoyaltyRoundMetadataReady?currentRound:null;
+ window.payuAdminLoyaltyRoundCutoff=window.payuAdminLoyaltyRoundMetadataReady?cutoff:0;
  const remoteTxRows=Array.isArray(results[2].transactions)?results[2].transactions:[];
  if(remoteTxRows.length){
   data.transactions=remoteTxRows.map(tx=>mapRemoteTransaction(tx));
