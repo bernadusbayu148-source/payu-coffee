@@ -555,6 +555,9 @@
 .tx-export-hint{font-size:12px;line-height:1.6;color:var(--muted);margin:4px 0}
 @media(max-width:760px){.tx-report-controls{width:100%}.tx-report-controls select,.tx-report-controls .btn{flex:1 1 160px;max-width:none}}
 </style>
+<style id="payu-dashboard-role-visibility">
+#dashboardNavBtn[hidden],#view-dashboard[hidden]{display:none!important}
+</style>
 <style id="payu-loyalty-round-admin">
 .member-head-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 #startNewLoyaltyRoundBtn[hidden]{display:none!important}
@@ -599,7 +602,7 @@
     <div>
       <p class="nav-label">Menu utama</p>
       <nav class="nav" aria-label="Navigasi admin">
-        <button class="nav-btn active" data-view="dashboard"><span class="nav-icon">⌂</span> Dashboard</button>
+        <button class="nav-btn active" data-view="dashboard" id="dashboardNavBtn"><span class="nav-icon">⌂</span> Dashboard</button>
         <button class="nav-btn" data-view="members"><span class="nav-icon">♙</span> Data Member</button>
         <button class="nav-btn" data-view="transactions"><span class="nav-icon">▤</span> Transaksi</button>
         <button class="nav-btn" data-view="menu"><span class="nav-icon">☕</span> Menu & Harga</button>
@@ -900,6 +903,7 @@
   let remoteOperationalMode=false;
   let publicStoreContact={whatsappNumber:'',mapsEmbedUrl:''};
   let remoteTransactionFallbackCache=null;
+  window.payuAdminCanViewDashboard=false;
   window.payuAdminLoyaltyRoundCutoff=0;
   window.payuAdminLoyaltyRoundCurrentId=null;
   window.payuAdminLoyaltyRoundMetadataReady=false;
@@ -993,6 +997,7 @@
   window.closeModal = id => document.getElementById(id)?.classList.remove('open');
   window.navigate = view => {
     if(!PAGE_INFO[view]) return;
+    if(view==='dashboard'&&window.payuAdminCanViewDashboard!==true){notify('Dashboard hanya dapat diakses oleh Master, Owner, dan Admin.');return;}
     if(view==='roles' && !window.payuAdminCanManageRoles){notify('Menu Role hanya tersedia untuk Master dan Owner.');return;}
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
     document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));
@@ -1123,6 +1128,7 @@
   function resetTransactionCouponSelection(){const select=document.getElementById('txCoupon');if(select)select.value='';refreshCouponOptions();updateTxPreview()}
 
   function renderDashboard(){
+    if(window.payuAdminCanViewDashboard!==true)return;
     const totalTransactions=data.transactions.length;const totalRevenue=data.transactions.reduce((sum,t)=>sum+(Number(t.total)||0),0);const points=data.members.reduce((sum,m)=>sum+(Number(m.points)||0),0);
     document.getElementById('statMembers').textContent=number(data.members.length);document.getElementById('statTransactions').textContent=number(totalTransactions);document.getElementById('statRevenue').textContent=money(totalRevenue);document.getElementById('statPoints').textContent=number(points);
     document.getElementById('recentMembers').innerHTML=data.members.length?`<div class="table-wrap"><table><thead><tr><th>Member</th><th>ID member</th><th>Poin</th></tr></thead><tbody>${[...data.members].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,5).map(m=>`<tr><td><div class="member-cell"><span class="mini-avatar">${esc(initials(m.name))}</span><div><strong>${esc(m.name)}</strong><small>${esc(m.phone)}</small></div></div></td><td>${esc(m.id)}</td><td><b>${number(m.points)}</b></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><div class="empty-icon">♙</div>Belum ada member. Tambahkan member pertama.</div>`;
@@ -1235,6 +1241,7 @@
   }
 
   function renderDashboardStats(){
+    if(window.payuAdminCanViewDashboard!==true)return;
     const {period,day,month,year,filtered,caption}=getDashboardStatsSelection();
     const revenue=filtered.reduce((s,t)=>s+(Number(t.total)||0),0);const discount=filtered.reduce((s,t)=>s+(Number(t.discount)||0),0);const pointEarned=filtered.reduce((s,t)=>s+(Number(t.points)||0),0);const itemCount=filtered.reduce((s,t)=>s+transactionItemsForStats(t).reduce((n,i)=>n+i.qty,0),0);const average=filtered.length?revenue/filtered.length:0;
     const memberPeriod=m=>{const d=String(m.createdAt||'');return period==='day'?d===day:period==='month'?d.startsWith(month):d.startsWith(year+'-')};const newMembers=data.members.filter(memberPeriod).length;
@@ -2278,6 +2285,8 @@ renderAll(); })();
   const roleSelect = document.getElementById('gateRole');
   const error = document.getElementById('adminGateError');
   const navRoles = document.getElementById('rolesNavBtn');
+  const dashboardNav = document.getElementById('dashboardNavBtn');
+  const dashboardView = document.getElementById('view-dashboard');
   const forcedPasswordModal = document.getElementById('forcedPasswordModal');
   const query = new URLSearchParams(window.location.search);
   const requestedRole = query.get('role');
@@ -2290,6 +2299,7 @@ renderAll(); })();
   function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   function initials(value){return String(value||'PA').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()}
   function canManageRoles(role){return role==='master'||role==='owner'}
+  function canViewDashboard(role){return ['master','owner','admin'].includes(role)}
   function updateGateRoles(){
     const selected=roleSelect.value;
     roleSelect.innerHTML=Object.entries(roleNames).map(([value,label])=>`<option value="${value}">${label}</option>`).join('');
@@ -2308,13 +2318,18 @@ renderAll(); })();
     if(avatar){avatar.textContent=initials(session.accountName||roleLabel);avatar.title=`${session.accountName||roleLabel} · ${roleLabel}`;}
 
     const forced=Boolean(session.mustChangePassword);
+    // Role yang berwenang berasal dari sesi backend, bukan parameter URL.
+    window.payuAdminCanViewDashboard=!forced&&session.backendAuthenticated===true&&canViewDashboard(session.backendRole);
+    if(dashboardNav)dashboardNav.hidden=!window.payuAdminCanViewDashboard;
+    if(dashboardView)dashboardView.hidden=!window.payuAdminCanViewDashboard;
     window.payuAdminCanManageRoles=canManageRoles(role)&&!forced;
     window.payuAdminCanResetLoyaltyRound=!forced&&session.backendAuthenticated&&session.backendRole==='master';
     const resetRoundBtn=document.getElementById('startNewLoyaltyRoundBtn');
     if(resetRoundBtn)resetRoundBtn.hidden=!window.payuAdminCanResetLoyaltyRound;
     if(navRoles)navRoles.hidden=!window.payuAdminCanManageRoles;
     const benefitsNav=document.getElementById('benefitsNavBtn');if(benefitsNav)benefitsNav.hidden=forced||!['master','owner','admin'].includes(session.backendRole);
-    if(!window.payuAdminCanManageRoles && document.getElementById('view-roles')?.classList.contains('active')) window.navigate('dashboard');
+    // Kasir mulai dari Transaksi, role lain tetap di Dashboard.
+    window.navigate(window.payuAdminCanViewDashboard?'dashboard':'transactions');
 
     if(forced){
       if(forcedPasswordModal)forcedPasswordModal.classList.add('open');
@@ -2333,6 +2348,9 @@ renderAll(); })();
     form.hidden=false;
     window.payuAdminCanManageRoles=false;
     window.payuAdminCanResetLoyaltyRound=false;
+    window.payuAdminCanViewDashboard=false;
+    if(dashboardNav)dashboardNav.hidden=true;
+    if(dashboardView)dashboardView.hidden=true;
     const resetRoundBtn=document.getElementById('startNewLoyaltyRoundBtn');
     if(resetRoundBtn)resetRoundBtn.hidden=true;
     if(navRoles)navRoles.hidden=true;
