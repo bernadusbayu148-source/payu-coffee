@@ -543,6 +543,18 @@
 .website-extra-banners:not([open]) #bannerSlotGrid{display:none}
 @media(max-width:760px){.editor-photo-select-hint{font-size:10px;padding:7px 10px}.website-extra-summary{flex-wrap:wrap}.website-extra-summary span{width:100%;order:3}}
 </style>
+<style id="payu-transaction-report">
+.tx-round-tag{display:inline-block;border-radius:999px;padding:5px 9px;background:#e2eadb;color:#385132;font-size:11px;font-weight:700;white-space:nowrap}
+.tx-round-tag.archive{background:#f0ede5;color:#675a4a}
+.tx-round-tag.unknown{background:#fff1e6;color:#9b4e23}
+.tx-report-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.tx-report-controls label{font-size:12px;font-weight:750;color:var(--muted)}
+#txRoundFilter{min-width:170px;max-width:240px}
+.tx-report-note{font-size:12px;color:var(--muted);line-height:1.6;padding:5px 0 12px}
+.tx-export-field[hidden]{display:none!important}
+.tx-export-hint{font-size:12px;line-height:1.6;color:var(--muted);margin:4px 0}
+@media(max-width:760px){.tx-report-controls{width:100%}.tx-report-controls select,.tx-report-controls .btn{flex:1 1 160px;max-width:none}}
+</style>
 <style id="payu-loyalty-round-admin">
 .member-head-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 #startNewLoyaltyRoundBtn[hidden]{display:none!important}
@@ -662,8 +674,8 @@
 
     <section class="view" id="view-transactions">
       <div class="section-heading"><div><h2>Transaksi</h2><p>Catat pembelian dan berikan poin secara otomatis.</p></div><button class="btn" onclick="openTransactionModal()">＋ Transaksi baru</button></div>
-      <div class="stats"><article class="stat"><div class="stat-top">Total transaksi <span class="stat-icon">▤</span></div><div class="stat-value" id="txCount">0</div><div class="stat-note">Seluruh riwayat tersimpan</div></article><article class="stat"><div class="stat-top">Total pendapatan <span class="stat-icon">↗</span></div><div class="stat-value" id="txRevenue">Rp0</div><div class="stat-note">Akumulasi semua transaksi</div></article></div>
-      <div class="panel"><div class="toolbar"><div class="search"><span class="search-icon">⌕</span><input id="txSearch" type="search" placeholder="Cari nama member atau ID transaksi..." /></div><button class="btn secondary" onclick="exportTransactions()">↓ Export CSV</button></div><div id="transactionsTable"></div></div>
+      <div class="stats"><article class="stat"><div class="stat-top">Total transaksi <span class="stat-icon">▤</span></div><div class="stat-value" id="txCount">0</div><div class="stat-note" id="txCountNote">Sesuai filter putaran</div></article><article class="stat"><div class="stat-top">Total pendapatan <span class="stat-icon">↗</span></div><div class="stat-value" id="txRevenue">Rp0</div><div class="stat-note" id="txRevenueNote">Sesuai filter putaran</div></article></div>
+      <div class="panel"><div class="toolbar"><div class="search"><span class="search-icon">⌕</span><input id="txSearch" type="search" placeholder="Cari nama member atau ID transaksi..." /></div><div class="tx-report-controls"><label for="txRoundFilter">Putaran</label><select id="txRoundFilter"><option value="current">Putaran aktif</option><option value="archive">Arsip putaran lama</option><option value="all">Semua transaksi</option></select><button class="btn secondary" type="button" onclick="openTransactionExportModal()">↓ Export CSV</button></div></div><p id="txRoundSummary" class="tx-report-note" role="status"></p><div id="transactionsTable"></div></div>
     </section>
 
     <section class="view" id="view-menu">
@@ -801,6 +813,21 @@
  </div>
 </div>
 
+<!-- Modal ekspor transaksi, hanya-baca -->
+<div class="modal-backdrop" id="txExportModal" role="dialog" aria-modal="true" aria-labelledby="txExportTitle">
+ <div class="modal">
+  <div class="modal-head"><div><h3 id="txExportTitle">Export CSV transaksi</h3><p>Pilih putaran serta periode laporan.</p></div><button class="close-btn" type="button" onclick="closeModal('txExportModal')" aria-label="Tutup">×</button></div>
+  <form id="txExportForm" class="form-grid">
+   <div class="field full"><label for="txExportScope">Data putaran</label><select id="txExportScope"><option value="current">Putaran aktif</option><option value="archive">Arsip semua putaran lama</option><option value="all">Semua transaksi</option></select></div>
+   <div class="field full"><label for="txExportPeriod">Periode transaksi</label><select id="txExportPeriod"><option value="all">Semua tanggal</option><option value="this_month">Bulan ini</option><option value="last_month">Bulan lalu</option><option value="month">Pilih bulan dan tahun</option><option value="custom">Rentang tanggal</option></select></div>
+   <div class="field full tx-export-field" id="txExportMonthField" hidden><label for="txExportMonth">Bulan dan tahun</label><input type="month" id="txExportMonth"></div>
+   <div class="field tx-export-field" id="txExportStartField" hidden><label for="txExportStart">Dari tanggal</label><input type="date" id="txExportStart"></div>
+   <div class="field tx-export-field" id="txExportEndField" hidden><label for="txExportEnd">Sampai tanggal</label><input type="date" id="txExportEnd"></div>
+   <div class="field full"><p id="txExportPreview" class="tx-export-hint" role="status"></p><p class="tx-export-hint">CSV dibuat dari transaksi yang telah dimuat dashboard (API membatasi hingga 200 transaksi terbaru). Export tidak mengubah data.</p></div>
+   <div class="field full"><div class="modal-footer"><button type="button" class="btn secondary" onclick="closeModal('txExportModal')">Batal</button><button type="submit" class="btn">Unduh CSV</button></div></div>
+  </form>
+ </div>
+</div>
 <!-- Modal member -->
 <div class="modal-backdrop" id="memberModal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle"><div class="modal"><div class="modal-head"><div><h3 id="memberModalTitle">Tambah member</h3><p>Isi informasi pelanggan untuk membuat kartu member.</p></div><button class="close-btn" onclick="closeModal('memberModal')" aria-label="Tutup">×</button></div><form id="memberForm" class="form-grid"><input type="hidden" id="memberEditId" />
   <div class="field full"><label for="memberName">Nama lengkap *</label><input id="memberName" required maxlength="80" placeholder="Contoh: Nadia Putri" /></div>
@@ -1419,7 +1446,7 @@
   window.openMemberProfile=async id=>{
     const m=data.members.find(x=>x.id===id);if(!m)return;ensureMemberDefaults(m);if(remoteOperationalMode)await ensureRemoteMemberCoupons(m);const level=memberLevel(m);const history=[...data.transactions].filter(t=>t.memberId===id).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
     const coupons=m.coupons.map((c,i)=>{const tpl=couponTemplate(m,c.id)||{label:c.name||'Kupon member',min:Number(c.min_spend||0),type:'free_item',rewardName:c.reward_menu_name||c.name||'menu gratis'};const status=String(c.status||(c.used?'used':'available'));const statusText=status==='used'?'Sudah digunakan':status==='expired'?'Kedaluwarsa karena kupon level lebih tinggi dipakai':'Tersedia';return `<div class="coupon-card ${status!=='available'?'used':''}"><strong>${esc(tpl.label)}</strong><small>Benefit menu gratis: ${esc(tpl.rewardName||c.reward_menu_name||c.name||'menu pilihan')}</small><small>Terbuka pada total belanja ${money(tpl.min)} · Level ${esc(tpl.level||c.issued_level||level)}</small><span class="coupon-status">${statusText}</span></div>`}).join('');
-    const trRows=history.length?`<div class="table-wrap"><table><thead><tr><th>Waktu / ID</th><th>Menu</th><th>Total</th><th>Poin</th><th>Aksi</th></tr></thead><tbody>${history.map(t=>`<tr><td><strong>${esc(t.id)}</strong><small style="display:block;color:var(--muted);margin-top:4px">${esc(t.createdAt||'')}</small></td><td>${Array.isArray(t.items)&&t.items.length?t.items.map(i=>`${esc(i.menuName)} × ${number(i.qty)}`).join('<br>'):esc(t.menuName||'Menu')}${t.couponTitle?`<small style="display:block;color:var(--green);margin-top:4px">Kupon: ${esc(t.couponTitle)}</small>`:''}</td><td><b>${money(t.total)}</b></td><td>${number(t.points)} poin</td><td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn secondary small" onclick="profileEditTransaction('${esc(t.id)}')">Edit</button><button class="btn danger small" onclick="deleteTransaction('${esc(t.id)}','${esc(m.id)}')">Hapus</button></div></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty" style="padding:20px">Belum ada riwayat transaksi untuk member ini.</div>';
+    const trRows=history.length?`<div class="table-wrap"><table><thead><tr><th>Waktu / ID</th><th>Menu</th><th>Total</th><th>Poin</th><th>Aksi</th></tr></thead><tbody>${history.map(t=>`<tr><td><strong>${esc(t.id)}</strong><small style="display:block;color:var(--muted);margin-top:4px">${esc(t.createdAt||'')}</small></td><td>${Array.isArray(t.items)&&t.items.length?t.items.map(i=>`${esc(i.menuName)} × ${number(i.qty)}`).join('<br>'):esc(t.menuName||'Menu')}${t.couponTitle?`<small style="display:block;color:var(--green);margin-top:4px">Kupon: ${esc(t.couponTitle)}</small>`:''}</td><td><b>${money(t.total)}</b></td><td>${number(t.points)} poin</td><td>${transactionIsReadonly(t)?'<span class="tx-round-tag archive">Arsip · Hanya baca</span>':`<div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn secondary small" onclick="profileEditTransaction('${esc(t.id)}')">Edit</button><button class="btn danger small" onclick="deleteTransaction('${esc(t.id)}','${esc(m.id)}')">Hapus</button></div>`}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty" style="padding:20px">Belum ada riwayat transaksi untuk member ini.</div>';
     document.getElementById('profileModalTitle').textContent='Profil member · '+m.name;
     document.getElementById('profileContent').innerHTML=`<div class="profile-header"><div class="profile-avatar">${esc(initials(m.name))}</div><div style="min-width:0;flex:1"><h4>${esc(m.name)}</h4><p>${esc(m.id)} · Bergabung ${esc(m.createdAt||'-')}</p><p style="margin-top:5px"><span class="level-badge">Level ${level}</span> <b style="margin-left:7px">${number(m.points)} poin</b></p></div><button class="btn secondary small" onclick="editMember('${esc(m.id)}')">Edit data</button></div>
       <div class="profile-info-grid"><div class="profile-info"><span>Nomor HP</span><strong>${esc(m.phone||'-')}</strong></div><div class="profile-info"><span>Email</span><strong>${esc(m.email||'-')}</strong></div><div class="profile-info"><span>Tanggal bergabung</span><strong>${esc(m.createdAt||'-')}</strong></div><div class="profile-info"><span>Status password</span><strong style="color:${m.mustChangePassword?'var(--red)':'var(--green)'}">${m.needsActivation?'Belum diaktifkan oleh member':(m.mustChangePassword?'Wajib membuat password baru':'Normal')}${m.resetIssuedAt?' · Reset '+esc(m.resetIssuedAt):''}</strong></div><div class="profile-info" style="grid-column:1/-1"><span>Catatan member</span><strong>${esc(m.notes||'Tidak ada catatan')}</strong></div></div>
@@ -1437,8 +1464,51 @@
   };
     window.exportMembers=()=>downloadCSV('payu-members.csv',[['ID Member','Nama','Nomor HP','Email','Poin','Tanggal Daftar'],...data.members.map(m=>[m.id,m.name,m.phone,m.email||'',m.points,m.createdAt||''])]);
 
-  function renderTransactions(){const q=(document.getElementById('txSearch').value||'').toLowerCase().trim();const all=[...data.transactions].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));const list=all.filter(t=>[t.id,t.memberName,t.memberId,t.menuName,t.payment,t.couponTitle].some(v=>String(v||'').toLowerCase().includes(q)));document.getElementById('txCount').textContent=number(data.transactions.length);document.getElementById('txRevenue').textContent=money(data.transactions.reduce((s,t)=>s+(Number(t.total)||0),0));document.getElementById('transactionsTable').innerHTML=list.length?`<div class="table-wrap"><table><thead><tr><th>ID / Waktu</th><th>Member</th><th>Menu / Kupon</th><th>Total</th><th>Poin</th><th>Pembayaran</th><th>Aksi</th></tr></thead><tbody>${list.map(t=>`<tr><td><strong>${esc(t.id)}</strong><small style="display:block;color:var(--muted);margin-top:4px">${esc(t.createdAt||'')}</small></td><td><strong>${esc(t.memberName)}</strong><small style="display:block;color:var(--muted);margin-top:4px">${esc(t.memberId)}</small></td><td>${Array.isArray(t.items)&&t.items.length?t.items.map(i=>`${esc(i.menuName)} × ${number(i.qty)}`).join('<br>'):`${esc(t.menuName||'Menu')} × ${number(t.qty||1)}`}${t.couponTitle?`<small style="display:block;color:var(--green);margin-top:4px">Kupon: ${esc(t.couponTitle)}</small>`:''}</td><td><b>${money(t.total)}</b>${Number(t.discount)>0?`<small style="display:block;color:var(--green);margin-top:4px">− ${money(t.discount)}</small>`:''}</td><td><span class="pill">+${number(t.points)} poin</span></td><td>${esc(t.payment||'Tunai')}</td><td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn secondary small" onclick="editTransaction('${esc(t.id)}')">Edit</button><button class="btn danger small" onclick="deleteTransaction('${esc(t.id)}')">Hapus</button></div></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><div class="empty-icon">▤</div>Belum ada transaksi${q?' yang cocok dengan pencarian.':'.'}</div>`}
+  function transactionRoundCategory(tx){
+  if(!remoteOperationalMode)return 'current';
+  if(!window.payuAdminLoyaltyRoundMetadataReady)return 'unknown';
+  const id=Number(tx.backendId||tx.id);
+  if(!Number.isInteger(id)||id<=0)return 'unknown';
+  return id<=Number(window.payuAdminLoyaltyRoundCutoff)?'archive':'current';
+}
+  function transactionIsReadonly(tx){return remoteOperationalMode&&transactionRoundCategory(tx)!=='current';}
+  function transactionRoundLabel(tx){
+  const category=transactionRoundCategory(tx),round=Number(window.payuAdminLoyaltyRoundCurrentId||0);
+  return category==='archive'?'Arsip lama':category==='unknown'?'Perlu sinkron':round?'Putaran #'+round:'Putaran aktif';
+}
+  function transactionMatchesRound(tx,scope){return scope==='all'||transactionRoundCategory(tx)===scope;}
+  function transactionReportDay(tx){
+  const raw=String(tx.date||tx.createdAt||''),match=raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  return match?match[1]:(transactionDateISO(tx)||'');
+}
+  function renderTransactions(){
+  const selector=document.getElementById('txRoundFilter'),search=(document.getElementById('txSearch').value||'').toLowerCase().trim();
+  const ready=!remoteOperationalMode||window.payuAdminLoyaltyRoundMetadataReady;
+  if(!ready){selector.value='all';selector.disabled=true;}else selector.disabled=false;
+  const scope=selector.value||'current';
+  const all=data.transactions.filter(tx=>transactionMatchesRound(tx,scope));
+  const list=[...all].sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')))
+    .filter(tx=>[tx.id,tx.transactionCode,tx.memberId,tx.memberName,tx.menuName,tx.payment,tx.couponTitle].some(x=>String(x||'').toLowerCase().includes(search)));
+  const round=Number(window.payuAdminLoyaltyRoundCurrentId||0);
+  const label=scope==='current'?'putaran aktif'+(round?' #'+round:''):scope==='archive'?'arsip putaran sebelumnya':'semua putaran';
+  document.getElementById('txCount').textContent=number(all.length);
+  document.getElementById('txRevenue').textContent=money(all.reduce((v,tx)=>v+(Number(tx.total)||0),0));
+  document.getElementById('txCountNote').textContent='Jumlah transaksi '+label;
+  document.getElementById('txRevenueNote').textContent='Pendapatan '+label;
+  document.getElementById('txRoundSummary').textContent=ready
+    ?'Menampilkan '+number(list.length)+' dari '+number(all.length)+' transaksi '+label+'. Arsip bersifat hanya-baca.'
+    :'Metadata putaran belum tersedia; pengubahan transaksi dikunci sampai sinkronisasi berhasil.';
+  document.getElementById('transactionsTable').innerHTML=list.length?
+    `<div class="table-wrap"><table><thead><tr><th>ID / Waktu</th><th>Member</th><th>Putaran</th><th>Menu / Kupon</th><th>Total</th><th>Poin</th><th>Pembayaran</th><th>Aksi</th></tr></thead><tbody>${list.map(tx=>{
+      const cat=transactionRoundCategory(tx);
+      const actions=transactionIsReadonly(tx)?`<span class="tx-round-tag ${cat==='archive'?'archive':'unknown'}">${cat==='archive'?'Arsip · Hanya baca':'Aksi dikunci'}</span>`:
+        `<div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn secondary small" onclick="editTransaction('${esc(tx.id)}')">Edit</button><button class="btn danger small" onclick="deleteTransaction('${esc(tx.id)}')">Hapus</button></div>`;
+      return `<tr><td><strong>${esc(tx.id)}</strong><small style="display:block;color:var(--muted);margin-top:4px">${esc(tx.createdAt||'')}</small></td><td><strong>${esc(tx.memberName)}</strong><small style="display:block;color:var(--muted);margin-top:4px">${esc(tx.memberId)}</small></td><td><span class="tx-round-tag ${cat==='archive'?'archive':cat==='unknown'?'unknown':''}">${esc(transactionRoundLabel(tx))}</span></td><td>${Array.isArray(tx.items)&&tx.items.length?tx.items.map(item=>`${esc(item.menuName)} × ${number(item.qty)}`).join('<br>'):`${esc(tx.menuName||'Menu')} × ${number(tx.qty||1)}`}${tx.couponTitle?`<small style="display:block;color:var(--green);margin-top:4px">Kupon: ${esc(tx.couponTitle)}</small>`:''}</td><td><b>${money(tx.total)}</b>${Number(tx.discount)>0?`<small style="display:block;color:var(--green);margin-top:4px">− ${money(tx.discount)}</small>`:''}</td><td><span class="pill">+${number(tx.points)} poin</span></td><td>${esc(tx.payment||'Tunai')}</td><td>${actions}</td></tr>`;
+    }).join('')}</tbody></table></div>`:
+    `<div class="empty"><div class="empty-icon">▤</div>Tidak ada transaksi untuk filter ini${search?' dan pencarian tersebut':''}.</div>`;
+}
   document.getElementById('txSearch').addEventListener('input',renderTransactions);
+  document.getElementById('txRoundFilter').addEventListener('change',renderTransactions);
   window.openTransactionModal=()=>{if(!data.members.length){notify('Tambahkan member terlebih dahulu sebelum membuat transaksi.');openMemberModal();return}if(!data.menus.length){notify('Tambahkan menu terlebih dahulu.');navigate('menu');return}editingTransactionId=null;document.getElementById('transactionForm').reset();document.getElementById('txModalTitle').textContent='Transaksi baru';document.getElementById('txMemberSearch').disabled=false;document.getElementById('txMember').value='';document.getElementById('txMemberSearch').value='';document.getElementById('txSelectedMember').textContent='Belum ada member dipilih.';document.getElementById('txSelectedMember').classList.add('empty-selection');document.getElementById('txMemberResults').innerHTML='';document.getElementById('txMemberResults').classList.remove('open');document.getElementById('txNotes').value='';document.getElementById('txPayment').value='Tunai';document.getElementById('txItems').innerHTML='';populateTransactionOptions();addTransactionItem();document.getElementById('txCoupon').value='';document.getElementById('transactionModal').classList.add('open');updateTxPreview();if(window.matchMedia('(min-width: 761px)').matches){document.getElementById('txMemberSearch').focus({preventScroll:true})}};
   function populateTransactionOptions(){const ms=document.getElementById('txMember');ms.innerHTML='<option value="">Pilih member</option>'+data.members.map(m=>`<option value="${esc(m.id)}">${esc(m.name)} — ${esc(m.id)}</option>`).join('');const box=document.getElementById('txItems');if(box.children.length){box.querySelectorAll('.tx-item-row').forEach(row=>{const sel=row.querySelector('.tx-item-menu');const current=sel.value;sel.innerHTML=data.menus.map(m=>`<option value="${esc(m.id)}">${esc(m.name)} — ${money(m.price)}</option>`).join('');if(data.menus.some(m=>m.id===current))sel.value=current})}updateTxPreview()}
   function memberMatches(q){const term=String(q||'').trim().toLowerCase();if(!term)return [];return data.members.filter(m=>[m.name,m.id,m.phone,m.email].some(v=>String(v||'').toLowerCase().includes(term))).slice(0,8)}
@@ -1542,12 +1612,12 @@
     notify(couponOnly?'Penukaran kupon berhasil dicatat dengan total Rp0 dan 0 poin.':(old?'Transaksi diperbarui':'Transaksi tersimpan')+'. '+member.name+' mendapat '+points+' poin.');
     editingTransactionId=null;
   });
-  window.editTransaction=async id=>{const t=data.transactions.find(x=>String(x.id)===String(id));if(!t)return;if(remoteOperationalMode&&window.payuAdminLoyaltyRoundCutoff>0&&Number(t.backendId||t.id)<=window.payuAdminLoyaltyRoundCutoff){notify('Transaksi dari putaran lama adalah arsip dan tidak dapat diedit.');return;}window.openTransactionModal();editingTransactionId=String(id);document.getElementById('txModalTitle').textContent='Edit transaksi';document.getElementById('txMemberSearch').disabled=true;await setTransactionMember(t.memberId);document.getElementById('txItems').innerHTML='';const sourceItems=Array.isArray(t.items)&&t.items.length?t.items:(t.couponId?[]:[{menuId:t.menuId,qty:t.qty||1}]);
+  window.editTransaction=async id=>{const t=data.transactions.find(x=>String(x.id)===String(id));if(!t)return;if(transactionIsReadonly(t)){notify('Transaksi dari putaran lama adalah arsip dan tidak dapat diedit.');return;}window.openTransactionModal();editingTransactionId=String(id);document.getElementById('txModalTitle').textContent='Edit transaksi';document.getElementById('txMemberSearch').disabled=true;await setTransactionMember(t.memberId);document.getElementById('txItems').innerHTML='';const sourceItems=Array.isArray(t.items)&&t.items.length?t.items:(t.couponId?[]:[{menuId:t.menuId,qty:t.qty||1}]);
   // Menu hadiah gratis telah dicatat sebagai snapshot transaction_items oleh API,
   // tetapi bukan pembelian berbayar. Jangan masukkan lagi sebagai baris belanja saat edit.
   const oldItems=sourceItems.filter(item=>!(t.couponId&&Number(item.price)===0&&/\(GRATIS\s*-\s*Kupon\b/i.test(String(item.menuName||''))));
   oldItems.forEach(item=>addTransactionItem(item.menuId,item.qty||1));document.getElementById('txPayment').value=t.payment||'Tunai';document.getElementById('txNotes').value=t.notes||'';await refreshCouponOptions();document.getElementById('txCoupon').value=t.couponId||'';updateTxPreview();document.getElementById('transactionModal').classList.add('open')};
-  window.deleteTransaction=async (id,profileMemberId=null)=>{const remoteT=data.transactions.find(x=>String(x.id)===String(id));if(!remoteT)return;if(remoteOperationalMode&&window.payuAdminLoyaltyRoundCutoff>0&&Number(remoteT.backendId||remoteT.id)<=window.payuAdminLoyaltyRoundCutoff){notify('Transaksi putaran lama disimpan sebagai arsip dan tidak dapat dibatalkan.');return;}if(remoteOperationalMode){if(!confirm(`Batalkan transaksi ${remoteT.transactionCode||remoteT.id}? Poin akan dikoreksi server.`))return;try{await window.payuAdminApiRequest('staff/transactions/void',{method:'POST',body:{id:Number(remoteT.backendId||remoteT.id)}});remoteTransactionFallbackCache=null;await window.payuAdminHydrateFromServer();notify('Transaksi dibatalkan di database dan poin dikoreksi.')}catch(err){notify('Transaksi gagal dibatalkan: '+err.message)}return;}const t=data.transactions.find(x=>x.id===id);if(!t)return;if(!confirm(`Hapus transaksi ${t.id}? Poin yang berasal dari transaksi ini akan dikoreksi dan kupon akan dikembalikan jika digunakan.`))return;const m=data.members.find(x=>x.id===t.memberId);if(m)m.points=Math.max(0,(Number(m.points)||0)-(Number(t.points)||0));releaseTransactionCoupon(t);data.transactions=data.transactions.filter(x=>x.id!==id);saveData();renderAll();if(profileMemberId&&document.getElementById('profileModal').classList.contains('open'))openMemberProfile(profileMemberId);notify('Transaksi dihapus, poin dan kupon sudah disesuaikan.')};
+  window.deleteTransaction=async (id,profileMemberId=null)=>{const remoteT=data.transactions.find(x=>String(x.id)===String(id));if(!remoteT)return;if(transactionIsReadonly(remoteT)){notify('Transaksi putaran lama disimpan sebagai arsip dan tidak dapat dibatalkan.');return;}if(remoteOperationalMode){if(!confirm(`Batalkan transaksi ${remoteT.transactionCode||remoteT.id}? Poin akan dikoreksi server.`))return;try{await window.payuAdminApiRequest('staff/transactions/void',{method:'POST',body:{id:Number(remoteT.backendId||remoteT.id)}});remoteTransactionFallbackCache=null;await window.payuAdminHydrateFromServer();notify('Transaksi dibatalkan di database dan poin dikoreksi.')}catch(err){notify('Transaksi gagal dibatalkan: '+err.message)}return;}const t=data.transactions.find(x=>x.id===id);if(!t)return;if(!confirm(`Hapus transaksi ${t.id}? Poin yang berasal dari transaksi ini akan dikoreksi dan kupon akan dikembalikan jika digunakan.`))return;const m=data.members.find(x=>x.id===t.memberId);if(m)m.points=Math.max(0,(Number(m.points)||0)-(Number(t.points)||0));releaseTransactionCoupon(t);data.transactions=data.transactions.filter(x=>x.id!==id);saveData();renderAll();if(profileMemberId&&document.getElementById('profileModal').classList.contains('open'))openMemberProfile(profileMemberId);notify('Transaksi dihapus, poin dan kupon sudah disesuaikan.')};
   window.exportTransactions=()=>downloadCSV('payu-transactions.csv',[['ID Transaksi','Waktu','ID Member','Nama Member','Daftar Menu','Total Jumlah Item','Total Belanja','Poin','Pembayaran','Catatan'],...data.transactions.map(t=>[t.id,t.createdAt,t.memberId,t.memberName,Array.isArray(t.items)?t.items.map(i=>`${i.menuName} x ${i.qty} (${i.subtotal})`).join(' | '):(t.menuName||''),t.qty||1,t.total,t.points,t.payment,t.notes||''])]);
 
   function normalizeStoreWhatsApp(value){
